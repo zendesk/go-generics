@@ -1,0 +1,23 @@
+version: "1.0"
+name: go-generics
+description: Contains generic utility functions for go programmers.
+product: foundation
+team: lockbox
+
+ecrRepositories:
+  - type: prod
+  - type: dev
+## https://zendeskdev.zendesk.com/hc/en-us/articles/5112124549018-How-do-I-publish-images-to-ECR-
+# ecrRepositories:
+#   - type: dev # without name, eg. <ecr>/dev/zendesk/<github-repo>
+#   - type: prod
+#   - name: ubuntu-22 # with name, eg. <ecr>/base/zendesk/<github-repo>/ubuntu-22
+#     type: base
+#   - name: my-lambda-function
+#     type: lambda
+#     lambdaFunctionName: generate-report
+#   - type: dev
+#     name: dev-with-lifecycle
+#     lifecyclePolicyOverrides: # allow overrides of default lifecycle policies
+#       - tagStatus: any
+#         expiryDays: 45

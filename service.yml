@@ -1,0 +1,41 @@
+version: '1.0'
+name: go-generics
+description: Contains generic utility functions for go programmers.
+product: foundation
+team: lockbox
+
+## https://zendeskdev.zendesk.com/hc/en-us/articles/4404594167706-Variable-Replacement-in-service-yml
+#parameters:
+#  staging:
+#    auroraInstanceType: "db.r5.large"
+#  production:
+#    auroraInstanceType: "db.r5.xlarge"
+
+## https://zendeskdev.zendesk.com/hc/en-us/articles/1260805032109-How-do-I-access-my-secrets-from-Secret-Service-in-code-
+#access:
+#  secret_paths:
+#    - path: path/to/my-secret
+
+#infrastructure:
+#  # https://zendeskdev.zendesk.com/hc/en-us/articles/1260802637409-How-do-I-give-my-service-AWS-permissions-
+#  # my-policy must be defined in https://github.com/zendesk/self-service-policy-templates before enabling this. More details in above article
+#  legacyPolicies:
+#    - name: legacy/my-service/my-policy
+
+#  # https://zendeskdev.zendesk.com/hc/en-us/articles/360016008299-How-do-I-provision-an-Aurora-cluster-
+#  # https://zendeskdev.zendesk.com/hc/en-us/articles/360011545640-How-do-I-connect-my-app-to-my-self-service-datastores-
+#  aurora:
+#  - name: my-aurora
+#    attributes:
+#      readReplicas: 2
+#      instanceType: ${parameters "auroraInstanceType"}
+#      schemas:
+#      - my-schema
+
+#  # https://zendeskdev.zendesk.com/hc/en-us/articles/360014737059-How-do-I-create-a-new-route-for-my-service-
+#  routes:
+#    - name: my-route
+#      attributes:
+#        path: /myroute
+
+# refer to https://zendeskdev.zendesk.com/hc/en-us/categories/1260801324130-Self-service-interface for remaining documentations of Self-Service Interface
