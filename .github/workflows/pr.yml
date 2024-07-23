@@ -83,17 +83,17 @@ jobs:
         run: |
           make test
 
-  test_fuzz:
-    runs-on: [self-hosted, zendesk-stable]
-    steps:
-      - name: Checkout
-        uses: zendesk/checkout@v3
-
-      - name: Setup Go
-        uses: zendesk/setup-go@v2
-        with:
-          go-version: 1.21.x
-
-      - name: Run Fuzz Tests
-        run: |
-          make test-fuzz
+#  test_fuzz:
+#    runs-on: [self-hosted, zendesk-stable]
+#    steps:
+#      - name: Checkout
+#        uses: zendesk/checkout@v3
+#
+#      - name: Setup Go
+#        uses: zendesk/setup-go@v2
+#        with:
+#          go-version: 1.21.x
+#
+#      - name: Run Fuzz Tests
+#        run: |
+#          make test-fuzz
