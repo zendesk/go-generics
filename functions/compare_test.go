@@ -12,11 +12,11 @@ import (
 )
 
 func TestDedupe(t *testing.T) {
-	test.CheckEqualIgnoreOrder(functions.Dedupe([]int{1, 1, 5, 5, 7, 9, 999}), "Test1", []int{1, 5, 7, 9, 999}, t)
-	test.CheckEqualIgnoreOrder(functions.Dedupe([]string{"abc", "bc", "a", "b", "b", "g", "abc"}), "Test2", []string{"abc", "bc", "a", "b", "g"}, t)
-	test.CheckEqualIgnoreOrder(functions.Dedupe([]int{-99, -9999, 9999, 99, -99, 99}), "Test3", []int{-99, -9999, 9999, 99}, t)
-	test.CheckEqualIgnoreOrder(functions.Dedupe([]byte{0x1, 0x2, 0x9, 0x10, 0x1}), "Test4", []byte{0x1, 0x2, 0x9, 0x10}, t)
-	test.CheckEqualIgnoreOrder(functions.Dedupe([]float64{1.11, 1.99, 99.99, 1.91, 99.99, 1.11, 1.44}), "Test3", []float64{1.11, 1.99, 99.99, 1.91, 1.44}, t)
+	test.CheckComparableEqualIgnoreOrder(functions.Dedupe([]int{1, 1, 5, 5, 7, 9, 999}), "Test1", []int{1, 5, 7, 9, 999}, t)
+	test.CheckComparableEqualIgnoreOrder(functions.Dedupe([]string{"abc", "bc", "a", "b", "b", "g", "abc"}), "Test2", []string{"abc", "bc", "a", "b", "g"}, t)
+	test.CheckComparableEqualIgnoreOrder(functions.Dedupe([]int{-99, -9999, 9999, 99, -99, 99}), "Test3", []int{-99, -9999, 9999, 99}, t)
+	test.CheckComparableEqualIgnoreOrder(functions.Dedupe([]byte{0x1, 0x2, 0x9, 0x10, 0x1}), "Test4", []byte{0x1, 0x2, 0x9, 0x10}, t)
+	test.CheckComparableEqualIgnoreOrder(functions.Dedupe([]float64{1.11, 1.99, 99.99, 1.91, 99.99, 1.11, 1.44}), "Test3", []float64{1.11, 1.99, 99.99, 1.91, 1.44}, t)
 }
 
 func TestContains(t *testing.T) {
@@ -177,7 +177,7 @@ func TestSliceContainsAny(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			test.CheckEqual(functions.SliceContainsAny(tt.sliceA, tt.sliceB), tt.name, tt.want, t)
+			test.CheckEqual(functions.ContainsAny(tt.sliceA, tt.sliceB), tt.name, tt.want, t)
 		})
 	}
 }
@@ -204,72 +204,71 @@ func TestSliceContainsAnyBools(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			test.CheckEqual(functions.SliceContainsAny(tt.sliceA, tt.sliceB), tt.name, tt.want, t)
+			test.CheckEqual(functions.ContainsAny(tt.sliceA, tt.sliceB), tt.name, tt.want, t)
 		})
 	}
 }
 
-//
-//func TestDedupeByHash(t *testing.T) {
-//	foos := []test.Foo{
-//		{
-//			Bar:   "bar1",
-//			Baz:   "baz1",
-//			Order: 0,
-//		},
-//		{
-//			Bar:   "bar2",
-//			Baz:   "baz2",
-//			Order: 1,
-//		},
-//		{
-//			Bar:   "bar3",
-//			Baz:   "baz3",
-//			Order: 2,
-//		}, // Below are dupes depending on fn provided
-//	}
-//
-//	dupe1 := test.Foo{
-//		Bar:   "bar1",
-//		Baz:   "nadfdsafads",
-//		Order: 9999,
-//	}
-//
-//	dupe2 := test.Foo{
-//		Bar:   "adfasdf",
-//		Baz:   "baz2",
-//		Order: 9998,
-//	}
-//
-//	dupe3 := test.Foo{
-//		Bar:   "adfasdf",
-//		Baz:   "nadfdsafads",
-//		Order: 1,
-//	}
-//
-//	dupe1Foos := append(foos, dupe1)
-//	dupe2Foos := append(foos, dupe2)
-//	dupe3Foos := append(foos, dupe3, dupe1, dupe2)
-//
-//	// test.Bar: "bar1" should be removed.
-//	dedupe1 := functions.DedupeByHash(dupe1Foos, func(i test.Foo) uint64 {
-//		return utils.Hash64(i.Bar)
-//	})
-//
-//	test.CheckEqualIgnoreOrder(dedupe1, "dedupe1", foos, t)
-//
-//	// Baz: "baz2" should be removed
-//	dedupe2 := functions.DedupeByHash(dupe2Foos, func(i test.Foo) uint64 {
-//		return utils.Hash64(i.Baz)
-//	})
-//	test.CheckEqualIgnoreOrder(dedupe2, "dedupe2", foos, t)
-//
-//	// Order: 1 should be removed.
-//	dedupe3 := functions.DedupeByHash(dupe3Foos, func(i test.Foo) uint64 {
-//		return uint64(i.Order)
-//	})
-//	test.CheckEqualIgnoreOrder(dedupe3, "dedupe3", append(foos, dupe1, dupe2), t)
-//}
+func TestDedupeByHash(t *testing.T) {
+	foos := []test.Foo{
+		{
+			Bar:   "bar1",
+			Baz:   "baz1",
+			Order: 0,
+		},
+		{
+			Bar:   "bar2",
+			Baz:   "baz2",
+			Order: 1,
+		},
+		{
+			Bar:   "bar3",
+			Baz:   "baz3",
+			Order: 2,
+		}, // Below are dupes depending on fn provided
+	}
+
+	dupe1 := test.Foo{
+		Bar:   "bar1",
+		Baz:   "nadfdsafads",
+		Order: 9999,
+	}
+
+	dupe2 := test.Foo{
+		Bar:   "adfasdf",
+		Baz:   "baz2",
+		Order: 9998,
+	}
+
+	dupe3 := test.Foo{
+		Bar:   "adfasdf",
+		Baz:   "nadfdsafads",
+		Order: 1,
+	}
+
+	dupe1Foos := append(foos, dupe1)
+	dupe2Foos := append(foos, dupe2)
+	dupe3Foos := append(foos, dupe3, dupe1, dupe2)
+
+	// test.Bar: "bar1" should be removed.
+	dedupe1 := functions.DedupeByHash(dupe1Foos, func(i test.Foo) uint64 {
+		return utils.Hash64(i.Bar)
+	})
+
+	test.CheckComparableEqualIgnoreOrder(dedupe1, "dedupe1", foos, t)
+
+	// Baz: "baz2" should be removed
+	dedupe2 := functions.DedupeByHash(dupe2Foos, func(i test.Foo) uint64 {
+		return utils.Hash64(i.Baz)
+	})
+	test.CheckComparableEqualIgnoreOrder(dedupe2, "dedupe2", foos, t)
+
+	// Order: 1 should be removed.
+	dedupe3 := functions.DedupeByHash(dupe3Foos, func(i test.Foo) uint64 {
+		return uint64(i.Order)
+	})
+	test.CheckComparableEqualIgnoreOrder(dedupe3, "dedupe3", append(foos, dupe1, dupe2), t)
+}
 
 func FuzzTestEqualIgnoreOrder(f *testing.F) {
 	for i := 0; i < seedIterations; i++ {

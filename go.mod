@@ -8,6 +8,7 @@ require (
 	github.com/jellydator/ttlcache/v3 v3.2.0
 	github.com/redis/go-redis/v9 v9.5.3
 	github.com/stretchr/testify v1.9.0
+	github.com/zendesk/generic v1.1.2
 	github.com/zendesk/lockbox-shared-lib v1.15.10
 	github.com/zendesk/zendesk_logging_go v1.19.2
 	golang.org/x/exp v0.0.0-20240707233637-46b078467d37
@@ -22,7 +23,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/segmentio/fasthash v1.0.3 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
-	github.com/zendesk/generic v1.1.2 // indirect
 	github.com/zendesk/zendesk_langsupport_go v0.0.12 // indirect
 	golang.org/x/crypto v0.22.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect

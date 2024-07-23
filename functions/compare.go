@@ -1,6 +1,10 @@
 package functions
 
-import "reflect"
+import (
+	"reflect"
+
+	"github.com/zendesk/generic/set"
+)
 
 // EqualIgnoreOrder compares N slices for equal values ignoring the order of the items in the slices. Items must be comparable.
 func EqualIgnoreOrder[T comparable](slices ...[]T) bool {
@@ -50,8 +54,8 @@ func Contains[T comparable](list []T, item T) bool {
 	return false
 }
 
-// SliceContainsAny compares slices A and B and returns true if at least one element of A exists in B
-func SliceContainsAny[T comparable](A []T, B []T) bool {
+// ContainsAny compares slices A and B and returns true if at least one element of A exists in B
+func ContainsAny[T comparable](A []T, B []T) bool {
 	set := make(map[T]bool)
 	for _, a := range A {
 		set[a] = true
@@ -91,18 +95,18 @@ func Dedupe[T comparable](items []T) []T {
 	return deduped
 }
 
-//// DedupeByHash dedupes the items between 2 slices using a hashFn that should return equal values for two items that are considered equal
-//func DedupeByHash[T comparable](items []T, hashFn func(t T) uint64) []T {
-//	deduped := set.NewHashset(0, func(a, b T) bool {
-//		return hashFn(a) == hashFn(b)
-//	}, hashFn)
-//
-//	for _, item := range items {
-//		deduped.Put(item)
-//	}
-//
-//	return deduped.Keys()
-//}
+// DedupeByHash dedupes the items between 2 slices using a hashFn that should return equal values for two items that are considered equal
+func DedupeByHash[T comparable](items []T, hashFn func(t T) uint64) []T {
+	deduped := set.NewHashset(0, func(a, b T) bool {
+		return hashFn(a) == hashFn(b)
+	}, hashFn)
+
+	for _, item := range items {
+		deduped.Put(item)
+	}
+
+	return deduped.Keys()
+}
 
 // RemoveNils removes any nil values from a slice of T -- this is safe for finding boxed and unboxed nils.
 func RemoveNils[T any](from []T) []T {

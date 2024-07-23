@@ -126,7 +126,7 @@ func TestRunMapToManyWithRetries(t *testing.T) {
 	test.CheckEqual(results, "results", expectedResult, t)
 }
 
-func TestRunMapMapWithRetries(t *testing.T) {
+func TestRunMapToSliceWithRetries(t *testing.T) {
 	maxRetries := 4
 	backoffInterval := time.Millisecond * 10
 
@@ -146,7 +146,7 @@ func TestRunMapMapWithRetries(t *testing.T) {
 		return []int{v}, nil
 	}
 
-	results, err := functions.RunMapMapWithRetries(testFunc, key, val, maxRetries, backoffInterval)
+	results, err := functions.RunMapToSliceWithRetries(testFunc, key, val, maxRetries, backoffInterval)
 	finish := time.Now()
 	test.CheckErr(err, "Unexpected error with RunMapWithRetries test.", t)
 

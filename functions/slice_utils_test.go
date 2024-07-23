@@ -26,7 +26,7 @@ func TestShuffle(t *testing.T) {
 	testSlice := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19}
 	updated := functions.Shuffle(testSlice)
 
-	test.CheckEqualIgnoreOrder(testSlice, "Shuffled slices do not have the same items", updated, t)
+	test.CheckComparableEqualIgnoreOrder(testSlice, "Shuffled slices do not have the same items", updated, t)
 
 	if testSlice[0] == updated[0] &&
 		testSlice[1] == updated[1] &&
