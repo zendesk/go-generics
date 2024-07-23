@@ -1,18 +1,41 @@
-##@ Build
+#PACKAGE := "github.com/zendesk/lockbox-shared-lib"
+#export GOPROXY ?= https://$(ARTIFACTORY_USERNAME):$(ARTIFACTORY_API_KEY)@zdrepo.jfrog.io/zdrepo/api/go/zen-go
+#export GOSUMDB := off
+AWS_PROFILE := sandbox1
 
-IMAGE_REPOSITORY = 713408432298.dkr.ecr.us-west-2.amazonaws.com/prod/zendesk/go-generics
+default: build
 
-.DEFAULT_GOAL := help
+.PHONY: build
+build:
+	go build $(PACKAGE) ./...
 
-.PHONY: build-image push-image update-digest retrieve-digest
-build-image: ## Build docker image
-	docker build -t $(IMAGE_REPOSITORY):$(TAG) .
+.PHONY: ensure_deps
+ensure_deps:
+	go mod vendor
+	go mod tidy
 
-push-image: ## Push docker image
-	docker push $(IMAGE_REPOSITORY):$(TAG)
+.PHONY: fmt
+	gofmt -w `find . -name '*.go'`
 
-##@ Help
+# make test TEST=MyTestName
+.PHONY: test
+test: test-unit
 
-.PHONY: help
-help:  ## Display this help.
-	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z0-9_-]+:.*?##/ { printf "  \033[36m%-25s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+.PHONY: test-unit
+test-unit:
+	go clean -testcache
+	go test -v -timeout 45m ./...
+
+.PHONY: test-fuzz
+test-fuzz:
+	./scripts/run_fuzz_tests.sh 30
+
+.PHONY: unit-with-coverage
+test-unit-with-coverage:
+	LOCAL_DEV=true go test -v -timeout 45m ./... -coverprofile cover.out
+
+#make test-one TEST=YourTestName
+.PHONY: test-one
+test-one:
+	go clean -testcache
+	go test -v -timeout 45m ./... -run ^$(TEST)$

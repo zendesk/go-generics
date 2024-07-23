@@ -1,5 +1,7 @@
 package types
 
+// Attribution: https://github.com/zyedidia/generic
+
 // Stack implements a LIFO stack with peeking.
 type Stack[T any] struct {
 	entries []T

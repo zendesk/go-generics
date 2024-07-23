@@ -61,18 +61,10 @@ func CheckEqual(result interface{}, resultName string, expectedResult interface{
 	}
 }
 
-func CheckEqualIgnoreOrder[T any](result []T, resultName string, expected []T, t *testing.T) {
-	for _, i := range result {
-		if !CheckContainsDeepEqual(expected, i) {
-			t.Fatalf("Missing result: %s. %+v is missing from %+v", resultName, i, expected)
-		}
-	}
-}
-
 func CheckComparableEqualIgnoreOrder[T comparable](result []T, resultName string, expected []T, t *testing.T) {
 	areEqual := equalIgnoreOrder(result, expected)
 	if !areEqual {
-		t.Fatalf("Provided slices: a: [%v] b: [%v] are not equal for %s", result, expected, resultName)
+		t.Fatalf("%s: Provided slices: result: [%v] expected: [%v] are not equal.", resultName, result, expected)
 	}
 }
 

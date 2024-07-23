@@ -1,0 +1,227 @@
+package cache
+
+import (
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestNew(t *testing.T) {
+	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
+
+	c, err := New[string, int](ttlCache, 25)
+	assert.NoError(t, err)
+	assert.NotNil(t, c)
+}
+
+func TestSetGetDelete(t *testing.T) {
+	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
+
+	c, err := New[string, string](ttlCache, 25)
+	assert.NoError(t, err)
+
+	// Set a value in the cache
+	err = c.Set("key", "value")
+	assert.NoError(t, err)
+
+	// Get the value from the cache
+	value, _, err := c.Get("key")
+	assert.NoError(t, err)
+	assert.Equal(t, "value", value)
+
+	err = c.Delete("key")
+	assert.NoError(t, err)
+	value, _, err = c.Get("key")
+	assert.Equal(t, value, "")
+	assert.NoError(t, err)
+}
+
+func TestGetError(t *testing.T) {
+	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
+
+	// Create a new CryptoCacher
+	c, err := New[string, string](ttlCache, 25)
+	assert.NoError(t, err)
+
+	// Try to get a value that hasn't been set
+	v, _, err := c.Get("key")
+	assert.Nil(t, err)
+	assert.Equal(t, v, "")
+}
+
+func TestSetGetComplexStruct(t *testing.T) {
+
+	type ComplexStruct struct {
+		Name    string
+		Numbers []int
+		Nested  struct {
+			Field     string
+			SubNested struct {
+				SubField int
+			}
+		}
+		Map map[string]struct {
+			Value int
+		}
+	}
+
+	// Create a new CryptoCacher
+	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
+	c, err := New[string, ComplexStruct](ttlCache, 25)
+	assert.NoError(t, err)
+
+	// Create a complex struct
+	value := ComplexStruct{
+		Name:    "test",
+		Numbers: []int{1, 2, 3},
+		Nested: struct {
+			Field     string
+			SubNested struct {
+				SubField int
+			}
+		}{
+			Field: "nested",
+			SubNested: struct {
+				SubField int
+			}{
+				SubField: 10,
+			},
+		},
+		Map: map[string]struct {
+			Value int
+		}{
+			"one": {Value: 1},
+			"two": {Value: 2},
+		},
+	}
+
+	// Set the complex struct in the cache
+	err = c.Set("key", value)
+	assert.NoError(t, err)
+
+	// Get the complex struct from the cache
+	retrievedValue, _, err := c.Get("key")
+	assert.NoError(t, err)
+	assert.Equal(t, value, retrievedValue)
+}
+
+func TestSetGetComplexKey(t *testing.T) {
+
+	type ComplexKey struct {
+		Field1 string
+		Field2 int
+	}
+
+	// Create a new CryptoCacher
+	ttlCache := NewInMemoryCache[ComplexKey, []byte](10 * time.Second)
+	c, err := New[ComplexKey, string](ttlCache, 25)
+	assert.NoError(t, err)
+
+	// Create a complex key
+	key := ComplexKey{
+		Field1: "field1",
+		Field2: 2,
+	}
+
+	// Set a value with the complex key
+	err = c.Set(key, "value")
+	assert.NoError(t, err)
+
+	// Get the value with the complex key
+	value, _, err := c.Get(key)
+	assert.NoError(t, err)
+	assert.Equal(t, "value", value)
+}
+
+func TestSetInvalidValue(t *testing.T) {
+
+	// Create a new CryptoCacher
+	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
+	c, err := New[string, chan int](ttlCache, 25)
+	assert.NoError(t, err)
+
+	// Try to set an invalid value
+	err = c.Set("key", make(chan int))
+	assert.Error(t, err)
+}
+
+func BenchmarkEncrypt(b *testing.B) {
+
+	// Run the benchmark
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		// Include key generation in benchmark test since that's the part that takes the longest
+		ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
+		c, err := New[string, string](ttlCache, 25)
+		if err != nil {
+			b.Fatal(err)
+		}
+		if err := c.Set("key", "value"); err != nil {
+			b.Fatal(err)
+		}
+	}
+	b.StopTimer()
+
+	// Check that the benchmark took less than 75ms
+	if avg := b.Elapsed() / time.Duration(b.N); avg > 75*time.Millisecond {
+		b.Fatalf("encrypt took too long: %v", avg)
+	}
+}
+
+func BenchmarkDecrypt(b *testing.B) {
+
+	// Run the benchmark
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		// Include key generation in benchmark test since that's the part that takes the longest
+		ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
+		c, err := New[string, string](ttlCache, 25)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		// Encrypt the value
+		if err := c.Set("key", "value"); err != nil {
+			b.Fatal(err)
+		}
+		if _, _, err := c.Get("key"); err != nil {
+			b.Fatal(err)
+		}
+	}
+	b.StopTimer()
+
+	// Check that the benchmark took less than 75ms
+	if avg := b.Elapsed() / time.Duration(b.N); avg > 75*time.Millisecond {
+		b.Fatalf("decrypt took too long: %v", avg)
+	}
+}
+
+func TestPurge(t *testing.T) {
+	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
+
+	c, err := New[string, string](ttlCache, 25)
+	assert.NoError(t, err)
+
+	// Set a value in the cache
+	err = c.Set("key", "value")
+	assert.NoError(t, err)
+
+	// Set another value in the cache
+	err = c.Set("key2", "value2")
+	assert.NoError(t, err)
+
+	// Get the value from the cache
+	value, _, err := c.Get("key")
+	assert.NoError(t, err)
+	assert.Equal(t, "value", value)
+
+	err = c.Purge()
+	assert.NoError(t, err)
+	value, _, err = c.Get("key")
+	assert.Equal(t, value, "")
+	assert.NoError(t, err)
+	value, _, err = c.Get("key2")
+	assert.Equal(t, value, "")
+	assert.NoError(t, err)
+}
