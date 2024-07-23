@@ -5,7 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	deep "github.com/go-test/deep"
+	"github.com/go-test/deep"
+	"github.com/google/go-cmp/cmp"
 )
 
 // CheckErr will fail a test if an error is detected
@@ -55,9 +56,8 @@ func ExpectErr(err error, message string, t *testing.T) {
 }
 
 func CheckEqual(result interface{}, resultName string, expectedResult interface{}, t *testing.T) {
-	if diff := deep.Equal(result, expectedResult); diff != nil {
-		t.Error(diff)
-		t.Fatalf("Unexpected results for result: %s", resultName)
+	if equal := cmp.Equal(result, expectedResult); !equal {
+		t.Fatalf("Unexpected results for result: %s. Expected: %+v, Got: %+v", resultName, expectedResult, result)
 	}
 }
 

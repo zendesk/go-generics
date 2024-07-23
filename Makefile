@@ -32,7 +32,7 @@ test-fuzz:
 
 .PHONY: unit-with-coverage
 test-unit-with-coverage:
-	LOCAL_DEV=true go test -v -timeout 45m ./... -coverprofile cover.out
+	go test -v -timeout 45m ./... -coverprofile cover.out
 
 #make test-one TEST=YourTestName
 .PHONY: test-one

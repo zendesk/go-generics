@@ -1,11 +1,10 @@
-package functions_test
+package functions
 
 import (
 	"fmt"
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/functions"
 	"github.com/zendesk/go-generics/internal/test"
 	"github.com/zendesk/lockbox-shared-lib/lockbox/generics"
 	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
@@ -14,7 +13,7 @@ import (
 func TestGoEachMapWithErrs(t *testing.T) {
 	fooMap := test.MakeFooMaps(5000)
 
-	errs := functions.GoEachMapWithErrs(fooMap, func(k int, v *test.Foo) error {
+	errs := GoEachMapWithErrs(fooMap, func(k int, v *test.Foo) error {
 		if v.Order%2 == 0 {
 			return fmt.Errorf("ERROR EVEN NUMBER")
 		}

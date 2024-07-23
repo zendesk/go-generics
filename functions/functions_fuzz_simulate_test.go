@@ -1,4 +1,4 @@
-package functions_test
+package functions
 
 // This can be removed once the bug in fuzz testing has been remediated and we can prove it. This file is useful for
 // simulating fuzz tests while avoiding the fuzz bug.

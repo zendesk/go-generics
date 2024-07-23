@@ -2,8 +2,6 @@ package functions
 
 import (
 	"context"
-
-	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
 )
 
 // Each runs fn() over every provided item.
@@ -22,7 +20,7 @@ func EachMergeErrs[T interface{}](items []T, fn func(T) error) error {
 		errs = append(errs, err)
 	}
 
-	return utils.MergeErrors(errs...)
+	return MergeErrors(errs...)
 }
 
 // GoEach runs a function across each item of a slice concurrently.

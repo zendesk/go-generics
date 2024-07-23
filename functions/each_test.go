@@ -1,4 +1,4 @@
-package functions_test
+package functions
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/functions"
 	"github.com/zendesk/go-generics/internal/test"
 	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
 )
@@ -23,7 +22,7 @@ func TestEachMergeErrs(t *testing.T) {
 
 	items := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 
-	foundErrs := functions.EachMergeErrs(items, errOnEvens)
+	foundErrs := EachMergeErrs(items, errOnEvens)
 
 	expectedErrsFound := strings.Contains(foundErrs.Error(), "error: 2.") &&
 		strings.Contains(foundErrs.Error(), "error: 4.") &&
@@ -50,7 +49,7 @@ func FuzzEach(f *testing.F) {
 	f.Fuzz(func(t *testing.T, num int) {
 		foos := test.MakeFoos(num)
 
-		functions.Each(foos, mutateFoo)
+		Each(foos, mutateFoo)
 		var expectedErrs []error
 		for _, foo := range foos {
 			err := mutateFooWithErr(foo)
@@ -74,9 +73,9 @@ func FuzzGoEach(f *testing.F) {
 		foos := test.MakeFoos(num)
 
 		if num%2 == 0 {
-			functions.GoEach(foos, mutateFoo)
+			GoEach(foos, mutateFoo)
 		} else {
-			functions.GoEach(foos, mutateFoo, functions.ConcurrencyLimitOption(num/3+1))
+			GoEach(foos, mutateFoo, ConcurrencyLimitOption(num/3+1))
 		}
 
 		var expectedErrs []error
@@ -104,9 +103,9 @@ func FuzzGoEachWithErrs(f *testing.F) {
 		var errs []error
 
 		if num%2 == 0 {
-			errs = functions.GoEachWithErrs(foos, mutateFooWithErr)
+			errs = GoEachWithErrs(foos, mutateFooWithErr)
 		} else {
-			errs = functions.GoEachWithErrs(foos, mutateFooWithErr, functions.ConcurrencyLimitOption(num/3+1))
+			errs = GoEachWithErrs(foos, mutateFooWithErr, ConcurrencyLimitOption(num/3+1))
 		}
 
 		var expectedErrs []error
@@ -166,7 +165,7 @@ func FuzzGoEachWithErrsRateLimitTest(f *testing.F) {
 
 		// execute
 		start := time.Now().UnixMilli()
-		_ = functions.GoEachWithErrs(foos, mutateFooWithErr, functions.ConcurrencyLimitOption(concurrency), functions.RateLimitOption(ratePerTime, duration))
+		_ = GoEachWithErrs(foos, mutateFooWithErr, ConcurrencyLimitOption(concurrency), RateLimitOption(ratePerTime, duration))
 		finish := time.Now().UnixMilli()
 
 		totalTime := float64(finish - start)

@@ -1,11 +1,10 @@
-package functions_test
+package functions
 
 import (
 	"sort"
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/functions"
 	"github.com/zendesk/go-generics/internal/test"
 	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
 )
@@ -19,7 +18,7 @@ func FuzzMapToSlice(f *testing.F) {
 		fooMaps := test.MakeFooMaps(num)
 
 		var bars []*test.Bar
-		bars = functions.MapToSlice(fooMaps, mapMap)
+		bars = MapToSlice(fooMaps, mapMap)
 
 		var expectedBars []*test.Bar
 		for k, v := range fooMaps {
@@ -50,9 +49,9 @@ func FuzzGoMapToSlice(f *testing.F) {
 
 		var bars []*test.Bar
 		if num%2 == 0 {
-			bars = functions.GoMapToSlice(fooMaps, mapMap)
+			bars = GoMapToSlice(fooMaps, mapMap)
 		} else {
-			bars = functions.GoMapToSlice(fooMaps, mapMap, functions.ConcurrencyLimitOption(num/3+1))
+			bars = GoMapToSlice(fooMaps, mapMap, ConcurrencyLimitOption(num/3+1))
 		}
 
 		var expectedBars []*test.Bar
@@ -85,9 +84,9 @@ func FuzzGoMapToSliceWithErrs(f *testing.F) {
 		var errs []error
 		var bars []*test.Bar
 		if num%2 == 0 {
-			bars, errs = functions.GoMapToSliceWithErrs(fooMaps, mapMapWithErr, functions.DiscardResultIfErrOption())
+			bars, errs = GoMapToSliceWithErrs(fooMaps, mapMapWithErr, DiscardResultIfErrOption())
 		} else {
-			bars, errs = functions.GoMapToSliceWithErrs(fooMaps, mapMapWithErr, functions.ConcurrencyLimitOption(num/3+1), functions.DiscardResultIfErrOption())
+			bars, errs = GoMapToSliceWithErrs(fooMaps, mapMapWithErr, ConcurrencyLimitOption(num/3+1), DiscardResultIfErrOption())
 		}
 
 		var expectedErrs []error
@@ -156,7 +155,7 @@ func FuzzGoMapToSliceWithErrsRateLimitTest(f *testing.F) {
 
 		// execute
 		start := time.Now().UnixMilli()
-		_, _ = functions.GoMapToSliceWithErrs(fooMaps, mapMapWithErr, functions.ConcurrencyLimitOption(concurrency), functions.RateLimitOption(ratePerTime, duration))
+		_, _ = GoMapToSliceWithErrs(fooMaps, mapMapWithErr, ConcurrencyLimitOption(concurrency), RateLimitOption(ratePerTime, duration))
 		finish := time.Now().UnixMilli()
 
 		totalTime := float64(finish - start)

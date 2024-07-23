@@ -1,9 +1,8 @@
-package functions_test
+package functions
 
 import (
 	"testing"
 
-	"github.com/zendesk/go-generics/functions"
 	"github.com/zendesk/go-generics/internal/test"
 )
 
@@ -11,7 +10,7 @@ func TestReduce(t *testing.T) {
 	start := []int{1, 2, 3, 3, 9, 1, 1}
 	sum := 0
 
-	sum = functions.Reduce(start, sum, func(from int, to int) int {
+	sum = Reduce(start, sum, func(from int, to int) int {
 		return from + to
 	})
 
@@ -20,7 +19,7 @@ func TestReduce(t *testing.T) {
 	startFloat := []float64{1.9, 2.1, 3.3, 3.09099099, 9, 1, 1.10}
 	sumFloat := 0.0
 
-	sumFloat = functions.Reduce(startFloat, sumFloat, func(from float64, to float64) float64 {
+	sumFloat = Reduce(startFloat, sumFloat, func(from float64, to float64) float64 {
 		return from + to
 	})
 

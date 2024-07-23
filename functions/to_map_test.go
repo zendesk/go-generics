@@ -1,10 +1,9 @@
-package functions_test
+package functions
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/zendesk/go-generics/functions"
 	"github.com/zendesk/go-generics/internal/test"
 	"github.com/zendesk/lockbox-shared-lib/lockbox/generics"
 	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
@@ -13,7 +12,7 @@ import (
 func TestToMap(t *testing.T) {
 	ints := []int{1, -20, 0, 11}
 
-	squaresMap := functions.ToMap(ints, func(i int) (int, int) {
+	squaresMap := ToMap(ints, func(i int) (int, int) {
 		return i, i * i
 	})
 

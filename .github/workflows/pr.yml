@@ -4,7 +4,6 @@ on:
   pull_request:
 
 jobs:
-  # TODO support integration tests in workflow
   sonarqube:
     name: "Sonarqube"
     runs-on: [self-hosted, zendesk-stable]

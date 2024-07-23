@@ -1,11 +1,10 @@
-package functions_test
+package functions
 
 import (
 	"fmt"
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/functions"
 	"github.com/zendesk/go-generics/internal/test"
 )
 
@@ -25,7 +24,7 @@ func TestRunEachWithRetries(t *testing.T) {
 		return nil
 	}
 
-	err := functions.RunWithRetries(testFunc, 0, maxRetries, backoffInterval)
+	err := RunWithRetries(testFunc, 0, maxRetries, backoffInterval)
 	finish := time.Now()
 	test.CheckErr(err, "Unexpected error with RunEachWithRetries test.", t)
 
@@ -53,7 +52,7 @@ func TestRunMapWithRetries(t *testing.T) {
 		return count * i, nil
 	}
 
-	result, err := functions.RunMapWithRetries(testFunc, input, maxRetries, backoffInterval)
+	result, err := RunMapWithRetries(testFunc, input, maxRetries, backoffInterval)
 	finish := time.Now()
 	test.CheckErr(err, "Unexpected error with RunMapWithRetries test.", t)
 
@@ -82,7 +81,7 @@ func TestRunToMapWithRetries(t *testing.T) {
 		return count * i, count * i * 2, nil
 	}
 
-	key, val, err := functions.RunToMapWithRetries(testFunc, input, maxRetries, backoffInterval)
+	key, val, err := RunToMapWithRetries(testFunc, input, maxRetries, backoffInterval)
 	finish := time.Now()
 	test.CheckErr(err, "Unexpected error with RunMapWithRetries test.", t)
 
@@ -115,7 +114,7 @@ func TestRunMapToManyWithRetries(t *testing.T) {
 		return []int{i[0]}, nil
 	}
 
-	results, err := functions.RunMapToManyWithRetries(testFunc, input, maxRetries, backoffInterval)
+	results, err := RunMapToManyWithRetries(testFunc, input, maxRetries, backoffInterval)
 	finish := time.Now()
 	test.CheckErr(err, "Unexpected error with RunMapWithRetries test.", t)
 
@@ -146,7 +145,7 @@ func TestRunMapToSliceWithRetries(t *testing.T) {
 		return []int{v}, nil
 	}
 
-	results, err := functions.RunMapToSliceWithRetries(testFunc, key, val, maxRetries, backoffInterval)
+	results, err := RunMapToSliceWithRetries(testFunc, key, val, maxRetries, backoffInterval)
 	finish := time.Now()
 	test.CheckErr(err, "Unexpected error with RunMapWithRetries test.", t)
 
@@ -180,7 +179,7 @@ func TestGoMapEachWithRetries(t *testing.T) {
 		return resultVal, nil
 	}
 
-	results, errs := functions.GoMapWithErrs(items, testFunc, functions.RetryOption(maxRetries, backoffInterval))
+	results, errs := GoMapWithErrs(items, testFunc, RetryOption(maxRetries, backoffInterval))
 	finish := time.Now()
 
 	if len(errs) > 0 {

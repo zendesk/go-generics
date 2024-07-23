@@ -4,37 +4,37 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/zendesk/go-generics/internal/test"
 )
 
 func TestNew(t *testing.T) {
 	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
 
 	c, err := New[string, int](ttlCache, 25)
-	assert.NoError(t, err)
-	assert.NotNil(t, c)
+	test.CheckErr(err, "Unexpected err", t)
+	test.ExpectNotNil("cache", c, t)
 }
 
 func TestSetGetDelete(t *testing.T) {
 	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
 
 	c, err := New[string, string](ttlCache, 25)
-	assert.NoError(t, err)
+	test.CheckErr(err, "Unexpected err", t)
 
 	// Set a value in the cache
 	err = c.Set("key", "value")
-	assert.NoError(t, err)
+	test.CheckErr(err, "Unexpected err", t)
 
 	// Get the value from the cache
 	value, _, err := c.Get("key")
-	assert.NoError(t, err)
-	assert.Equal(t, "value", value)
+	test.CheckErr(err, "Unexpected err", t)
+	test.CheckEqual(value, "value", "value", t)
 
 	err = c.Delete("key")
-	assert.NoError(t, err)
+	test.CheckErr(err, "Unexpected err", t)
 	value, _, err = c.Get("key")
-	assert.Equal(t, value, "")
-	assert.NoError(t, err)
+	test.CheckEqual("", "value", value, t)
+	test.CheckErr(err, "Unexpected err", t)
 }
 
 func TestGetError(t *testing.T) {
@@ -42,12 +42,12 @@ func TestGetError(t *testing.T) {
 
 	// Create a new CryptoCacher
 	c, err := New[string, string](ttlCache, 25)
-	assert.NoError(t, err)
+	test.CheckErr(err, "Unexpected err", t)
 
 	// Try to get a value that hasn't been set
 	v, _, err := c.Get("key")
-	assert.Nil(t, err)
-	assert.Equal(t, v, "")
+	test.CheckErr(err, "Unexpeted err", t)
+	test.CheckEqual(v, "value", "", t)
 }
 
 func TestSetGetComplexStruct(t *testing.T) {
@@ -69,7 +69,7 @@ func TestSetGetComplexStruct(t *testing.T) {
 	// Create a new CryptoCacher
 	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
 	c, err := New[string, ComplexStruct](ttlCache, 25)
-	assert.NoError(t, err)
+	test.CheckErr(err, "Unexpected err", t)
 
 	// Create a complex struct
 	value := ComplexStruct{
@@ -98,12 +98,12 @@ func TestSetGetComplexStruct(t *testing.T) {
 
 	// Set the complex struct in the cache
 	err = c.Set("key", value)
-	assert.NoError(t, err)
+	test.CheckErr(err, "Unexpected err", t)
 
 	// Get the complex struct from the cache
 	retrievedValue, _, err := c.Get("key")
-	assert.NoError(t, err)
-	assert.Equal(t, value, retrievedValue)
+	test.CheckErr(err, "Unexpected err", t)
+	test.CheckEqual(retrievedValue, "retrievedValue", value, t)
 }
 
 func TestSetGetComplexKey(t *testing.T) {
@@ -116,7 +116,7 @@ func TestSetGetComplexKey(t *testing.T) {
 	// Create a new CryptoCacher
 	ttlCache := NewInMemoryCache[ComplexKey, []byte](10 * time.Second)
 	c, err := New[ComplexKey, string](ttlCache, 25)
-	assert.NoError(t, err)
+	test.CheckErr(err, "Unexpected err", t)
 
 	// Create a complex key
 	key := ComplexKey{
@@ -126,12 +126,12 @@ func TestSetGetComplexKey(t *testing.T) {
 
 	// Set a value with the complex key
 	err = c.Set(key, "value")
-	assert.NoError(t, err)
+	test.CheckErr(err, "Unexpected err", t)
 
 	// Get the value with the complex key
 	value, _, err := c.Get(key)
-	assert.NoError(t, err)
-	assert.Equal(t, "value", value)
+	test.CheckErr(err, "Unexpected err", t)
+	test.CheckEqual(value, "value", "value", t)
 }
 
 func TestSetInvalidValue(t *testing.T) {
@@ -139,11 +139,11 @@ func TestSetInvalidValue(t *testing.T) {
 	// Create a new CryptoCacher
 	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
 	c, err := New[string, chan int](ttlCache, 25)
-	assert.NoError(t, err)
+	test.CheckErr(err, "Unexpected err", t)
 
 	// Try to set an invalid value
 	err = c.Set("key", make(chan int))
-	assert.Error(t, err)
+	test.ExpectErr(err, "Expected err", t)
 }
 
 func BenchmarkEncrypt(b *testing.B) {
@@ -201,27 +201,27 @@ func TestPurge(t *testing.T) {
 	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
 
 	c, err := New[string, string](ttlCache, 25)
-	assert.NoError(t, err)
+	test.CheckErr(err, "Unexpected err", t)
 
 	// Set a value in the cache
 	err = c.Set("key", "value")
-	assert.NoError(t, err)
+	test.CheckErr(err, "Unexpected err", t)
 
 	// Set another value in the cache
 	err = c.Set("key2", "value2")
-	assert.NoError(t, err)
+	test.CheckErr(err, "Unexpected err", t)
 
 	// Get the value from the cache
 	value, _, err := c.Get("key")
-	assert.NoError(t, err)
-	assert.Equal(t, "value", value)
+	test.CheckErr(err, "Unexpected err", t)
+	test.CheckEqual(value, "value", "value", t)
 
 	err = c.Purge()
-	assert.NoError(t, err)
+	test.CheckErr(err, "Unexpected err", t)
 	value, _, err = c.Get("key")
-	assert.Equal(t, value, "")
-	assert.NoError(t, err)
+	test.CheckEqual(value, "value", "", t)
+	test.CheckErr(err, "Unexpected err", t)
 	value, _, err = c.Get("key2")
-	assert.Equal(t, value, "")
-	assert.NoError(t, err)
+	test.CheckEqual(value, "value", "", t)
+	test.CheckErr(err, "Unexpected err", t)
 }

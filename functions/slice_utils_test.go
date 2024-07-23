@@ -1,22 +1,21 @@
-package functions_test
+package functions
 
 import (
 	"testing"
 
-	"github.com/zendesk/go-generics/functions"
 	"github.com/zendesk/go-generics/internal/test"
 	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
 )
 
 func TestJoin(t *testing.T) {
-	test.CheckEqual(functions.Join([]string{"foo", "bar", "baz"}, ","), "Test1", "foo,bar,baz", t)
-	test.CheckEqual(functions.Join([]int{1, 2, 3, 4}, ","), "Test1", "1,2,3,4", t)
-	test.CheckEqual(functions.Join([]float64{1.11, 2.22, 3.33, 4.44}, ","), "Test1", "1.11,2.22,3.33,4.44", t)
+	test.CheckEqual(Join([]string{"foo", "bar", "baz"}, ","), "Test1", "foo,bar,baz", t)
+	test.CheckEqual(Join([]int{1, 2, 3, 4}, ","), "Test1", "1,2,3,4", t)
+	test.CheckEqual(Join([]float64{1.11, 2.22, 3.33, 4.44}, ","), "Test1", "1.11,2.22,3.33,4.44", t)
 }
 
 func TestGeneralize(t *testing.T) {
 	ints := []int{1, 2, 3, 4}
-	generalized := functions.Generalize(ints)
+	generalized := Generalize(ints)
 	var generalType []interface{}
 
 	test.CheckOk(utils.TypesMatch(generalized, generalType), "Expected []interface{} but did not get that", t)
@@ -24,7 +23,7 @@ func TestGeneralize(t *testing.T) {
 
 func TestShuffle(t *testing.T) {
 	testSlice := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19}
-	updated := functions.Shuffle(testSlice)
+	updated := Shuffle(testSlice)
 
 	test.CheckComparableEqualIgnoreOrder(testSlice, "Shuffled slices do not have the same items", updated, t)
 
@@ -82,7 +81,7 @@ func TestIntersection(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			test.CheckComparableEqualIgnoreOrder(functions.Intersection(tt.sliceA, tt.sliceB), tt.name, tt.want, t)
+			test.CheckComparableEqualIgnoreOrder(Intersection(tt.sliceA, tt.sliceB), tt.name, tt.want, t)
 		})
 	}
 }

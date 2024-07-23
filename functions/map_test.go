@@ -1,4 +1,4 @@
-package functions_test
+package functions
 
 import (
 	"fmt"
@@ -7,9 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/functions"
 	"github.com/zendesk/go-generics/internal/test"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/generics"
 	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
 )
 
@@ -24,8 +22,8 @@ func TestMapWithErrs(t *testing.T) {
 
 	items := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	expected := []int{1, 3, 5, 7, 9}
-	results, foundErrs := functions.MapWithErrs(items, errOnEvens)
-	resultsNoNegative := functions.Filter(results, func(i int) bool {
+	results, foundErrs := MapWithErrs(items, errOnEvens)
+	resultsNoNegative := Filter(results, func(i int) bool {
 		return i != -1
 	})
 
@@ -59,8 +57,8 @@ func TestMapMergeErrs(t *testing.T) {
 
 	items := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	expected := []int{1, 3, 5, 7, 9}
-	results, foundErrs := functions.MapMergeErrs(items, errOnEvens)
-	resultsNoNegative := functions.Filter(results, func(i int) bool {
+	results, foundErrs := MapMergeErrs(items, errOnEvens)
+	resultsNoNegative := Filter(results, func(i int) bool {
 		return i != -1
 	})
 
@@ -94,7 +92,7 @@ func TestDiscardResultsIfErr(t *testing.T) {
 
 	items := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	expected := []int{1, 3, 5, 7, 9}
-	results, foundErrs := functions.GoMapWithErrs(items, errOnEvens, functions.DiscardResultIfErrOption(), functions.RandomOrderOption())
+	results, foundErrs := GoMapWithErrs(items, errOnEvens, DiscardResultIfErrOption(), RandomOrderOption())
 	sort.Slice(results, func(i, j int) bool {
 		return results[i] < results[j]
 	})
@@ -127,8 +125,8 @@ func FuzzMap(f *testing.F) {
 		foos := test.MakeFoos(num)
 
 		// remove any ones with dupe order b/c that's how we're ordering below.
-		foos = generics.DedupeByHash(foos, hashByOrder)
-		bars := generics.Map(foos, toBar)
+		foos = DedupeByHash(foos, hashByOrder)
+		bars := Map(foos, toBar)
 
 		if len(bars) != len(foos) {
 			t.Fatal("Mapping failed, data was lost.")
@@ -159,9 +157,9 @@ func FuzzGoMap(f *testing.F) {
 		foos := test.MakeFoos(num)
 
 		// remove any ones with duplicate order value b/c that's how we're ordering below.
-		foos = generics.DedupeByHash(foos, hashByOrder)
+		foos = DedupeByHash(foos, hashByOrder)
 
-		bars := generics.GoMap(foos, toBar, generics.RandomOrderOption())
+		bars := GoMap(foos, toBar, RandomOrderOption())
 
 		if len(bars) != len(foos) {
 			t.Fatalf("Mapping failed, data was lost. Got length: %d but expected %d", len(bars), len(foos))
@@ -192,15 +190,15 @@ func FuzzGoMapWithErrs(f *testing.F) {
 		foos := test.MakeFoos(num)
 
 		// remove any ones with duplicate order value b/c that's how we're ordering below.
-		foos = generics.DedupeByHash(foos, hashByOrder)
+		foos = DedupeByHash(foos, hashByOrder)
 
 		var bars []*test.Bar
 		var errs []error
 
 		if num%2 == 0 {
-			bars, errs = generics.GoMapWithErrs(foos, toBarWithErr, generics.DiscardResultIfErrOption())
+			bars, errs = GoMapWithErrs(foos, toBarWithErr, DiscardResultIfErrOption())
 		} else {
-			bars, errs = generics.GoMapWithErrs(foos, toBarWithErr, generics.ConcurrencyLimitOption(num/3+1), generics.DiscardResultIfErrOption(), generics.RandomOrderOption())
+			bars, errs = GoMapWithErrs(foos, toBarWithErr, ConcurrencyLimitOption(num/3+1), DiscardResultIfErrOption(), RandomOrderOption())
 		}
 
 		if len(bars)+len(errs) != len(foos) {
@@ -238,70 +236,6 @@ func FuzzGoMapWithErrs(f *testing.F) {
 	})
 }
 
-func FuzzMapMap(f *testing.F) {
-	for i := 0; i < seedIterations; i++ {
-		f.Add(utils.RandomNumber(maxSliceSizeLength))
-	}
-
-	f.Fuzz(func(t *testing.T, num int) {
-		fooMaps := test.MakeFooMaps(num)
-
-		var bars []*test.Bar
-		bars = generics.MapMap(fooMaps, mapMap)
-
-		var expectedBars []*test.Bar
-		for k, v := range fooMaps {
-			bar := mapMap(k, v)
-			expectedBars = append(expectedBars, bar)
-		}
-
-		// Order slices before compare
-		sort.Slice(bars, func(i, j int) bool {
-			return bars[i].Order > bars[j].Order
-		})
-
-		sort.Slice(expectedBars, func(i, j int) bool {
-			return expectedBars[i].Order > expectedBars[j].Order
-		})
-
-		test.CheckEqual(bars, "Bars", expectedBars, t)
-	})
-}
-
-func FuzzGoMapMap(f *testing.F) {
-	for i := 0; i < seedIterations; i++ {
-		f.Add(utils.RandomNumber(maxSliceSizeLength))
-	}
-
-	f.Fuzz(func(t *testing.T, num int) {
-		fooMaps := test.MakeFooMaps(num)
-
-		var bars []*test.Bar
-		if num%2 == 0 {
-			bars = generics.GoMapMap(fooMaps, mapMap)
-		} else {
-			bars = generics.GoMapMap(fooMaps, mapMap, generics.ConcurrencyLimitOption(num/3+1))
-		}
-
-		var expectedBars []*test.Bar
-		for k, v := range fooMaps {
-			bar := mapMap(k, v)
-			expectedBars = append(expectedBars, bar)
-		}
-
-		// Order slices before compare
-		sort.Slice(bars, func(i, j int) bool {
-			return bars[i].Order > bars[j].Order
-		})
-
-		sort.Slice(expectedBars, func(i, j int) bool {
-			return expectedBars[i].Order > expectedBars[j].Order
-		})
-
-		test.CheckEqual(bars, "Bars", expectedBars, t)
-	})
-}
-
 func FuzzGoMapWithErrsRateLimitTest(f *testing.F) {
 	for i := 0; i < seedRateLimitIterations; i++ {
 		sliceSize := utils.RandomNumber(maxSliceSizeLengthRateLimit)
@@ -319,7 +253,7 @@ func FuzzGoMapWithErrsRateLimitTest(f *testing.F) {
 	}
 
 	f.Fuzz(func(t *testing.T, num int, ratePerTime int, durationNanoseconds int64) {
-		ratePerTime = generics.Max(ratePerTime, -ratePerTime)
+		ratePerTime = Max(ratePerTime, -ratePerTime)
 		duration := time.Duration(durationNanoseconds)
 		foos := test.MakeFoos(num)
 
@@ -337,7 +271,7 @@ func FuzzGoMapWithErrsRateLimitTest(f *testing.F) {
 
 		// execute
 		start := time.Now().UnixMilli()
-		_, _ = generics.GoMapWithErrs(foos, toBarWithErr, generics.ConcurrencyLimitOption(concurrency), generics.RateLimitOption(ratePerTime, duration))
+		_, _ = GoMapWithErrs(foos, toBarWithErr, ConcurrencyLimitOption(concurrency), RateLimitOption(ratePerTime, duration))
 		finish := time.Now().UnixMilli()
 
 		totalTime := float64(finish - start)

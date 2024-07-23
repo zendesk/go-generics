@@ -1,31 +1,30 @@
-package functions_test
+package functions
 
 import (
 	"math/rand"
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/functions"
 	"github.com/zendesk/go-generics/internal/test"
 	"github.com/zendesk/lockbox-shared-lib/lockbox/generics"
 	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
 )
 
 func TestDedupe(t *testing.T) {
-	test.CheckComparableEqualIgnoreOrder(functions.Dedupe([]int{1, 1, 5, 5, 7, 9, 999}), "Test1", []int{1, 5, 7, 9, 999}, t)
-	test.CheckComparableEqualIgnoreOrder(functions.Dedupe([]string{"abc", "bc", "a", "b", "b", "g", "abc"}), "Test2", []string{"abc", "bc", "a", "b", "g"}, t)
-	test.CheckComparableEqualIgnoreOrder(functions.Dedupe([]int{-99, -9999, 9999, 99, -99, 99}), "Test3", []int{-99, -9999, 9999, 99}, t)
-	test.CheckComparableEqualIgnoreOrder(functions.Dedupe([]byte{0x1, 0x2, 0x9, 0x10, 0x1}), "Test4", []byte{0x1, 0x2, 0x9, 0x10}, t)
-	test.CheckComparableEqualIgnoreOrder(functions.Dedupe([]float64{1.11, 1.99, 99.99, 1.91, 99.99, 1.11, 1.44}), "Test3", []float64{1.11, 1.99, 99.99, 1.91, 1.44}, t)
+	test.CheckComparableEqualIgnoreOrder(Dedupe([]int{1, 1, 5, 5, 7, 9, 999}), "Test1", []int{1, 5, 7, 9, 999}, t)
+	test.CheckComparableEqualIgnoreOrder(Dedupe([]string{"abc", "bc", "a", "b", "b", "g", "abc"}), "Test2", []string{"abc", "bc", "a", "b", "g"}, t)
+	test.CheckComparableEqualIgnoreOrder(Dedupe([]int{-99, -9999, 9999, 99, -99, 99}), "Test3", []int{-99, -9999, 9999, 99}, t)
+	test.CheckComparableEqualIgnoreOrder(Dedupe([]byte{0x1, 0x2, 0x9, 0x10, 0x1}), "Test4", []byte{0x1, 0x2, 0x9, 0x10}, t)
+	test.CheckComparableEqualIgnoreOrder(Dedupe([]float64{1.11, 1.99, 99.99, 1.91, 99.99, 1.11, 1.44}), "Test3", []float64{1.11, 1.99, 99.99, 1.91, 1.44}, t)
 }
 
 func TestContains(t *testing.T) {
-	test.CheckEqual(functions.Contains([]string{"foo", "bar", "baz"}, "foo"), "Test1", true, t)
-	test.CheckEqual(functions.Contains([]int{1, 2, 3, 4}, 4), "Test1", true, t)
-	test.CheckEqual(functions.Contains([]float64{1.11, 2.22, 3.33, 4.44}, 4.44), "Test1", true, t)
-	test.CheckEqual(functions.Contains([]string{"foo", "bar", "baz"}, "fo"), "Test1", false, t)
-	test.CheckEqual(functions.Contains([]int{1, 2, 3, 4}, 0), "Test1", false, t)
-	test.CheckEqual(functions.Contains([]float64{1.11, 2.22, 3.33, 4.44}, 4.444), "Test1", false, t)
+	test.CheckEqual(Contains([]string{"foo", "bar", "baz"}, "foo"), "Test1", true, t)
+	test.CheckEqual(Contains([]int{1, 2, 3, 4}, 4), "Test1", true, t)
+	test.CheckEqual(Contains([]float64{1.11, 2.22, 3.33, 4.44}, 4.44), "Test1", true, t)
+	test.CheckEqual(Contains([]string{"foo", "bar", "baz"}, "fo"), "Test1", false, t)
+	test.CheckEqual(Contains([]int{1, 2, 3, 4}, 0), "Test1", false, t)
+	test.CheckEqual(Contains([]float64{1.11, 2.22, 3.33, 4.44}, 4.444), "Test1", false, t)
 }
 
 type thing1 struct{}
@@ -58,11 +57,11 @@ func TestRemoveNils(t *testing.T) {
 	t.Logf("thing5: %+v", thing5)         // thing 5 is nil but thing5 == nil is false. It's a BOXED nil.
 	t.Logf("IS NIL5: %+v", thing5 == nil) // this is FALSE because this is a BOXED nil
 
-	test.CheckEqual(functions.RemoveNils([]*string{&foo, &bar, nil, &baz}), "Test1", []*string{&foo, &bar, &baz}, t)
-	test.CheckEqual(functions.RemoveNils([]*string{&foo, &bar, nil, &baz, &thing, thing2}), "Test2", []*string{&foo, &bar, &baz, &thing}, t)
-	test.CheckEqual(functions.RemoveNils([]IsAThing3{thing3, nil}), "Test3", []IsAThing3{}, t)
-	test.CheckEqual(functions.RemoveNils([]IsAThing3{thing5, nil, nil}), "Test4", []IsAThing3{}, t)
-	test.CheckEqual(functions.RemoveNils([]IsAThing3{thing5, nil, realThing3}), "Test4", []IsAThing3{realThing3}, t)
+	test.CheckEqual(RemoveNils([]*string{&foo, &bar, nil, &baz}), "Test1", []*string{&foo, &bar, &baz}, t)
+	test.CheckEqual(RemoveNils([]*string{&foo, &bar, nil, &baz, &thing, thing2}), "Test2", []*string{&foo, &bar, &baz, &thing}, t)
+	test.CheckEqual(RemoveNils([]IsAThing3{thing3, nil}), "Test3", []IsAThing3{}, t)
+	test.CheckEqual(RemoveNils([]IsAThing3{thing5, nil, nil}), "Test4", []IsAThing3{}, t)
+	test.CheckEqual(RemoveNils([]IsAThing3{thing5, nil, realThing3}), "Test4", []IsAThing3{realThing3}, t)
 }
 
 type ContainingStruct struct {
@@ -128,13 +127,13 @@ func TestContainsDeepEqual(t *testing.T) {
 		},
 	}
 
-	notFound := functions.ContainsDeepEqual(missing, toFind)
+	notFound := ContainsDeepEqual(missing, toFind)
 	test.CheckOk(!notFound, "Item was found but should be missing!", t)
 
 	// Add the duplicate, but don't add toFind b/c we want to ensure deepEqual is not comparing memory addresses.
 	notMissing := append(missing, toAdd)
 
-	shouldBeFound := functions.ContainsDeepEqual(notMissing, toFind)
+	shouldBeFound := ContainsDeepEqual(notMissing, toFind)
 	test.CheckOk(shouldBeFound, "Item was not found but should be!", t)
 
 }
@@ -145,14 +144,14 @@ func TestEqualIgnoreOrder(t *testing.T) {
 	third := []int{1, 2, 3, 7, 7}
 	different := []int{9, 9, 9, 9}
 
-	test.CheckOk(functions.EqualIgnoreOrder(first, second, third), "Test 1", t)
-	test.CheckOk(functions.EqualIgnoreOrder(first, third), "Test 2", t)
-	test.CheckNotOk(functions.EqualIgnoreOrder(first, second, third, different), "Test 3", t)
-	test.CheckNotOk(functions.EqualIgnoreOrder(different, first, second), "Test 4", t)
-	test.CheckOk(functions.EqualIgnoreOrder(first, second), "Test 5", t)
-	test.CheckOk(functions.EqualIgnoreOrder(first, third), "Test 6", t)
-	test.CheckOk(functions.EqualIgnoreOrder(different, different), "Test 7", t)
-	test.CheckOk(functions.EqualIgnoreOrder(first), "Test 8", t)
+	test.CheckOk(EqualIgnoreOrder(first, second, third), "Test 1", t)
+	test.CheckOk(EqualIgnoreOrder(first, third), "Test 2", t)
+	test.CheckNotOk(EqualIgnoreOrder(first, second, third, different), "Test 3", t)
+	test.CheckNotOk(EqualIgnoreOrder(different, first, second), "Test 4", t)
+	test.CheckOk(EqualIgnoreOrder(first, second), "Test 5", t)
+	test.CheckOk(EqualIgnoreOrder(first, third), "Test 6", t)
+	test.CheckOk(EqualIgnoreOrder(different, different), "Test 7", t)
+	test.CheckOk(EqualIgnoreOrder(first), "Test 8", t)
 }
 
 func TestSliceContainsAny(t *testing.T) {
@@ -177,7 +176,7 @@ func TestSliceContainsAny(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			test.CheckEqual(functions.ContainsAny(tt.sliceA, tt.sliceB), tt.name, tt.want, t)
+			test.CheckEqual(ContainsAny(tt.sliceA, tt.sliceB), tt.name, tt.want, t)
 		})
 	}
 }
@@ -204,7 +203,7 @@ func TestSliceContainsAnyBools(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			test.CheckEqual(functions.ContainsAny(tt.sliceA, tt.sliceB), tt.name, tt.want, t)
+			test.CheckEqual(ContainsAny(tt.sliceA, tt.sliceB), tt.name, tt.want, t)
 		})
 	}
 }
@@ -251,20 +250,20 @@ func TestDedupeByHash(t *testing.T) {
 	dupe3Foos := append(foos, dupe3, dupe1, dupe2)
 
 	// test.Bar: "bar1" should be removed.
-	dedupe1 := functions.DedupeByHash(dupe1Foos, func(i test.Foo) uint64 {
+	dedupe1 := DedupeByHash(dupe1Foos, func(i test.Foo) uint64 {
 		return utils.Hash64(i.Bar)
 	})
 
 	test.CheckComparableEqualIgnoreOrder(dedupe1, "dedupe1", foos, t)
 
 	// Baz: "baz2" should be removed
-	dedupe2 := functions.DedupeByHash(dupe2Foos, func(i test.Foo) uint64 {
+	dedupe2 := DedupeByHash(dupe2Foos, func(i test.Foo) uint64 {
 		return utils.Hash64(i.Baz)
 	})
 	test.CheckComparableEqualIgnoreOrder(dedupe2, "dedupe2", foos, t)
 
 	// Order: 1 should be removed.
-	dedupe3 := functions.DedupeByHash(dupe3Foos, func(i test.Foo) uint64 {
+	dedupe3 := DedupeByHash(dupe3Foos, func(i test.Foo) uint64 {
 		return uint64(i.Order)
 	})
 	test.CheckComparableEqualIgnoreOrder(dedupe3, "dedupe3", append(foos, dupe1, dupe2), t)
