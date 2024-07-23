@@ -8,7 +8,8 @@ type Tuple[A any, B any] struct {
 }
 
 type TupleWithErr[A any, B any] struct {
-	Tuple[A, B]
+	A A
+	B B
 	E error
 }
 
