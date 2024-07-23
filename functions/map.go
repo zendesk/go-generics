@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/zendesk/go-generics/types"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
 )
 
 // Map converts a slice of T to a slice of Y via a converter function
@@ -44,7 +43,7 @@ func MapMergeErrs[T any, Y any](from []T, converter func(T) (Y, error)) ([]Y, er
 		errs = append(errs, err)
 	}
 
-	return ys, utils.MergeErrors(errs...)
+	return ys, MergeErrors(errs...)
 }
 
 // GoMap - Fast Map inside of a goroutine with safe aggregation

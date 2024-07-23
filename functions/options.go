@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/zendesk/go-generics/ratelimit"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
 )
 
 const (
@@ -87,7 +86,7 @@ func setOpts(options []Option) *OptionConfig {
 	}
 
 	if cfg.limiter == nil {
-		memoryBackend := ratelimit.NewMemoryRateLimiterBackend(ratelimit.UnlimitedRate, time.Second, utils.UnlimitedRate)
+		memoryBackend := ratelimit.NewMemoryRateLimiterBackend(ratelimit.UnlimitedRate, time.Second, ratelimit.UnlimitedRate)
 		cfg.limiter = ratelimit.NewRateLimiter(ratelimit.FailClosed, memoryBackend)
 	}
 

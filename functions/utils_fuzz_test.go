@@ -4,15 +4,13 @@ import (
 	"math/rand"
 	"testing"
 	"time"
-
-	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
 )
 
 const (
 	fuzzSeedIterations = 5000
 )
 
-func FuzzRandomNumberBetweenTest(f *testing.F) {
+func Fuzz_randomNumberBetweenTest(f *testing.F) {
 	maxInt := 2147483647
 	for i := 0; i < fuzzSeedIterations; i++ {
 		rand.Seed(time.Now().UnixNano())
@@ -23,14 +21,14 @@ func FuzzRandomNumberBetweenTest(f *testing.F) {
 	}
 
 	f.Fuzz(func(t *testing.T, minNumber, maxNumber int) {
-		num := utils.RandomNumberBetween(minNumber, maxNumber)
+		num := randomNumberBetween(minNumber, maxNumber)
 		if num < minNumber || num > maxNumber {
 			t.Fatalf("Number returned: %d is not valid! It must be between %d and %d", num, minNumber, maxNumber)
 		}
 	})
 }
 
-func FuzzRandomDurationBetweenTest(f *testing.F) {
+func Fuzz_randomDurationBetweenTest(f *testing.F) {
 	var maxInt64 int64 = 9223372036854775807
 	for i := 0; i < fuzzSeedIterations; i++ {
 		rand.Seed(time.Now().UnixNano())
@@ -43,7 +41,7 @@ func FuzzRandomDurationBetweenTest(f *testing.F) {
 	f.Fuzz(func(t *testing.T, minNumber, maxNumber int64) {
 		min := time.Duration(minNumber)
 		max := time.Duration(maxNumber)
-		num := utils.RandomDurationBetween(min, max)
+		num := randomDurationBetween(min, max)
 		if num.Nanoseconds() < min.Nanoseconds() || num.Nanoseconds() > max.Nanoseconds() {
 			t.Fatalf("Duration returned: %d is not valid! It must be between %d and %d", num, minNumber, maxNumber)
 		}

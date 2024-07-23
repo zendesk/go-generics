@@ -5,8 +5,6 @@ import (
 	"testing"
 
 	"github.com/zendesk/go-generics/internal/test"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/generics"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
 )
 
 func TestToMap(t *testing.T) {
@@ -28,12 +26,12 @@ func TestToMap(t *testing.T) {
 
 func FuzzGoToMap(f *testing.F) {
 	for i := 0; i < seedIterations; i++ {
-		f.Add(utils.RandomNumber(maxSliceSizeLength))
+		f.Add(randomNumber(maxSliceSizeLength))
 	}
 
 	f.Fuzz(func(t *testing.T, num int) {
 		foos := test.MakeFoosOrderly(num)
-		fooMap := generics.GoToMap(foos, toKeyValue)
+		fooMap := GoToMap(foos, toKeyValue)
 
 		if len(fooMap) != len(foos) {
 			t.Fatalf("Mapping failed, data was lost. Got length: %d but expected %d", len(fooMap), len(foos))
@@ -48,14 +46,14 @@ func FuzzGoToMap(f *testing.F) {
 
 func FuzzGoToMapWithErrs(f *testing.F) {
 	for i := 0; i < seedIterations; i++ {
-		f.Add(utils.RandomNumber(maxSliceSizeLength))
+		f.Add(randomNumber(maxSliceSizeLength))
 	}
 
 	f.Fuzz(func(t *testing.T, num int) {
-		num = generics.Max(1, num)
+		num = Max(1, num)
 		foos := test.MakeFoosOrderly(num)
 
-		fooMap, errs := generics.GoToMapWithErrs(foos, toKeyValueWithErrs)
+		fooMap, errs := GoToMapWithErrs(foos, toKeyValueWithErrs)
 
 		expectedErrCount := (num-1)/3 + 1
 
@@ -71,14 +69,14 @@ func FuzzGoToMapWithErrs(f *testing.F) {
 
 func FuzzGoToMapWithErrsDropErrorRecords(f *testing.F) {
 	for i := 0; i < seedIterations; i++ {
-		f.Add(utils.RandomNumber(maxSliceSizeLength))
+		f.Add(randomNumber(maxSliceSizeLength))
 	}
 
 	f.Fuzz(func(t *testing.T, num int) {
-		num = generics.Max(1, num)
+		num = Max(1, num)
 		foos := test.MakeFoosOrderly(num)
 
-		fooMap, errs := generics.GoToMapWithErrs(foos, toKeyValueWithErrs, generics.DiscardResultIfErrOption())
+		fooMap, errs := GoToMapWithErrs(foos, toKeyValueWithErrs, DiscardResultIfErrOption())
 
 		expectedErrCount := (num-1)/3 + 1
 

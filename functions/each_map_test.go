@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/zendesk/go-generics/internal/test"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/generics"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
 )
 
 func TestGoEachMapWithErrs(t *testing.T) {
@@ -32,10 +30,10 @@ func TestGoEachMapWithErrs(t *testing.T) {
 
 func FuzzGoEachMapWithErrsRateLimitTest(f *testing.F) {
 	for i := 0; i < seedRateLimitIterations; i++ {
-		sliceSize := utils.RandomNumber(maxSliceSizeLengthRateLimit)
+		sliceSize := randomNumber(maxSliceSizeLengthRateLimit)
 		// we want to ensure rate < sliceSize otherwise no throttling will occur and we cannot estimate expectedDuration. Also rate cannot be 0
-		rate := utils.RandomNumberBetween(minRatePerInterval, (sliceSize+1)/5+1)
-		duration := utils.RandomDurationBetween(time.Millisecond, time.Second).Nanoseconds()
+		rate := randomNumberBetween(minRatePerInterval, (sliceSize+1)/5+1)
+		duration := randomDurationBetween(time.Millisecond, time.Second).Nanoseconds()
 
 		// If rate is very low, reset rate to ensure we don't run TOO long (max 50 seconds with this change)
 		if sliceSize != 0 && sliceSize/rate > 50 {
@@ -51,7 +49,7 @@ func FuzzGoEachMapWithErrsRateLimitTest(f *testing.F) {
 		foos := test.MakeFooMaps(num)
 
 		// estimate expected execution time given rate limit
-		concurrency := utils.RandomNumberBetween(1, 20) // Concurrency doesn't matter, rate is limited across goroutines
+		concurrency := randomNumberBetween(1, 20) // Concurrency doesn't matter, rate is limited across goroutines
 
 		var expectedDurationMillis float64
 		// excluding the first batch, we can assume rate-limiting for all subsequent batches at the per-time interval. First batch starts immediately
@@ -72,7 +70,7 @@ func FuzzGoEachMapWithErrsRateLimitTest(f *testing.F) {
 
 		// execute
 		start := time.Now().UnixMilli()
-		_ = generics.GoEachMapWithErrs(foos, errorOnEvens, generics.ConcurrencyLimitOption(concurrency), generics.RateLimitOption(ratePerTime, duration))
+		_ = GoEachMapWithErrs(foos, errorOnEvens, ConcurrencyLimitOption(concurrency), RateLimitOption(ratePerTime, duration))
 		finish := time.Now().UnixMilli()
 
 		totalTime := float64(finish - start)

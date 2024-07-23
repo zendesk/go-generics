@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/zendesk/go-generics/internal/test"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
 )
 
 func TestEachMergeErrs(t *testing.T) {
@@ -43,7 +42,7 @@ func TestEachMergeErrs(t *testing.T) {
 
 func FuzzEach(f *testing.F) {
 	for i := 0; i < 1; i++ {
-		f.Add(utils.RandomNumber(maxSliceSizeLength))
+		f.Add(randomNumber(maxSliceSizeLength))
 	}
 
 	f.Fuzz(func(t *testing.T, num int) {
@@ -66,7 +65,7 @@ func FuzzEach(f *testing.F) {
 
 func FuzzGoEach(f *testing.F) {
 	for i := 0; i < seedIterations; i++ {
-		f.Add(utils.RandomNumber(maxSliceSizeLength))
+		f.Add(randomNumber(maxSliceSizeLength))
 	}
 
 	f.Fuzz(func(t *testing.T, num int) {
@@ -94,7 +93,7 @@ func FuzzGoEach(f *testing.F) {
 
 func FuzzGoEachWithErrs(f *testing.F) {
 	for i := 0; i < seedIterations; i++ {
-		f.Add(utils.RandomNumber(maxSliceSizeLength))
+		f.Add(randomNumber(maxSliceSizeLength))
 	}
 
 	f.Fuzz(func(t *testing.T, num int) {
@@ -123,8 +122,15 @@ func FuzzGoEachWithErrs(f *testing.F) {
 		sort.Slice(errs, func(i, j int) bool {
 			return errs[i].Error() > errs[j].Error()
 		})
+		expectedStrs := Map(expectedErrs, func(e error) string {
+			return e.Error()
+		})
 
-		test.CheckEqual(errs, "Errs", expectedErrs, t)
+		gotErrs := Map(errs, func(e error) string {
+			return e.Error()
+		})
+
+		test.CheckEqual(expectedStrs, "Errs", gotErrs, t)
 		for _, foo := range foos {
 			test.CheckEqual(foo.Bar, fmt.Sprintf("Foo: %d", foo.Order), foo.Baz+fmt.Sprintf("%d", foo.Order), t)
 		}
@@ -133,10 +139,10 @@ func FuzzGoEachWithErrs(f *testing.F) {
 
 func FuzzGoEachWithErrsRateLimitTest(f *testing.F) {
 	for i := 0; i < seedRateLimitIterations; i++ {
-		sliceSize := utils.RandomNumber(maxSliceSizeLengthRateLimit)
+		sliceSize := randomNumber(maxSliceSizeLengthRateLimit)
 		// we want to ensure rate < sliceSize otherwise no throttling will occur and we cannot estimate expectedDuration. Also rate cannot be 0
-		rate := utils.RandomNumberBetween(minRatePerInterval, (sliceSize+1)/5+1)
-		duration := utils.RandomDurationBetween(time.Millisecond, time.Second).Nanoseconds()
+		rate := randomNumberBetween(minRatePerInterval, (sliceSize+1)/5+1)
+		duration := randomDurationBetween(time.Millisecond, time.Second).Nanoseconds()
 
 		// If rate is very low, reset rate to ensure we don't run TOO long (max 50 seconds with this change)
 		if sliceSize != 0 && sliceSize/rate > 50 {
@@ -152,7 +158,7 @@ func FuzzGoEachWithErrsRateLimitTest(f *testing.F) {
 		foos := test.MakeFoos(num)
 
 		// estimate expected execution time given rate limit
-		concurrency := utils.RandomNumberBetween(1, 20) // Concurrency doesn't matter, rate is limited across goroutines
+		concurrency := randomNumberBetween(1, 20) // Concurrency doesn't matter, rate is limited across goroutines
 
 		var expectedDurationMillis float64
 		// excluding the first batch, we can assume rate-limiting for all subsequent batches at the per-time interval. First batch starts immediately

@@ -6,28 +6,26 @@ import (
 	"time"
 
 	"github.com/zendesk/go-generics/internal/test"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/generics"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
 )
 
 func FuzzGoMapToMany(f *testing.F) {
 	for i := 0; i < seedIterations; i++ {
-		f.Add(utils.RandomNumber(maxSliceSizeLength))
+		f.Add(randomNumber(maxSliceSizeLength))
 	}
 
 	f.Fuzz(func(t *testing.T, num int) {
 		foos := test.MakeFoos(num)
-		barsPerFoo := utils.RandomNumberBetween(1, maxMutationExpansion)
+		barsPerFoo := randomNumberBetween(1, maxMutationExpansion)
 
 		//remove any ones with duplicate order value b/c that's how we're ordering below.
-		foos = generics.DedupeByHash(foos, hashByOrder)
+		foos = DedupeByHash(foos, hashByOrder)
 
 		//execute
 		var bars []*test.Bar
 		if num%2 == 0 {
-			bars = generics.GoMapToMany(foos, toManyBars(barsPerFoo))
+			bars = GoMapToMany(foos, toManyBars(barsPerFoo))
 		} else {
-			bars = generics.GoMapToMany(foos, toManyBars(barsPerFoo), generics.ConcurrencyLimitOption(num/3+1))
+			bars = GoMapToMany(foos, toManyBars(barsPerFoo), ConcurrencyLimitOption(num/3+1))
 		}
 
 		// Validate data was mutated properly by provided function
@@ -52,24 +50,24 @@ func FuzzGoMapToMany(f *testing.F) {
 
 func FuzzGoMapToManyWithErrs(f *testing.F) {
 	for i := 0; i < seedIterations; i++ {
-		f.Add(utils.RandomNumber(maxSliceSizeLength))
+		f.Add(randomNumber(maxSliceSizeLength))
 	}
 
 	f.Fuzz(func(t *testing.T, num int) {
 		foos := test.MakeFoos(num)
-		barsPerFoo := utils.RandomNumberBetween(1, maxMutationExpansion)
+		barsPerFoo := randomNumberBetween(1, maxMutationExpansion)
 
 		// remove any ones with duplicate order value b/c that's how we're ordering below.
-		foos = generics.DedupeByHash(foos, hashByOrder)
+		foos = DedupeByHash(foos, hashByOrder)
 
 		// execute
 		var bars []*test.Bar
 		var errs []error
 
 		if num%2 == 0 {
-			bars, errs = generics.GoMapToManyWithErrs(foos, toManyBarsWithErr(barsPerFoo), generics.DiscardResultIfErrOption())
+			bars, errs = GoMapToManyWithErrs(foos, toManyBarsWithErr(barsPerFoo), DiscardResultIfErrOption())
 		} else {
-			bars, errs = generics.GoMapToManyWithErrs(foos, toManyBarsWithErr(barsPerFoo), generics.ConcurrencyLimitOption(num/3+1), generics.DiscardResultIfErrOption())
+			bars, errs = GoMapToManyWithErrs(foos, toManyBarsWithErr(barsPerFoo), ConcurrencyLimitOption(num/3+1), DiscardResultIfErrOption())
 		}
 
 		// Validate data was mutated properly by provided function
@@ -102,16 +100,19 @@ func FuzzGoMapToManyWithErrs(f *testing.F) {
 
 		test.CheckEqual(len(bars), "Bar Length is not equal expected bar length", len(expectedBars), t)
 		test.CheckEqual(bars, "Bars", expectedBars, t)
-		test.CheckEqual(errs, "Errs", expectedErrs, t)
+
+		expectedStrs := Map(expectedErrs, func(e error) string { return e.Error() })
+		errStrs := Map(errs, func(e error) string { return e.Error() })
+		test.CheckEqual(expectedStrs, "Errs", errStrs, t)
 	})
 }
 
 func FuzzGoMapToManyWithErrsRateLimitTest(f *testing.F) {
 	for i := 0; i < seedRateLimitIterations; i++ {
-		sliceSize := utils.RandomNumber(maxSliceSizeLengthRateLimit)
+		sliceSize := randomNumber(maxSliceSizeLengthRateLimit)
 		// we want to ensure rate < sliceSize otherwise no throttling will occur and we cannot estimate expectedDuration. Also rate cannot be 0
-		rate := utils.RandomNumberBetween(minRatePerInterval, (sliceSize+1)/5+1)
-		duration := utils.RandomDurationBetween(time.Millisecond, time.Second).Nanoseconds()
+		rate := randomNumberBetween(minRatePerInterval, (sliceSize+1)/5+1)
+		duration := randomDurationBetween(time.Millisecond, time.Second).Nanoseconds()
 
 		// If rate is very low, reset rate to ensure we don't run TOO long (max 50 seconds with this change)
 		if sliceSize != 0 && sliceSize/rate > 50 {
@@ -121,13 +122,13 @@ func FuzzGoMapToManyWithErrsRateLimitTest(f *testing.F) {
 	}
 
 	f.Fuzz(func(t *testing.T, num int, ratePerTime int, durationNanoseconds int64) {
-		ratePerTime = generics.Max(ratePerTime)
+		ratePerTime = Max(ratePerTime)
 		duration := time.Duration(durationNanoseconds)
 		foos := test.MakeFoos(num)
-		barsPerFoo := utils.RandomNumberBetween(1, maxMutationExpansion)
+		barsPerFoo := randomNumberBetween(1, maxMutationExpansion)
 
 		// estimate expected execution time given rate limit
-		concurrency := utils.RandomNumberBetween(1, 20) // Concurrency doesn't matter, rate is limited across goroutines
+		concurrency := randomNumberBetween(1, 20) // Concurrency doesn't matter, rate is limited across goroutines
 		t.Logf("Len: %d, rate: %d, duration: %d, - converted len %f, rate %f duration %f", len(foos), ratePerTime, duration.Milliseconds(), float64(len(foos)), float64(ratePerTime), float64(duration.Milliseconds()))
 
 		var expectedDurationMillis float64
@@ -141,7 +142,7 @@ func FuzzGoMapToManyWithErrsRateLimitTest(f *testing.F) {
 
 		// execute
 		start := time.Now().UnixMilli()
-		_, _ = generics.GoMapToManyWithErrs(foos, toManyBarsWithErr(barsPerFoo), generics.ConcurrencyLimitOption(concurrency), generics.RateLimitOption(ratePerTime, duration))
+		_, _ = GoMapToManyWithErrs(foos, toManyBarsWithErr(barsPerFoo), ConcurrencyLimitOption(concurrency), RateLimitOption(ratePerTime, duration))
 		finish := time.Now().UnixMilli()
 
 		totalTime := float64(finish - start)

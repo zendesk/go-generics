@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/zendesk/go-generics/internal/test"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
 )
 
 func TestJoin(t *testing.T) {
@@ -18,7 +17,7 @@ func TestGeneralize(t *testing.T) {
 	generalized := Generalize(ints)
 	var generalType []interface{}
 
-	test.CheckOk(utils.TypesMatch(generalized, generalType), "Expected []interface{} but did not get that", t)
+	test.CheckOk(typesMatch(generalized, generalType), "Expected []interface{} but did not get that", t)
 }
 
 func TestShuffle(t *testing.T) {

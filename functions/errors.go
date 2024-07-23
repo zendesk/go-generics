@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-
-	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
 )
 
 func HasNonNilError(errs []error) bool {
@@ -49,7 +47,7 @@ func WrapErrorf(err error, message string, args ...any) error {
 
 // WrapErrorsIntoFirst wraps all errors into the first preserving type.
 func WrapErrorsIntoFirst(errs ...error) error {
-	if len(errs) == 0 || !utils.HasNonNilError(errs) {
+	if len(errs) == 0 || !HasNonNilError(errs) {
 		return nil
 	}
 

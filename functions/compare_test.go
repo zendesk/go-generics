@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/zendesk/go-generics/internal/test"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/generics"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
 )
 
 func TestDedupe(t *testing.T) {
@@ -251,14 +249,14 @@ func TestDedupeByHash(t *testing.T) {
 
 	// test.Bar: "bar1" should be removed.
 	dedupe1 := DedupeByHash(dupe1Foos, func(i test.Foo) uint64 {
-		return utils.Hash64(i.Bar)
+		return hash64(i.Bar)
 	})
 
 	test.CheckComparableEqualIgnoreOrder(dedupe1, "dedupe1", foos, t)
 
 	// Baz: "baz2" should be removed
 	dedupe2 := DedupeByHash(dupe2Foos, func(i test.Foo) uint64 {
-		return utils.Hash64(i.Baz)
+		return hash64(i.Baz)
 	})
 	test.CheckComparableEqualIgnoreOrder(dedupe2, "dedupe2", foos, t)
 
@@ -271,8 +269,8 @@ func TestDedupeByHash(t *testing.T) {
 
 func FuzzTestEqualIgnoreOrder(f *testing.F) {
 	for i := 0; i < seedIterations; i++ {
-		sliceSize := uint(utils.RandomNumber(maxSliceSizeLength))
-		numSlices := uint(utils.RandomNumber(1000))
+		sliceSize := uint(randomNumber(maxSliceSizeLength))
+		numSlices := uint(randomNumber(1000))
 		f.Add(numSlices, sliceSize)
 	}
 
@@ -289,7 +287,7 @@ func FuzzTestEqualIgnoreOrder(f *testing.F) {
 
 		// Make identical slices
 		for j := 0; j <= int(sliceLength)-1; j++ {
-			number := utils.RandomNumber(99999)
+			number := randomNumber(99999)
 			for i := 0; i <= int(numSlices)-1; i++ {
 				comparables[i][j] = number
 			}
@@ -304,12 +302,12 @@ func FuzzTestEqualIgnoreOrder(f *testing.F) {
 		}
 
 		if expectFailure {
-			sliceToBreak := utils.RandomNumberBetween(0, int(numSlices)-1)
-			itemToBreak := utils.RandomNumberBetween(0, int(sliceLength)-1)
+			sliceToBreak := randomNumberBetween(0, int(numSlices)-1)
+			itemToBreak := randomNumberBetween(0, int(sliceLength)-1)
 			comparables[sliceToBreak][itemToBreak] = comparables[sliceToBreak][itemToBreak] + 1
-			test.CheckNotOk(generics.EqualIgnoreOrder(comparables...), "Comparable slices were equal but shouldn't be!", t)
+			test.CheckNotOk(EqualIgnoreOrder(comparables...), "Comparable slices were equal but shouldn't be!", t)
 		} else {
-			test.CheckOk(generics.EqualIgnoreOrder(comparables...), "Comparable were not equal but should be!", t)
+			test.CheckOk(EqualIgnoreOrder(comparables...), "Comparable were not equal but should be!", t)
 		}
 	})
 }

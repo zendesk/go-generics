@@ -23,7 +23,7 @@ package functions
 //				}()
 //
 //				t.Run(strconv.Itoa(i), func(t *testing.T) {
-//					num := utils.RandomNumberBetween(0, 30000)
+//					num := randomNumberBetween(0, 30000)
 //
 //					foos := MakeFoos(num)
 //					barsPerFoo := num
@@ -32,14 +32,14 @@ package functions
 //					}
 //
 //					// remove any ones with duplicate order value b/c that's how we're ordering below.
-//					foos = utils.DedupeByHash(foos, hashByOrder)
+//					foos = DedupeByHash(foos, hashByOrder)
 //
 //					// execute
 //					var bars []*Bar
 //					if num%2 == 0 {
-//						bars = utils.GoMapToMany(foos, toManyBars(barsPerFoo))
+//						bars = GoMapToMany(foos, toManyBars(barsPerFoo))
 //					} else {
-//						bars = utils.GoMapToMany(foos, toManyBars(barsPerFoo), utils.ConcurrencyLimitOption(num/3+1))
+//						bars = GoMapToMany(foos, toManyBars(barsPerFoo), ConcurrencyLimitOption(num/3+1))
 //					}
 //
 //					// Validate data was mutated properly by provided function
@@ -85,22 +85,22 @@ package functions
 //			}()
 //
 //			t.Run(strconv.Itoa(i), func(t *testing.T) {
-//				sliceSize := utils.RandomNumber(maxSliceSizeLengthRateLimit)
+//				sliceSize := randomNumber(maxSliceSizeLengthRateLimit)
 //				// we want to ensure rate < sliceSize otherwise no throttling will occur and we cannot estimate expectedDuration. Also rate cannot be 0
-//				rate := utils.RandomNumberBetween(minRatePerInterval, (sliceSize+1)/5+1)
-//				durationNanoseconds := utils.RandomDurationBetween(time.Millisecond, time.Second).Nanoseconds()
+//				rate := randomNumberBetween(minRatePerInterval, (sliceSize+1)/5+1)
+//				durationNanoseconds := randomDurationBetween(time.Millisecond, time.Second).Nanoseconds()
 //
 //				// If rate is very low, reset rate to ensure we don't run TOO long (max 50 seconds with this change)
 //				if sliceSize != 0 && sliceSize/rate > 50 {
 //					rate = sliceSize / 10
 //				}
 //
-//				ratePerTime := utils.Max(rate, -rate)
+//				ratePerTime := Max(rate, -rate)
 //				duration := time.Duration(durationNanoseconds)
 //				foos := MakeFoos(sliceSize)
 //
 //				// estimate expected execution time given rate limit
-//				concurrency := utils.RandomNumberBetween(1, 20) // Concurrency doesn't matter, rate is limited across goroutines
+//				concurrency := randomNumberBetween(1, 20) // Concurrency doesn't matter, rate is limited across goroutines
 //
 //				var expectedDurationMillis float64
 //				// excluding the first batch, we can assume rate-limiting for all subsequent batches at the per-time interval. First batch starts immediately
@@ -113,7 +113,7 @@ package functions
 //
 //				// execute
 //				start := time.Now().UnixMilli()
-//				_, _ = utils.GoMapWithErrs(foos, toBarWithErr, utils.ConcurrencyLimitOption(concurrency), utils.RateLimitOption(ratePerTime, duration))
+//				_, _ = GoMapWithErrs(foos, toBarWithErr, ConcurrencyLimitOption(concurrency), RateLimitOption(ratePerTime, duration))
 //				finish := time.Now().UnixMilli()
 //
 //				totalTime := float64(finish - start)
@@ -143,12 +143,12 @@ package functions
 //	durationNanoseconds := int64(343012204)
 //	num := 756
 //
-//	ratePerTime = utils.Max(ratePerTime, -ratePerTime)
+//	ratePerTime = Max(ratePerTime, -ratePerTime)
 //	duration := time.Duration(durationNanoseconds)
 //	foos := MakeFoos(num)
 //
 //	// estimate expected execution time given rate limit
-//	concurrency := utils.RandomNumberBetween(1, 20) // Concurrency doesn't matter, rate is limited across goroutines
+//	concurrency := randomNumberBetween(1, 20) // Concurrency doesn't matter, rate is limited across goroutines
 //
 //	var expectedDurationMillis float64
 //	// excluding the first batch, we can assume rate-limiting for all subsequent batches at the per-time interval. First batch starts immediately
@@ -161,7 +161,7 @@ package functions
 //
 //	// execute
 //	start := time.Now().UnixMilli()
-//	_, _ = utils.GoMapWithErrs(foos, toBarWithErr, utils.ConcurrencyLimitOption(concurrency), utils.RateLimitOption(ratePerTime, duration))
+//	_, _ = GoMapWithErrs(foos, toBarWithErr, ConcurrencyLimitOption(concurrency), RateLimitOption(ratePerTime, duration))
 //	finish := time.Now().UnixMilli()
 //
 //	totalTime := float64(finish - start)

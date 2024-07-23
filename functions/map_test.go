@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/zendesk/go-generics/internal/test"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
 )
 
 func TestMapWithErrs(t *testing.T) {
@@ -27,7 +26,7 @@ func TestMapWithErrs(t *testing.T) {
 		return i != -1
 	})
 
-	foundMergedErrs := utils.MergeErrors(foundErrs...)
+	foundMergedErrs := MergeErrors(foundErrs...)
 	expectedErrsFound := strings.Contains(foundMergedErrs.Error(), "error: 2.") &&
 		strings.Contains(foundMergedErrs.Error(), "error: 4.") &&
 		strings.Contains(foundMergedErrs.Error(), "error: 6.") &&
@@ -97,7 +96,7 @@ func TestDiscardResultsIfErr(t *testing.T) {
 		return results[i] < results[j]
 	})
 
-	foundMergedErrs := utils.MergeErrors(foundErrs...)
+	foundMergedErrs := MergeErrors(foundErrs...)
 	expectedErrsFound := strings.Contains(foundMergedErrs.Error(), "error: 2.") &&
 		strings.Contains(foundMergedErrs.Error(), "error: 4.") &&
 		strings.Contains(foundMergedErrs.Error(), "error: 6.") &&
@@ -118,7 +117,7 @@ func TestDiscardResultsIfErr(t *testing.T) {
 
 func FuzzMap(f *testing.F) {
 	for i := 0; i < seedIterations; i++ {
-		f.Add(utils.RandomNumber(maxSliceSizeLength))
+		f.Add(randomNumber(maxSliceSizeLength))
 	}
 
 	f.Fuzz(func(t *testing.T, num int) {
@@ -150,7 +149,7 @@ func FuzzMap(f *testing.F) {
 
 func FuzzGoMap(f *testing.F) {
 	for i := 0; i < seedIterations; i++ {
-		f.Add(utils.RandomNumber(maxSliceSizeLength))
+		f.Add(randomNumber(maxSliceSizeLength))
 	}
 
 	f.Fuzz(func(t *testing.T, num int) {
@@ -183,7 +182,7 @@ func FuzzGoMap(f *testing.F) {
 
 func FuzzGoMapWithErrs(f *testing.F) {
 	for i := 0; i < seedIterations; i++ {
-		f.Add(utils.RandomNumber(maxSliceSizeLength))
+		f.Add(randomNumber(maxSliceSizeLength))
 	}
 
 	f.Fuzz(func(t *testing.T, num int) {
@@ -231,17 +230,20 @@ func FuzzGoMapWithErrs(f *testing.F) {
 			return errs[i].Error() > errs[j].Error()
 		})
 
+		expectedErrStrs := Map(expectedErrs, func(e error) string { return e.Error() })
+		errsStrs := Map(errs, func(e error) string { return e.Error() })
+
 		test.CheckEqual(bars, "Bars", expectedBars, t)
-		test.CheckEqual(errs, "Errs", expectedErrs, t)
+		test.CheckEqual(errsStrs, "Errs", expectedErrStrs, t)
 	})
 }
 
 func FuzzGoMapWithErrsRateLimitTest(f *testing.F) {
 	for i := 0; i < seedRateLimitIterations; i++ {
-		sliceSize := utils.RandomNumber(maxSliceSizeLengthRateLimit)
+		sliceSize := randomNumber(maxSliceSizeLengthRateLimit)
 		// we want to ensure rate < sliceSize otherwise no throttling will occur and we cannot estimate expectedDuration. Also rate cannot be 0
-		rate := utils.RandomNumberBetween(minRatePerInterval, (sliceSize+1)/5+1)
-		duration := utils.RandomDurationBetween(time.Millisecond, time.Second).Nanoseconds()
+		rate := randomNumberBetween(minRatePerInterval, (sliceSize+1)/5+1)
+		duration := randomDurationBetween(time.Millisecond, time.Second).Nanoseconds()
 
 		// If rate is very low, reset rate to ensure we don't run TOO long (max 50 seconds with this change)
 		if sliceSize != 0 && sliceSize/rate > 50 {
@@ -258,7 +260,7 @@ func FuzzGoMapWithErrsRateLimitTest(f *testing.F) {
 		foos := test.MakeFoos(num)
 
 		// estimate expected execution time given rate limit
-		concurrency := utils.RandomNumberBetween(1, 20) // Concurrency doesn't matter, rate is limited across goroutines
+		concurrency := randomNumberBetween(1, 20) // Concurrency doesn't matter, rate is limited across goroutines
 
 		var expectedDurationMillis float64
 		// excluding the first batch, we can assume rate-limiting for all subsequent batches at the per-time interval. First batch starts immediately

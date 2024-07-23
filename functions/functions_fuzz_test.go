@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/zendesk/go-generics/internal/test"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
 )
 
 const (
@@ -86,7 +85,7 @@ var mutateFooWithErr = func(t *test.Foo) error {
 }
 
 var hashByOrder = func(f *test.Foo) uint64 {
-	return utils.Hash64(fmt.Sprintf(strconv.Itoa(f.Order)))
+	return hash64(fmt.Sprintf(strconv.Itoa(f.Order)))
 }
 
 var mapMap = func(key int, val *test.Foo) *test.Bar {
