@@ -621,7 +621,7 @@ func Test_Serializer_DynamicType_Reflect(t *testing.T) {
 	toStr, err := NewSerializer[Foo]().FromDynamicType(from).ToJsonString()
 	test.CheckErr(err, "Failed to go from struct to json string", t)
 	t.Logf("Type: %+v", typ)
-	toStruct, err := NewSerializer[any]().FromDynamicType(toStr).ToDynamicType(Reflect, typ)
+	toStruct, err := NewSerializer[Foo]().FromDynamicType(toStr).ToDynamicType(Reflect, typ)
 	test.CheckErr(err, "Failed to go from json string to struct", t)
 	test.CheckEqual(toStruct, "struct -> json", from, t)
 
