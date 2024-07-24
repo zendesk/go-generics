@@ -17,8 +17,8 @@ client side rate limiting, automated retries, and more.
 
 Functions **not** prefixed with Go will run serially, and may be tuned with the below options:
 - RateLimitOption: Limits maximum iterations that may be executed over a specified timeframe
-    - e.g. functions.RandomOrderOption(10, time.Second)
-- RetryOption: Retries a function if it returns an error with progressive backoff
+    - e.g. functions.RateLimitOption(10, time.Second)
+- RetryOption: Retries a function if it returns an error with linear progressive backoff (backoff duration * retry number)
     - e.g. functions.RetryOption(3, time.Millisecond * 500)
 - RandomOrderOption: The targeted function will randomly order its execution rather than iterating over elements in the provided order
 - DiscardResultIfErrOption: Mapping functions will discard results when errors are returned
@@ -55,7 +55,7 @@ cache miss.
 
 - Generic implementation that supports all types.
 - Time-to-live for items set in the cache may be configured
-- Fail-through cache may be configured to configure multiple levels of caching. If the key is missing from the primary is found, the secondary will be queried
+- Fail-through cache may be configured to configure multiple levels of caching. If the key is missing from the primary, the secondary will be queried
 - Supports transparent encryption / decryption wrapper for configuring a encrypted cache in memory and/or redis.
 
 Future goals / features:
@@ -119,7 +119,7 @@ return db.ReadPerson(userID)
 })
 
 
-// Get a value from the cache, if it is found in the fail-through cache, it will be added to the primary cache
+// Get a value from the cache, if it is found in the fail-through cache, it will be added to the primary cache as it is returned.
 user, wasFound, err := cache.Get(userID)
 ```
 
@@ -188,4 +188,39 @@ Multiple rate limiters with shared redis backend and different rate limits
     }
 	doSomething()
 }
+```
+
+## Concurrency Limiter
+
+Limits max concurrency of the Run() Function based on config:
+
+## Features
+- Allows providing of onComplete callback function after the provided function completes
+
+```go
+// Limit concurrency to 5 concurrent executions. The provided Run() function will be executed in a goroutine.
+
+limiter := ratelimit.NewConcurrencyLimiter(5)
+
+for i := 0; i < 20; i++ {
+      limiter.Run(func() {
+        fmt.Printf("Run #: %d \n", i)
+        time.Sleep(time.Second)
+    })
+}
+
+// With on-complete callback
+for i := 0; i < 20; i++ {
+    limiter.Run(func() {
+        fmt.Printf("Run #: %d executing \n", i)
+        time.Sleep(time.Second)
+    }, ratelimit.WithOnCompleteCallback(func() {
+        fmt.Printf("Callback executed for: %d \n", i)
+    }))
+}
+
+// Wait for callbacks before existing
+time.Sleep(time.Second * 5)
+
+
 ```
