@@ -57,7 +57,9 @@ func ExpectErr(err error, message string, t *testing.T) {
 }
 
 func CheckEqual(result interface{}, resultName string, expectedResult interface{}, t *testing.T) {
-	if equal := cmp.Equal(result, expectedResult); !equal {
+	if equal := cmp.Equal(result, expectedResult, cmp.Exporter(func(v reflect.Type) bool {
+		return true
+	})); !equal {
 		t.Fatalf("Unexpected results for result: %s. Expected: %+v, Got: %+v", resultName, expectedResult, result)
 	}
 }

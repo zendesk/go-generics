@@ -46,10 +46,82 @@ foos, errs := GoMapWithErrs(fooIds, func(id string) (Foo, error) {
 
 
 ## Caching
- Todo: Fill in cache documentation
+
+The `cache` package contains a generic cache implementation that supports dynamic backends, redis, or in-memory. You may also supply your own backend. 
+Additionally, a `fail-through` cache may be supplied, for instance, so the in-memory cache can be checked first, with a fail-through to redis on a
+cache miss. 
+
+### Features
+
+- Generic implementation that supports all types.
+- Time-to-live for items set in the cache may be configured
+- Fail-through cache may be configured to configure multiple levels of caching. If the key is missing from the primary is found, the secondary will be queried
+- Supports transparent encryption / decryption wrapper for configuring a encrypted cache in memory and/or redis.
+
+Future goals / features:
+- Sized based capacity
+- Custom eviction (LRU, LFU, etc)
+  - In memory cache uses LRU based eviction when capacity is reached.
+
+#### Cache Examples
+
+Example 1: Simple in-memory cache
+
+```go 
+// Basic in memory cache example
+type Person struct {
+	Name string
+	Age int
+}
+ttl := time.Minute
+capacity := uint64(4096)
+cache := cache.NewInMemoryCache[string, Person](ttl,
+    cache.WithCapacity[string, string](capacity)
+)
+
+// Set a value in the cache
+cache.Set(userID, Person{Name: "James", Age: 30})
+
+// Get a value from the cache, or if it doesn't exist, look it up from the DB, set it in the cache, and return it
+cache.GetOrSet(userID, func() (V, error) { 
+	return db.ReadPerson(userID)
+})
+```
+
+Example 2: In memory cache with redis fail-through
+
+```go
+// In Memory cache with Redis Cache fail-through
+type Person struct {
+    Name string
+    Age int
+}
+
+ttl := time.Minute
+capacity := uint64(4096)
 
 
+client, _ := NewRedisClient(redisCfg)
+failThrough := cache.NewRedisCache[K, Person](context.Background(), client, ttl)
 
+cache := cache.NewInMemoryCache[string, Person](ttl,
+    cache.WithCapacity[string, string](capacity),
+    cache.WithFailThroughCache[string, string](failThrough),
+)
+
+// Set a value in the cache (this will also be set in the fail-through cache)
+cache.Set(userID, Person{Name: "James", Age: 30})
+
+// Get a value from the cache, or if it doesn't exist, look it up from the DB, set it in the cache, and return it
+// This will also be set in the fail-through cache
+cache.GetOrSet(userID, func() (V, error) {
+return db.ReadPerson(userID)
+})
+
+
+// Get a value from the cache, if it is found in the fail-through cache, it will be added to the primary cache
+user, wasFound, err := cache.Get(userID)
+```
 
 ## RateLimiter
 
