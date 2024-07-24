@@ -108,12 +108,17 @@ foos, errs := functions.GoMapWithErrs(fooIds, func(id string) (Foo, error) {
 
 ## Types
 
-The `types` package contains generic data structures, including:
+The `types` package contains some conspicuously missing go data structures, including:
 - Set
   - NewSet[T comparable](items ...T) *Set[T]
   - NewHashSet[T any](items ...T) *Set[T] 
     - ^^ May be used with any data structure, even noncomparable ones
+  - NewHashSetWithHashFn[T](fn HashFn, items ...T)
+    - You may provide your own custom hash function. func(t T) string
 - Stack
+
+### Future plans
+- Add an option to enable synchronization of the datastructures to prevent concurrent modification. Right now these datastructures are not thread safe.
 
 ## Caching
 
