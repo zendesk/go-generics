@@ -106,42 +106,43 @@ func TestDedupeByHash(t *testing.T) {
 
 	dupe1 := test.Foo{
 		Bar:   "bar1",
-		Baz:   "nadfdsafads",
-		Order: 9999,
+		Baz:   "baz1",
+		Order: 0,
 	}
 
 	dupe2 := test.Foo{
-		Bar:   "adfasdf",
+		Bar:   "bar2",
 		Baz:   "baz2",
-		Order: 9998,
-	}
-
-	dupe3 := test.Foo{
-		Bar:   "adfasdf",
-		Baz:   "nadfdsafads",
 		Order: 1,
 	}
 
+	dupe3 := test.Foo{
+		Bar:   "bar3",
+		Baz:   "baz3",
+		Order: 4, // not a dupe based on order and hasfn
+	}
+
 	dupe1Foos := append(foos, dupe1)
-	dupe2Foos := append(foos, dupe2)
+	dupe2Foos := append(foos, dupe2, dupe3)
 	dupe3Foos := append(foos, dupe3, dupe1, dupe2)
 
 	// test.Bar: "bar1" should be removed.
 	dedupe1 := DedupeByHash(dupe1Foos, func(i test.Foo) string {
-		return hashAny(i.Bar)
+		return hashAny(i.Order)
 	})
 
 	test.CheckComparableEqualIgnoreOrder(dedupe1, "dedupe1", foos, t)
 
-	// Baz: "baz2" should be removed
+	// Baz: "baz2" should be removed, dupe3 remains
 	dedupe2 := DedupeByHash(dupe2Foos, func(i test.Foo) string {
-		return hashAny(i.Bar)
+		return hashAny(i.Order)
 	})
-	test.CheckComparableEqualIgnoreOrder(dedupe2, "dedupe2", foos, t)
+	test.CheckComparableEqualIgnoreOrder(dedupe2, "dedupe2", append(foos, dupe3), t)
 
-	// Order: 1 should be removed.
+	// Order: dupe 1 & 2 should be removed
 	dedupe3 := DedupeByHash(dupe3Foos, func(i test.Foo) string {
-		return hashAny(i.Bar)
+		return hashAny(i.Order)
 	})
-	test.CheckComparableEqualIgnoreOrder(dedupe3, "dedupe3", append(foos, dupe1, dupe2), t)
+
+	test.CheckComparableEqualIgnoreOrder(dedupe3, "dedupe3", append(foos, dupe3), t)
 }
