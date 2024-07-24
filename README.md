@@ -48,6 +48,9 @@ foos, errs := GoMapWithErrs(fooIds, func(id string) (Foo, error) {
 ## Caching
  Todo: Fill in cache documentation
 
+
+
+
 ## RateLimiter
 
 A generic rate-limiter implementation is provided, that supports dynamic backends, redis, or in-memory. You may also supply your own backend.
