@@ -65,7 +65,7 @@ func GoToMapWithErrs[T any, K comparable, V any](items []T, f func(T) (K, V, err
 		go func() {
 			for item := range jobChan {
 				cfg.limiter.WaitForRate(context.Background())
-				k, v, err := RunToMapWithRetries(f, item, cfg.RetryCount, cfg.RetryBackoffInterval)
+				k, v, err := runToMapWithRetries(f, item, cfg.RetryCount, cfg.RetryBackoffInterval)
 				resultChan <- types.TupleWithErr[K, V]{A: k, B: v, E: err}
 			}
 		}()

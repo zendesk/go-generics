@@ -2,8 +2,6 @@ package functions
 
 import (
 	"reflect"
-
-	"github.com/zendesk/generic/set"
 )
 
 // EqualIgnoreOrder compares N slices for equal values ignoring the order of the items in the slices. Items must be comparable.
@@ -78,53 +76,4 @@ func ContainsDeepEqual[T any](list []T, item T) bool {
 		}
 	}
 	return false
-}
-
-// Dedupe the items in a comparable slice.
-func Dedupe[T comparable](items []T) []T {
-	itemMap := make(map[T]bool)
-	for _, item := range items {
-		itemMap[item] = true
-	}
-
-	var deduped []T
-	for k := range itemMap {
-		deduped = append(deduped, k)
-	}
-
-	return deduped
-}
-
-// DedupeByHash dedupes the items between 2 slices using a hashFn that should return equal values for two items that are considered equal
-func DedupeByHash[T comparable](items []T, hashFn func(t T) uint64) []T {
-	deduped := set.NewHashset(0, func(a, b T) bool {
-		return hashFn(a) == hashFn(b)
-	}, hashFn)
-
-	for _, item := range items {
-		deduped.Put(item)
-	}
-
-	return deduped.Keys()
-}
-
-// RemoveNils removes any nil values from a slice of T -- this is safe for finding boxed and unboxed nils.
-func RemoveNils[T any](from []T) []T {
-	var noNils = []T{}
-	for _, t := range from {
-		v := reflect.ValueOf(t)
-		kind := v.Kind()
-		switch kind {
-		case reflect.Invalid:
-			continue
-		case reflect.Chan, reflect.Func, reflect.Map, reflect.Pointer, reflect.UnsafePointer, reflect.Interface, reflect.Slice:
-			if !v.IsNil() {
-				noNils = append(noNils, t)
-			}
-		default:
-			// all other types are not nillable
-			noNils = append(noNils, t)
-		}
-	}
-	return noNils
 }

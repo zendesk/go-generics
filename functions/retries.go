@@ -20,9 +20,9 @@ func RunWithRetries[T any](fn func(t T) error, item T, numRetries int, backoffIn
 	return err
 }
 
-// RunMapWithRetries will run fn numRetries+1 times, if an error is returned, the fn will be run again, until
+// runMapWithRetries will run fn numRetries+1 times, if an error is returned, the fn will be run again, until
 // numRetries is exceeded or a non-nil error is returned
-func RunMapWithRetries[T any, Y any](fn func(T) (Y, error), item T, numRetries int, backoffInterval time.Duration) (Y, error) {
+func runMapWithRetries[T any, Y any](fn func(T) (Y, error), item T, numRetries int, backoffInterval time.Duration) (Y, error) {
 	var err error
 	var result Y
 	for i := 0; i < numRetries+1; i++ {
@@ -38,9 +38,9 @@ func RunMapWithRetries[T any, Y any](fn func(T) (Y, error), item T, numRetries i
 	return result, err
 }
 
-// RunToMapWithRetries will run fn numRetries+1 times, if an error is returned, the fn will be run again, until
+// runToMapWithRetries will run fn numRetries+1 times, if an error is returned, the fn will be run again, until
 // numRetries is exceeded or a non-nil error is returned
-func RunToMapWithRetries[T any, K comparable, V any](fn func(T) (K, V, error), item T, numRetries int, backoffInterval time.Duration) (K, V, error) {
+func runToMapWithRetries[T any, K comparable, V any](fn func(T) (K, V, error), item T, numRetries int, backoffInterval time.Duration) (K, V, error) {
 	var err error
 	var k K
 	var v V
@@ -57,9 +57,9 @@ func RunToMapWithRetries[T any, K comparable, V any](fn func(T) (K, V, error), i
 	return k, v, err
 }
 
-// RunMapToManyWithRetries will run fn numRetries+1 times, if an error is returned, the fn will be run again, until
+// runMapToManyWithRetries will run fn numRetries+1 times, if an error is returned, the fn will be run again, until
 // numRetries is exceeded or a non-nil error is returned
-func RunMapToManyWithRetries[T any, Y any](fn func(T) ([]Y, error), item T, numRetries int, backoffInterval time.Duration) ([]Y, error) {
+func runMapToManyWithRetries[T any, Y any](fn func(T) ([]Y, error), item T, numRetries int, backoffInterval time.Duration) ([]Y, error) {
 	var err error
 	var result []Y
 	for i := 0; i < numRetries+1; i++ {
@@ -75,9 +75,9 @@ func RunMapToManyWithRetries[T any, Y any](fn func(T) ([]Y, error), item T, numR
 	return result, err
 }
 
-// RunMapToSliceWithRetries will run fn numRetries+1 times, if an error is returned, the fn will be run again, until
+// runMapToSliceWithRetries will run fn numRetries+1 times, if an error is returned, the fn will be run again, until
 // numRetries is exceeded or a non-nil error is returned
-func RunMapToSliceWithRetries[K comparable, V any, Z any](fn func(K, V) (Z, error), k K, v V, numRetries int, backoffInterval time.Duration) (Z, error) {
+func runMapToSliceWithRetries[K comparable, V any, Z any](fn func(K, V) (Z, error), k K, v V, numRetries int, backoffInterval time.Duration) (Z, error) {
 	var err error
 	var result Z
 	for i := 0; i < numRetries+1; i++ {

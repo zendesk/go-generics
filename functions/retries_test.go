@@ -33,7 +33,7 @@ func TestRunEachWithRetries(t *testing.T) {
 	}
 }
 
-func TestRunMapWithRetries(t *testing.T) {
+func TestrunMapWithRetries(t *testing.T) {
 	maxRetries := 4
 	backoffInterval := time.Millisecond * 10
 
@@ -52,9 +52,9 @@ func TestRunMapWithRetries(t *testing.T) {
 		return count * i, nil
 	}
 
-	result, err := RunMapWithRetries(testFunc, input, maxRetries, backoffInterval)
+	result, err := runMapWithRetries(testFunc, input, maxRetries, backoffInterval)
 	finish := time.Now()
-	test.CheckErr(err, "Unexpected error with RunMapWithRetries test.", t)
+	test.CheckErr(err, "Unexpected error with runMapWithRetries test.", t)
 
 	if finish.Sub(start) < minDuration {
 		t.Fatalf("Retries did not backoff a minimum expected duration.")
@@ -62,7 +62,7 @@ func TestRunMapWithRetries(t *testing.T) {
 
 	test.CheckEqual(result, "Total Result", expectedResult, t)
 }
-func TestRunToMapWithRetries(t *testing.T) {
+func TestrunToMapWithRetries(t *testing.T) {
 	maxRetries := 4
 	backoffInterval := time.Millisecond * 10
 
@@ -81,9 +81,9 @@ func TestRunToMapWithRetries(t *testing.T) {
 		return count * i, count * i * 2, nil
 	}
 
-	key, val, err := RunToMapWithRetries(testFunc, input, maxRetries, backoffInterval)
+	key, val, err := runToMapWithRetries(testFunc, input, maxRetries, backoffInterval)
 	finish := time.Now()
-	test.CheckErr(err, "Unexpected error with RunMapWithRetries test.", t)
+	test.CheckErr(err, "Unexpected error with runMapWithRetries test.", t)
 
 	if finish.Sub(start) < minDuration {
 		t.Fatalf("Retries did not backoff a minimum expected duration.")
@@ -93,7 +93,7 @@ func TestRunToMapWithRetries(t *testing.T) {
 	test.CheckEqual(val, "Val", expectedResult*2, t)
 }
 
-func TestRunMapToManyWithRetries(t *testing.T) {
+func TestrunMapToManyWithRetries(t *testing.T) {
 	maxRetries := 4
 	backoffInterval := time.Millisecond * 10
 
@@ -114,9 +114,9 @@ func TestRunMapToManyWithRetries(t *testing.T) {
 		return []int{i[0]}, nil
 	}
 
-	results, err := RunMapToManyWithRetries(testFunc, input, maxRetries, backoffInterval)
+	results, err := runMapToManyWithRetries(testFunc, input, maxRetries, backoffInterval)
 	finish := time.Now()
-	test.CheckErr(err, "Unexpected error with RunMapWithRetries test.", t)
+	test.CheckErr(err, "Unexpected error with runMapWithRetries test.", t)
 
 	if finish.Sub(start) < minDuration {
 		t.Fatalf("Retries did not backoff a minimum expected duration.")
@@ -125,7 +125,7 @@ func TestRunMapToManyWithRetries(t *testing.T) {
 	test.CheckEqual(results, "results", expectedResult, t)
 }
 
-func TestRunMapToSliceWithRetries(t *testing.T) {
+func TestrunMapToSliceWithRetries(t *testing.T) {
 	maxRetries := 4
 	backoffInterval := time.Millisecond * 10
 
@@ -145,9 +145,9 @@ func TestRunMapToSliceWithRetries(t *testing.T) {
 		return []int{v}, nil
 	}
 
-	results, err := RunMapToSliceWithRetries(testFunc, key, val, maxRetries, backoffInterval)
+	results, err := runMapToSliceWithRetries(testFunc, key, val, maxRetries, backoffInterval)
 	finish := time.Now()
-	test.CheckErr(err, "Unexpected error with RunMapWithRetries test.", t)
+	test.CheckErr(err, "Unexpected error with runMapWithRetries test.", t)
 
 	if finish.Sub(start) < minDuration {
 		t.Fatalf("Retries did not backoff a minimum expected duration.")

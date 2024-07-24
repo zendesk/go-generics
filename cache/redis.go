@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/serialize"
+	"github.com/zendesk/go-generics/serialize"
 )
 
 type Redis interface {

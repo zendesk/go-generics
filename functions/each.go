@@ -5,7 +5,7 @@ import (
 )
 
 // Each runs fn() over every provided item.
-func Each[T interface{}](items []T, fn func(T)) {
+func Each[T any](items []T, fn func(T)) {
 	for _, i := range items {
 		fn(i)
 	}
@@ -13,7 +13,7 @@ func Each[T interface{}](items []T, fn func(T)) {
 
 // EachMergeErrs runs the provided fn() over every item  and aggregates all errors into a single error.
 // If no error is found, nil is returned.
-func EachMergeErrs[T interface{}](items []T, fn func(T) error) error {
+func EachMergeErrs[T any](items []T, fn func(T) error) error {
 	var errs []error
 	for _, i := range items {
 		err := fn(i)
@@ -28,7 +28,7 @@ func EachMergeErrs[T interface{}](items []T, fn func(T) error) error {
 //   - ConcurrencyLimitOption
 //   - RateLimitOption
 //   - RandomOrderOption
-func GoEach[T interface{}](items []T, fn func(T), opts ...Option) {
+func GoEach[T any](items []T, fn func(T), opts ...Option) {
 	_ = GoEachWithErrs(items, func(t T) error {
 		fn(t)
 		return nil

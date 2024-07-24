@@ -59,7 +59,7 @@ func GoMapToSliceWithErrs[K comparable, V any, Z any](items map[K]V, converter f
 		go func() {
 			for item := range jobChan {
 				cfg.limiter.WaitForRate(context.Background())
-				converted, err := RunMapToSliceWithRetries(converter, item.A, item.B, cfg.RetryCount, cfg.RetryBackoffInterval)
+				converted, err := runMapToSliceWithRetries(converter, item.A, item.B, cfg.RetryCount, cfg.RetryBackoffInterval)
 				resultChan <- types.Tuple[Z, error]{A: converted, B: err}
 			}
 		}()

@@ -93,7 +93,7 @@ func GoMapWithErrs[T any, Y any](items []T, f func(T) (Y, error), opts ...Option
 		go func() {
 			for item := range jobChan {
 				cfg.limiter.WaitForRate(context.Background())
-				converted, err := RunMapWithRetries(f, item, cfg.RetryCount, cfg.RetryBackoffInterval)
+				converted, err := runMapWithRetries(f, item, cfg.RetryCount, cfg.RetryBackoffInterval)
 				resultChan <- types.Tuple[Y, error]{A: converted, B: err}
 			}
 		}()

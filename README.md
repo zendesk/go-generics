@@ -1,3 +1,5 @@
+[![Tests](https://github.com/zendesk/go-generics/actions/workflows/release.yml/badge.svg)](https://github.com/zendesk/zendesk/actions/workflows/test.yml)
+
 # go-generics
 
 Contains generic functions, data structures, and utilities for go programmers, including:
@@ -6,44 +8,103 @@ Contains generic functions, data structures, and utilities for go programmers, i
 - Rate / Concurrecy Limiters
 - Generic Caches 
 - Data structures
+- Succinct Serialization
 
 Brought to you by the Zendesk Lockbox team. 
+
 
 ## Functions
 
 The `functions` package contains dozens of generic functions with custom options support to allow fast-mapping with, or without concurrency,
 client side rate limiting, automated retries, and more.
 
-
-Functions **not** prefixed with Go will run serially, and may be tuned with the below options:
-- RateLimitOption: Limits maximum iterations that may be executed over a specified timeframe
-    - e.g. functions.RateLimitOption(10, time.Second)
-- RetryOption: Retries a function if it returns an error with linear progressive backoff (backoff duration * retry number)
-    - e.g. functions.RetryOption(3, time.Millisecond * 500)
-- RandomOrderOption: The targeted function will randomly order its execution rather than iterating over elements in the provided order
-- DiscardResultIfErrOption: Mapping functions will discard results when errors are returned
+Functions **not** prefixed with `Go` will run serially.
 
 Functions prefixed with `Go` will run concurrently, and may be tuned with the additional options:
-- ConcurrencyLimitOption: limits the concurrency of a concurrent mapping function to protect against open file limits, connection limits, etc.
+- RateLimitOption: Limits maximum iterations that may be executed over a specified timeframe
+  - e.g. functions.RateLimitOption(10, time.Second)
+- RetryOption: Retries a function if it returns an error with linear progressive backoff (backoff duration * retry number)
+  - e.g. functions.RetryOption(3, time.Millisecond * 500)
+- RandomOrderOption: The targeted function will randomly order its execution rather than iterating over elements in the provided order
+- DiscardResultIfErrOption: Mapping functions will discard results when errors are returned
+- ConcurrencyLimitOption: limits the concurrency of a concurrent mapping function to protect against open file limits, connection limits, etc. To run serialize, set concurrency to 1.
+
+#### Functions:
+
+### Comparison:
+- EqualIgnoreOrder[T comparable](slices ...[]T) bool
+- Contains[T comparable](list []T, item T) bool
+- ContainsAny[T comparable](A []T, B []T) bool
+- ContainsDeepEqual[T any](list []T, item T) bool
+
+### Iterative
+- Each[T any](items []T, fn func(T))
+- EachMergeErrs[T any](items []T, fn func(T) error) error
+- GoEach[T any](items []T, fn func(T), opts ...Option)
+- GoEachWithErrs[T any](items []T, fn func(T) error, opts ...Option) (errs []error)
+- GoEachMapWithErrs[K comparable, V any](items map[K]V, fn func(K, V) error, opts ...Option) (errs []error)
+
+### Filters
+- Find[T interface{}](from []T, filter func(T) bool) (item T, wasFound bool)
+- Filter[T any](from []T, filter func(T) bool) []T
+- FilterMap[K comparable, V any](from map[K]V, filter func(k K, v V) bool) map[K]V
+
+### Mapping
+
+#### From X to Slice
+- Map[T any, Y any](from []T, converter func(T) Y) []Y
+- MapWithErrs[T any, Y any](from []T, converter func(T) (Y, error)) ([]Y, []error)
+- MapMergeErrs[T any, Y any](from []T, converter func(T) (Y, error)) ([]Y, error)
+- GoMap[T any, Y any](items []T, converter func(T) Y, opts ...Option) []Y
+- GoMapWithErrs[T any, Y any](items []T, f func(T) (Y, error), opts ...Option) (results []Y, errs []error)
+- GoMapToMany[T any, Y any](items []T, converter func(T) []Y, opts ...Option) (results []Y)
+- GoMapToManyWithErrs[T any, Y any](items []T, converter func(T) ([]Y, error), opts ...Option) (results []Y, errs []error)
+- MapToSlice[K comparable, V any, Z any](from map[K]V, converter func(k K, v V) Z) []Z
+- GoMapToSlice[K comparable, V any, Z any](items map[K]V, converter func(K, V) Z, opts ...Option) []Z
+- GoMapToSliceWithErrs[K comparable, V any, Z any](items map[K]V, converter func(K, V) (Z, error), opts ...Option) (results []Z, errs []error)
+
+#### From X to Map
+- ToMap[T any, K comparable, V any](from []T, converter func(T) (K, V)) map[K]V
+- GoToMap[T any, K comparable, V any](items []T, f func(T) (K, V), opts ...Option) map[K]V
+- GoToMapWithErrs[T any, K comparable, V any](items []T, f func(T) (K, V, error), opts ...Option) (results map[K]V, errs []error) 
+
+### Reduce
+- Reduce[T any, Y any](from []T, to Y, reducer func(T, Y) Y) Y
+
+### Other
+- RunWithRetries[T any](fn func(t T) error, item T, numRetries int, backoffInterval time.Duration) error
+- Min[T cmp.Ordered](values ...T) T
+- Max[T cmp.Ordered](values ...T) T
+- Copy[K comparable, V any](items map[K]V) map[K]V
+- Convert[T any, Y any](from T, converter func(T) Y) Y
+
+### Slice
+- Intersection[T comparable](a, b []T) []T
+- Dedupe[T comparable](items []T) []T
+- DedupeByHash[T comparable](items []T, hashFn func(t T) uint64) []T
+- Shuffle[T any](items []T) []T
+- RemoveNils[T any](from []T) []T
+- Generalize[T any](from []T) []interface{}
+- Join[T any](items []T, separator string) string
+
 
 #### Functions Examples
 
 ```go
 // Execute an API call concurrently, one for each ID in the list, and return the result, or an error.
 // Rate-limit requests to 10 per second.
+// Limit max concurrent requests to 5
 // If a request returns an error, it will be retried up to 3 times, with a 500 millisecond progressive backoff.
-// So the first retry will back off by 500ms, the second by 1 second, the third by 1.5 seconds
 
 fooIds := []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
-foos, errs := GoMapWithErrs(fooIds, func(id string) (Foo, error) {
+foos, errs := functions.GoMapWithErrs(fooIds, func(id string) (Foo, error) {
     foo, err := fooAPI.GetFoo(id)
         if err != nil {
             return Foo{}, fmt.Errorf("Error encountered, this will trigger a retry: %w", err)
         }
     return foo, err
-}, RateLimitOption(10, time.Second), RetryOption(3, time.Millisecond*500))
+}, RateLimitOption(10, time.Second), RetryOption(3, time.Millisecond*500), ConcurrencyLimitOption(5))
 ```
-
 
 ## Caching
 
@@ -223,4 +284,63 @@ for i := 0; i < 20; i++ {
 time.Sleep(time.Second * 5)
 
 
+```
+
+## Succinct Serialization
+
+Simplifies serializing / deserialization of data from various formats. Also allows dynamic type discovery and conversion for 
+dynamic use cases.
+
+### Future plans:
+- Allow the client to provide custom serializer / deserialization functions via an option.
+
+# Examples
+```go
+// Deserialize a JSON string into a struct
+type Person struct {
+    Name string `json: "name"`
+    Age int     `json: "age"`
+}
+
+// From JSON to Person
+input := "{\"name\": \"James\", \"age\": 30}"
+person, err := serialize.NewSerializer[Person]().FromJsonString(input).ToStruct()
+
+// From Person to JSON
+json, err := serialize.NewSerializer[Person]().FromStruct(person).ToJsonString()
+
+// From JSON to []*Person
+input = "[{\"name\": \"James\", \"age\": 30}, {\"name\": \"Bob\", \"age\": 44}]"
+people, err := serialize.NewSerializer[[]*Person]().FromJsonString(input).ToStruct()
+
+// From Person to []byte
+bytes, err := serialize.NewSerializer[any]().FromStruct(person).ToBytes()
+
+// From Person to B64String
+bytes, err := serialize.NewSerializer[any]().FromStruct(person).ToB64String()
+
+```
+
+In some instances the same code may need to dynamically serialize or deserialize data from or to a variable type, in these instances, you may use FromDynamicType and ToDynamicType.
+If one of these methods is called, reflection or generics may be used to dynamically determine the source or target type.
+```go
+// Dynamic type example
+type Animal struct {
+    Type string `json: "type"`
+    Age int     `json: "age"`
+}
+
+person := Person{Name: "James", Age: 30}
+
+// Test from any to JSON
+jsonStr, err := NewSerializer[any]().FromDynamicType(person).ToJsonString()
+
+// Test to dynamic type
+var typ T // Animal
+input := "{\"type\": \"Gorilla\", \"age\": 2}"
+
+// serialize.Reflect indicates that we should use reflection to determine the type of "typ" and deserialize input into that type
+// In this instance, if typ is a struct, `T` will be used to deserialize the input into a struct, if the `typ` is a []byte or string, 
+// then normal deserialization will be used to marshal the input into that type
+gorilla, err := NewSerializer[T]().FromJsonString(input).ToDynamicType(serialize.Reflect, typ)
 ```
