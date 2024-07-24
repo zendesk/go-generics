@@ -1,0 +1,74 @@
+name: release
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'patch'
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  release:
+    runs-on: [self-hosted, zendesk-stable]
+    if:
+      ${{
+        (github.event.pull_request.merged == true && (
+          contains(github.event.pull_request.labels.*.name, 'create-patch-release') ||
+          contains(github.event.pull_request.labels.*.name, 'create-minor-release') ||
+          contains(github.event.pull_request.labels.*.name, 'create-major-release')
+        )) || github.event_name == 'workflow_dispatch'
+      }}
+    outputs:
+      version_type: ${{ steps.type.outputs.version_type }}
+    steps:
+      - uses: zendesk/checkout@v3
+
+      - name: Set version type
+        id: type
+        run: |
+          set -ex -o pipefail
+          if [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
+            echo "::set-output name=version_type::${{ github.event.inputs.release_type }}"
+          elif [ ${{ contains(github.event.pull_request.labels.*.name, 'create-major-release') }} ]; then
+            echo "::set-output name=version_type::major"
+          elif [ ${{ contains(github.event.pull_request.labels.*.name, 'create-minor-release') }} ]; then
+            echo "::set-output name=version_type::minor"
+          else
+            echo "::set-output name=version_type::patch"
+          fi
+
+      - name: Compute tag
+        uses: zendesk/compute-tag@v13
+        id: tag
+        with:
+          github_token: ${{ github.token }}
+          version_scheme: semantic
+          version_type: ${{ steps.type.outputs.version_type }}
+
+      - name: Create release
+        uses: zendesk/create-release@v1.1.4
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: ${{ steps.tag.outputs.next_tag }}
+          release_name: ${{ steps.tag.outputs.next_tag }}
+          commitish: ${{ github.git_ref }}
+          body: |
+            See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
+
+      - name: Run artifactory publish
+        run: ./scripts/artifactory_publish.sh
+        env:
+          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
+          ARTIFACT_VERSION: ${{ steps.tag.outputs.next_tag }}

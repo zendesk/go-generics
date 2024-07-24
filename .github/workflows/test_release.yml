@@ -1,0 +1,59 @@
+name: Test
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+jobs:
+  sonarqube:
+    name: "Sonarqube"
+    runs-on: [self-hosted, zendesk-stable]
+    env:
+      GO111MODULE: on
+    steps:
+      - uses: zendesk/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: zendesk/setup-go@v2
+        with:
+          go-version: 1.22.x
+
+      - name: Generate Code Coverage Report (via tests)
+        run: |
+          unset GOPROXY
+          git config --global url."https://${{ secrets.ORG_GITHUB_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+          make test-unit-with-coverage
+
+      - name: Checkout Sonarqube Action Repo
+        uses: zendesk/checkout@v2
+        with:
+          repository: zendesk/zendesk-sonarqube-gh-action
+          ref: v1
+          token: ${{ secrets.ORG_GITHUB_TOKEN }}
+          path: .github/actions/sonarqube_action
+
+      - name: Run Sonarqube Analysis
+        uses: ./.github/actions/sonarqube_action
+        with:
+          sonar_url: ${{ secrets.SONARQUBE_HOST }}
+          sonar_token: ${{ secrets.SONARQUBE_TOKEN }}
+          product: "go-generics"
+          team: "lockbox"
+
+  test_unit:
+    runs-on: [self-hosted, zendesk-stable]
+    steps:
+      - name: Checkout
+        uses: zendesk/checkout@v3
+
+      - name: Setup Go
+        uses: zendesk/setup-go@v2
+        with:
+          go-version: 1.22.x
+
+      - name: Run Unit Tests
+        run: |
+          make test

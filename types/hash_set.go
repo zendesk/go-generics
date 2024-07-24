@@ -1,0 +1,79 @@
+package types
+
+import (
+	"crypto/sha256"
+	"fmt"
+)
+
+func hashAny(obj any) string {
+	h := sha256.New()
+	h.Write([]byte(fmt.Sprintf("%v", obj)))
+
+	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+func newHashSet[V comparable]() ISet[V] {
+	return &hashSet[V]{values: make(map[string]V)}
+}
+
+// InternalSet concrete implementation.
+type hashSet[V comparable] struct {
+	values map[string]V
+}
+
+// Put adds 'val' to the hashSet.
+func (s *hashSet[V]) Put(v V) {
+	key := hashAny(v)
+	s.values[key] = v
+}
+
+// Has returns true only if 'val' is in the hashSet.
+func (s *hashSet[V]) Has(v V) bool {
+	_, ok := s.values[hashAny(v)]
+	return ok
+}
+
+// Remove removes 'val' from the hashSet.
+func (s *hashSet[V]) Remove(v V) {
+	delete(s.values, hashAny(v))
+}
+
+func (s *hashSet[V]) Values() []V {
+	out := make([]V, len(s.values))
+	i := 0
+	for _, val := range s.values {
+		out[i] = val
+		i++
+	}
+	return out
+}
+
+// Clear removes all elements from the hashSet.
+func (s *hashSet[V]) Clear() {
+	s.values = make(map[string]V)
+}
+
+// Size returns the number of elements in the hashSet.
+func (s *hashSet[V]) Size() int {
+	return len(s.values)
+}
+
+// Copy returns a copy of this hashSet.
+func (s *hashSet[V]) Copy() ISet[V] {
+	return &hashSet[V]{
+		values: s.copyItems(),
+	}
+}
+
+// New returns an empty Set[V]
+func (s *hashSet[V]) New() ISet[V] {
+	return newHashSet[V]()
+}
+
+func (s *hashSet[V]) copyItems() map[string]V {
+	values := make(map[string]V)
+	for k, v := range s.values {
+		values[k] = v
+	}
+	return values
+}

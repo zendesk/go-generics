@@ -1,0 +1,147 @@
+package functions
+
+import (
+	"testing"
+
+	"github.com/zendesk/go-generics/internal/test"
+)
+
+func TestJoin(t *testing.T) {
+	test.CheckEqual(Join([]string{"foo", "bar", "baz"}, ","), "Test1", "foo,bar,baz", t)
+	test.CheckEqual(Join([]int{1, 2, 3, 4}, ","), "Test1", "1,2,3,4", t)
+	test.CheckEqual(Join([]float64{1.11, 2.22, 3.33, 4.44}, ","), "Test1", "1.11,2.22,3.33,4.44", t)
+}
+
+func TestGeneralize(t *testing.T) {
+	ints := []int{1, 2, 3, 4}
+	generalized := Generalize(ints)
+	var generalType []interface{}
+
+	test.CheckOk(typesMatch(generalized, generalType), "Expected []interface{} but did not get that", t)
+}
+
+func TestShuffle(t *testing.T) {
+	testSlice := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19}
+	updated := Shuffle(testSlice)
+
+	test.CheckComparableEqualIgnoreOrder(testSlice, "Shuffled slices do not have the same items", updated, t)
+
+	if testSlice[0] == updated[0] &&
+		testSlice[1] == updated[1] &&
+		testSlice[5] == updated[5] &&
+		testSlice[2] == updated[2] {
+		t.Fatalf("This slice was not shuffled properly, or we're REALLY unlucky.")
+	}
+}
+
+func TestIntersection(t *testing.T) {
+	tests := []struct {
+		name   string
+		sliceA []int
+		sliceB []int
+		want   []int
+	}{
+		{
+			"it returns the intersection when a matching element is found",
+			[]int{1, 2, 3, 4, 5, 6},
+			[]int{1, 8, 9, 10, 11, 6},
+			[]int{1, 6},
+		},
+		{
+			"it returns empty when no matching element is found",
+			[]int{1, 2, 3, 4, 5, 6},
+			[]int{7, 8, 9, 10, 11},
+			[]int{},
+		},
+		{
+			"it works with identical slices",
+			[]int{1, 2, 3, 4, 5, 6},
+			[]int{1, 2, 3, 4, 5, 6},
+			[]int{1, 2, 3, 4, 5, 6},
+		},
+		{
+			"it works with inverted slices",
+			[]int{1, 2, 3, 4, 5, 6},
+			[]int{6, 5, 4, 3, 2, 1},
+			[]int{1, 2, 3, 4, 5, 6},
+		},
+		{
+			"it works with supersets slices in B",
+			[]int{1, 2, 3, 4, 5, 6},
+			[]int{8, 6, 5, 4, 3, 2, 1, 7},
+			[]int{1, 2, 3, 4, 5, 6},
+		},
+		{
+			"it works with supersets slices in A",
+			[]int{7, 1, 2, 3, 9, 4, 5, 6, 8},
+			[]int{6, 5, 4, 3, 2, 1},
+			[]int{1, 2, 3, 4, 5, 6},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test.CheckComparableEqualIgnoreOrder(Intersection(tt.sliceA, tt.sliceB), tt.name, tt.want, t)
+		})
+	}
+}
+
+func TestDedupeByHash(t *testing.T) {
+	foos := []test.Foo{
+		{
+			Bar:   "bar1",
+			Baz:   "baz1",
+			Order: 0,
+		},
+		{
+			Bar:   "bar2",
+			Baz:   "baz2",
+			Order: 1,
+		},
+		{
+			Bar:   "bar3",
+			Baz:   "baz3",
+			Order: 2,
+		}, // Below are dupes depending on fn provided
+	}
+
+	dupe1 := test.Foo{
+		Bar:   "bar1",
+		Baz:   "nadfdsafads",
+		Order: 9999,
+	}
+
+	dupe2 := test.Foo{
+		Bar:   "adfasdf",
+		Baz:   "baz2",
+		Order: 9998,
+	}
+
+	dupe3 := test.Foo{
+		Bar:   "adfasdf",
+		Baz:   "nadfdsafads",
+		Order: 1,
+	}
+
+	dupe1Foos := append(foos, dupe1)
+	dupe2Foos := append(foos, dupe2)
+	dupe3Foos := append(foos, dupe3, dupe1, dupe2)
+
+	// test.Bar: "bar1" should be removed.
+	dedupe1 := DedupeByHash(dupe1Foos, func(i test.Foo) uint64 {
+		return hash64(i.Bar)
+	})
+
+	test.CheckComparableEqualIgnoreOrder(dedupe1, "dedupe1", foos, t)
+
+	// Baz: "baz2" should be removed
+	dedupe2 := DedupeByHash(dupe2Foos, func(i test.Foo) uint64 {
+		return hash64(i.Baz)
+	})
+	test.CheckComparableEqualIgnoreOrder(dedupe2, "dedupe2", foos, t)
+
+	// Order: 1 should be removed.
+	dedupe3 := DedupeByHash(dupe3Foos, func(i test.Foo) uint64 {
+		return uint64(i.Order)
+	})
+	test.CheckComparableEqualIgnoreOrder(dedupe3, "dedupe3", append(foos, dupe1, dupe2), t)
+}
