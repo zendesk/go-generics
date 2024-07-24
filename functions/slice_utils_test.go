@@ -127,21 +127,21 @@ func TestDedupeByHash(t *testing.T) {
 	dupe3Foos := append(foos, dupe3, dupe1, dupe2)
 
 	// test.Bar: "bar1" should be removed.
-	dedupe1 := DedupeByHash(dupe1Foos, func(i test.Foo) uint64 {
-		return hash64(i.Bar)
+	dedupe1 := DedupeByHash(dupe1Foos, func(i test.Foo) string {
+		return hashAny(i.Bar)
 	})
 
 	test.CheckComparableEqualIgnoreOrder(dedupe1, "dedupe1", foos, t)
 
 	// Baz: "baz2" should be removed
-	dedupe2 := DedupeByHash(dupe2Foos, func(i test.Foo) uint64 {
-		return hash64(i.Baz)
+	dedupe2 := DedupeByHash(dupe2Foos, func(i test.Foo) string {
+		return hashAny(i.Bar)
 	})
 	test.CheckComparableEqualIgnoreOrder(dedupe2, "dedupe2", foos, t)
 
 	// Order: 1 should be removed.
-	dedupe3 := DedupeByHash(dupe3Foos, func(i test.Foo) uint64 {
-		return uint64(i.Order)
+	dedupe3 := DedupeByHash(dupe3Foos, func(i test.Foo) string {
+		return hashAny(i.Bar)
 	})
 	test.CheckComparableEqualIgnoreOrder(dedupe3, "dedupe3", append(foos, dupe1, dupe2), t)
 }

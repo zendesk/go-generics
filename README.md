@@ -106,6 +106,15 @@ foos, errs := functions.GoMapWithErrs(fooIds, func(id string) (Foo, error) {
 }, RateLimitOption(10, time.Second), RetryOption(3, time.Millisecond*500), ConcurrencyLimitOption(5))
 ```
 
+## Types
+
+The `types` package contains generic data structures, including:
+- Set
+  - NewSet[T comparable](items ...T) *Set[T]
+  - NewHashSet[T any](items ...T) *Set[T] 
+    - ^^ May be used with any data structure, even noncomparable ones
+- Stack
+
 ## Caching
 
 The `cache` package contains a generic cache implementation that supports dynamic backends, redis, or in-memory. You may also supply your own backend. 

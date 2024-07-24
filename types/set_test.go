@@ -130,7 +130,7 @@ func generateSetTests[K comparable](seeds []K) []setTest[K] {
 	}
 }
 
-func Test_SetOperations(t *testing.T) {
+func Test_ConcreteSets(t *testing.T) {
 	initSets := func() map[string]ISet[int] {
 		return map[string]ISet[int]{
 			"ComparableSet": newComparableSet[int](),
@@ -154,6 +154,68 @@ func Test_SetOperations(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_Set(t *testing.T) {
+	a := []int{1, 2, 3}
+	b := []int{3, 4, 5}
+	c := []int{99, 100, 101}
+	d := []int{1, 2}
+
+	aSet := NewSet(a...)
+	bSet := NewSet(b...)
+	cSet := NewSet(c...)
+	dSet := NewSet(d...)
+	dSetCopy := NewSet(d...)
+
+	// Difference
+	test.CheckComparableEqualIgnoreOrder(aSet.Difference(bSet).Values(), "A - B", []int{1, 2}, t)
+	test.CheckComparableEqualIgnoreOrder(bSet.Difference(aSet).Values(), "B - A", []int{4, 5}, t)
+
+	// Intersection
+	test.CheckComparableEqualIgnoreOrder(aSet.Intersection(bSet).Values(), "A ∩ B", []int{3}, t)
+	test.CheckComparableEqualIgnoreOrder(bSet.Intersection(aSet).Values(), "B ∩ A", []int{3}, t)
+
+	// Union
+	test.CheckComparableEqualIgnoreOrder(aSet.Union(bSet).Values(), "A U B", []int{1, 2, 3, 4, 5}, t)
+	test.CheckComparableEqualIgnoreOrder(bSet.Union(aSet).Values(), "B U A", []int{1, 2, 3, 4, 5}, t)
+
+	// IsDisjoint
+	test.CheckNotOk(aSet.IsDisjoint(bSet), "Not Disjoint", t)
+	test.CheckOk(bSet.IsDisjoint(cSet), "Is Disjoint", t)
+
+	// IsSubset
+	test.CheckOk(dSet.IsSubset(aSet), "Is Subset", t)
+	test.CheckNotOk(bSet.IsSubset(aSet), "Not Subset", t)
+
+	// Superset
+	test.CheckOk(aSet.IsSuperset(dSet), "Is SuperSet", t)
+	test.CheckNotOk(bSet.IsSuperset(aSet), "Not Superset", t)
+	test.CheckNotOk(dSet.IsSuperset(aSet), "Not SuperSet (2)", t)
+
+	// Proper Subset
+	test.CheckOk(dSet.IsProperSubset(aSet), "Proper subset", t)
+	test.CheckNotOk(dSet.IsProperSubset(bSet), "Not Proper subset", t)
+	test.CheckNotOk(dSet.IsProperSubset(dSetCopy), "Not Proper subset (equal)", t)
+
+	// Proper SuperSet
+	test.CheckOk(aSet.IsProperSuperset(dSet), "Proper superset", t)
+	test.CheckNotOk(aSet.IsProperSuperset(bSet), "Not Proper superset", t)
+	test.CheckNotOk(dSet.IsProperSuperset(dSetCopy), "Not Proper superset (equal)", t)
+
+	// Equal
+	test.CheckOk(dSet.Equal(dSetCopy), "Is Equal", t)
+
+	// SymmetricDifference
+	test.CheckComparableEqualIgnoreOrder(aSet.SymmetricDifference(bSet).Keys(), "Symmetric Diff", []int{1, 2, 4, 5}, t)
+
+	// In Place
+	aClone := aSet.Clone()
+	test.CheckComparableEqualIgnoreOrder(aClone.InPlaceIntersection(bSet).Values(), "InPlaceIntersection", []int{3}, t)
+	aClone = aSet.Clone()
+	test.CheckComparableEqualIgnoreOrder(aClone.InPlaceUnion(bSet).Values(), "InPlaceUnion", []int{1, 2, 3, 4, 5}, t)
+	aClone = aSet.Clone()
+	test.CheckComparableEqualIgnoreOrder(aClone.InPlaceDifference(bSet).Values(), "InPlaceDifference", []int{1, 2}, t)
 }
 
 // Fuzz_Set is a fuzz test for the Set operations, byte slice is the only compatible dynamic length input for fuzzing

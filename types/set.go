@@ -20,20 +20,54 @@ type Set[V any] struct {
 	set ISet[V]
 }
 
-func NewSet[V comparable]() Set[V] {
-	return Set[V]{set: newComparableSet[V]()}
+// NewSet creates a new set with the provided values. Supports only comparable types.
+func NewSet[V comparable](values ...V) Set[V] {
+	s := Set[V]{set: newComparableSet[V]()}
+
+	for _, val := range values {
+		s.Put(val)
+	}
+
+	return s
 }
 
+// NewHashSet creates a new set with the provided values. Supports any type.
+func NewHashSet[V any](values ...V) Set[V] {
+	s := Set[V]{set: newHashSet[V]()}
+
+	for _, val := range values {
+		s.Put(val)
+	}
+
+	return s
+}
+
+func NewHashSetWithHashFn[V any](hashFn HashFn[V], values ...V) Set[V] {
+	s := Set[V]{set: newHashSetWithHashFn[V](hashFn)}
+
+	for _, val := range values {
+		s.Put(val)
+	}
+
+	return s
+}
+
+// NewCustomSet creates a new set with the provided ISet implementation
 func NewCustomSet[V any](set ISet[V]) Set[V] {
 	return Set[V]{set: set}
 }
 
+// Intersection returns a new set with the intersection of the current set and others
 func (s Set[V]) Intersection(others ...Set[V]) Set[V] {
 	return s.Clone().InPlaceIntersection(others...)
 }
+
+// Difference returns a new set with the difference of the current set and others
 func (s Set[V]) Difference(others ...Set[V]) Set[V] {
 	return s.Clone().InPlaceDifference(others...)
 }
+
+// Union returns a new set with the union of the current set and others
 func (s Set[V]) Union(others ...Set[V]) Set[V] {
 	return s.Clone().InPlaceUnion(others...)
 }
@@ -57,10 +91,12 @@ func (s Set[V]) EachWithErrs(fn func(key V) error) []error {
 	return errs
 }
 
+// Has returns true only if 'val' is in the set.
 func (s Set[V]) Has(k V) bool {
 	return s.set.Has(k)
 }
 
+// Remove removes 'val' from the set.
 func (s Set[V]) Remove(k V) {
 	s.set.Remove(k)
 }
@@ -70,20 +106,24 @@ func (s Set[V]) Put(k V) {
 	s.set.Put(k)
 }
 
+// Clear removes all elements from the set.
 func (s Set[V]) Clear() {
 	s.set.Clear()
 }
 
+// Size returns the number of elements in the set.
 func (s Set[V]) Size() int {
-	return s.Size()
+	return s.set.Size()
 }
 
+// Copy returns a copy of this set.
 func (s Set[V]) Clone() Set[V] {
 	new := Set[V]{set: s.set.New()}
 	new.set = s.set.Copy()
 	return new
 }
 
+// SymmetricDifference returns a new set with the symmetric difference of the current set and others
 func (s Set[V]) SymmetricDifference(others ...Set[V]) Set[V] {
 	new := s.Clone()
 	seen := new.Clone()
@@ -100,6 +140,7 @@ func (s Set[V]) SymmetricDifference(others ...Set[V]) Set[V] {
 	return new
 }
 
+// InPlaceIntersection will modify the current set in place to become the intersection with others
 func (s Set[V]) InPlaceIntersection(others ...Set[V]) Set[V] {
 	for _, other := range others {
 		s.Each(func(key V) {
@@ -111,6 +152,7 @@ func (s Set[V]) InPlaceIntersection(others ...Set[V]) Set[V] {
 	return s
 }
 
+// InPlaceDifference will modify the current set in place to become the difference with others
 func (s Set[V]) InPlaceDifference(others ...Set[V]) Set[V] {
 	for _, other := range others {
 		other.Each(func(key V) {
@@ -120,6 +162,7 @@ func (s Set[V]) InPlaceDifference(others ...Set[V]) Set[V] {
 	return s
 }
 
+// InPlaceUnion will modify the current set in place to become the union with others
 func (s Set[V]) InPlaceUnion(others ...Set[V]) Set[V] {
 	for _, other := range others {
 		other.Each(func(key V) {
@@ -137,10 +180,12 @@ func (s Set[V]) Keys() []V {
 	return s.Values()
 }
 
+// IsDisjoint returns true if the current set has no elements in common with others
 func (s Set[V]) IsDisjoint(other Set[V]) bool {
-	return s.Intersection(other).Size() > 0
+	return s.Intersection(other).Size() == 0
 }
 
+// IsSubset returns true if the current set is a subset of others
 func (s Set[V]) IsSubset(of Set[V]) bool {
 	subset := true
 	s.Each(func(key V) {
@@ -151,6 +196,7 @@ func (s Set[V]) IsSubset(of Set[V]) bool {
 	return subset
 }
 
+// IsSuperset returns true if the current set is a superset of others
 func (s Set[V]) IsSuperset(of Set[V]) bool {
 	superset := true
 	of.Each(func(key V) {
@@ -161,6 +207,7 @@ func (s Set[V]) IsSuperset(of Set[V]) bool {
 	return superset
 }
 
+// Equal returns true if the current set is equal to others
 func (s Set[V]) Equal(to Set[V]) bool {
 	if s.Size() != to.Size() {
 		return false
@@ -168,6 +215,7 @@ func (s Set[V]) Equal(to Set[V]) bool {
 	return s.Union(to).Size() == s.Size()
 }
 
+// IsProperSubset returns true if the current set is a proper subset of others
 func (s Set[V]) IsProperSubset(to Set[V]) bool {
 	if s.Equal(to) {
 		return false
@@ -175,6 +223,7 @@ func (s Set[V]) IsProperSubset(to Set[V]) bool {
 	return s.IsSubset(to)
 }
 
+// IsProperSuperset returns true if the current set is a proper superset of others
 func (s Set[V]) IsProperSuperset(to Set[V]) bool {
 	if s.Equal(to) {
 		return false

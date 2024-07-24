@@ -5,37 +5,40 @@ import (
 	"fmt"
 )
 
-func hashAny(obj any) string {
-	h := sha256.New()
-	h.Write([]byte(fmt.Sprintf("%v", obj)))
+type HashFn[T any] func(t T) string
 
-	return fmt.Sprintf("%x", h.Sum(nil))
+func newHashSet[V any]() ISet[V] {
+	return &hashSet[V]{values: make(map[string]V), hashFn: hashAny[V]}
 }
 
-func newHashSet[V comparable]() ISet[V] {
-	return &hashSet[V]{values: make(map[string]V)}
+func newHashSetWithHashFn[V any](fn HashFn[V]) ISet[V] {
+	return &hashSet[V]{
+		values: make(map[string]V),
+		hashFn: fn,
+	}
 }
 
 // InternalSet concrete implementation.
-type hashSet[V comparable] struct {
+type hashSet[V any] struct {
 	values map[string]V
+	hashFn HashFn[V]
 }
 
 // Put adds 'val' to the hashSet.
 func (s *hashSet[V]) Put(v V) {
-	key := hashAny(v)
+	key := s.hashFn(v)
 	s.values[key] = v
 }
 
 // Has returns true only if 'val' is in the hashSet.
 func (s *hashSet[V]) Has(v V) bool {
-	_, ok := s.values[hashAny(v)]
+	_, ok := s.values[s.hashFn(v)]
 	return ok
 }
 
 // Remove removes 'val' from the hashSet.
 func (s *hashSet[V]) Remove(v V) {
-	delete(s.values, hashAny(v))
+	delete(s.values, s.hashFn(v))
 }
 
 func (s *hashSet[V]) Values() []V {
@@ -76,4 +79,11 @@ func (s *hashSet[V]) copyItems() map[string]V {
 		values[k] = v
 	}
 	return values
+}
+
+func hashAny[V any](v V) string {
+	h := sha256.New()
+	h.Write([]byte(fmt.Sprintf("%v", v)))
+
+	return fmt.Sprintf("%x", h.Sum(nil))
 }

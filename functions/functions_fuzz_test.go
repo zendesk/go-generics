@@ -1,8 +1,8 @@
 package functions
 
 import (
+	"crypto/sha256"
 	"fmt"
-	"strconv"
 
 	"github.com/zendesk/go-generics/internal/test"
 )
@@ -84,8 +84,8 @@ var mutateFooWithErr = func(t *test.Foo) error {
 	return nil
 }
 
-var hashByOrder = func(f *test.Foo) uint64 {
-	return hash64(fmt.Sprintf(strconv.Itoa(f.Order)))
+var hashByOrder = func(f *test.Foo) string {
+	return hashAny(f.Order)
 }
 
 var mapMap = func(key int, val *test.Foo) *test.Bar {
@@ -106,4 +106,11 @@ var mapMapWithErr = func(key int, val *test.Foo) (*test.Bar, error) {
 	} else {
 		return bar, nil
 	}
+}
+
+func hashAny(obj any) string {
+	h := sha256.New()
+	h.Write([]byte(fmt.Sprintf("%v", obj)))
+
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
