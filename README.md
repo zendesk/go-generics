@@ -1,4 +1,4 @@
-[![Tests](https://github.com/zendesk/go-generics/actions/workflows/release.yml/badge.svg)](https://github.com/zendesk/zendesk/actions/workflows/test.yml)
+[![Tests](https://github.com/zendesk/go-generics/actions/workflows/test_release.yml/badge.svg)](https://github.com/zendesk/zendesk/actions/workflows/test.yml)
 
 # go-generics
 
@@ -88,7 +88,7 @@ Functions prefixed with `Go` will run concurrently, and may be tuned with the ad
 - Join[T any](items []T, separator string) string
 
 
-#### Functions Examples
+### Functions Examples
 
 ```go
 // Execute an API call concurrently, one for each ID in the list, and return the result, or an error.

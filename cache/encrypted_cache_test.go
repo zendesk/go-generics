@@ -40,7 +40,7 @@ func TestSetGetDelete(t *testing.T) {
 func TestGetError(t *testing.T) {
 	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
 
-	// Create a new CryptoCacher
+	// Create a new EncryptedCache
 	c, err := New[string, string](ttlCache, 25)
 	test.CheckErr(err, "Unexpected err", t)
 
@@ -66,7 +66,7 @@ func TestSetGetComplexStruct(t *testing.T) {
 		}
 	}
 
-	// Create a new CryptoCacher
+	// Create a new EncryptedCache
 	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
 	c, err := New[string, ComplexStruct](ttlCache, 25)
 	test.CheckErr(err, "Unexpected err", t)
@@ -113,7 +113,7 @@ func TestSetGetComplexKey(t *testing.T) {
 		Field2 int
 	}
 
-	// Create a new CryptoCacher
+	// Create a new EncryptedCache
 	ttlCache := NewInMemoryCache[ComplexKey, []byte](10 * time.Second)
 	c, err := New[ComplexKey, string](ttlCache, 25)
 	test.CheckErr(err, "Unexpected err", t)
@@ -136,7 +136,7 @@ func TestSetGetComplexKey(t *testing.T) {
 
 func TestSetInvalidValue(t *testing.T) {
 
-	// Create a new CryptoCacher
+	// Create a new EncryptedCache
 	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
 	c, err := New[string, chan int](ttlCache, 25)
 	test.CheckErr(err, "Unexpected err", t)

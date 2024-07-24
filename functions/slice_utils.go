@@ -9,7 +9,7 @@ import (
 
 	"golang.org/x/exp/slices"
 
-	"github.com/zendesk/generic/set"
+	"github.com/zendesk/go-generics/types"
 )
 
 // Intersection returns the intersection of two slices
@@ -57,15 +57,13 @@ func Dedupe[T comparable](items []T) []T {
 
 // DedupeByHash dedupes the items between 2 slices using a hashFn that should return equal values for two items that are considered equal
 func DedupeByHash[T comparable](items []T, hashFn func(t T) uint64) []T {
-	deduped := set.NewHashset(0, func(a, b T) bool {
-		return hashFn(a) == hashFn(b)
-	}, hashFn)
+	deduped := types.NewSet[T]()
 
 	for _, item := range items {
 		deduped.Put(item)
 	}
 
-	return deduped.Keys()
+	return deduped.Values()
 }
 
 // RemoveNils removes any nil values from a slice of T -- this is safe for finding boxed and unboxed nils.

@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/go-test/deep"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
@@ -64,6 +63,25 @@ func CheckEqual(result interface{}, resultName string, expectedResult interface{
 	}
 }
 
+func CheckContains[T any](list []T, item T, t *testing.T) {
+	for _, listItem := range list {
+		if matches := cmp.Equal(item, listItem); matches {
+			return
+		}
+	}
+
+	t.Fatalf("Item: %+v not found in list", item)
+}
+
+func CheckEqualEquateEmpty(result interface{}, resultName string, expectedResult interface{}, t *testing.T) {
+	if isEqual := cmp.Equal(result, expectedResult, cmpopts.EquateEmpty(), cmpopts.SortSlices(func(a, b any) bool {
+		return fmt.Sprintf("%+v", a) < fmt.Sprintf("%+v", b)
+	})); !isEqual {
+		t.Errorf("Error for: %s, Result: %+v and Expected: %+v differ.", resultName, result, expectedResult)
+		t.Fatalf("Unexpected results for result: %s", resultName)
+	}
+}
+
 func CheckEqualErrs(result interface{}, resultName string, expectedResult interface{}, t *testing.T) {
 	if equal := cmp.Equal(result, expectedResult, cmpopts.EquateErrors()); !equal {
 		t.Fatalf("Unexpected results for result: %s. Expected: %+v, Got: %+v", resultName, expectedResult, result)
@@ -75,25 +93,6 @@ func CheckComparableEqualIgnoreOrder[T comparable](result []T, resultName string
 	if !areEqual {
 		t.Fatalf("%s: Provided slices: result: [%v] expected: [%v] are not equal.", resultName, result, expected)
 	}
-}
-
-func CheckContainsDeepEqual[T any](list []T, item T) bool {
-	for _, listItem := range list {
-		if diff := deep.Equal(item, listItem); diff == nil {
-			return true
-		}
-	}
-	return false
-}
-
-func CheckContains[T any](list []T, item T, t *testing.T) {
-	for _, listItem := range list {
-		if diff := deep.Equal(item, listItem); diff == nil {
-			return
-		}
-	}
-
-	t.Fatalf("Item: %+v not found in list", item)
 }
 
 func CheckOk(ok bool, message string, t *testing.T) {

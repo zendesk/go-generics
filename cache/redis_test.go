@@ -8,8 +8,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/test"
-	logger "github.com/zendesk/zendesk_logging_go"
+	"github.com/zendesk/go-generics/internal/test"
 )
 
 const (
@@ -36,7 +35,6 @@ func (mc *mockClient) Get(ctx context.Context, key string) *redis.StringCmd {
 	} else {
 		val.SetVal(string(mc.setValue))
 		b, err := val.Bytes()
-		logger.Warnf(context.Background(), "Getting: %+v, err:%+v", b, err)
 	}
 	return val
 }

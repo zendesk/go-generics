@@ -133,6 +133,10 @@ func (s Set[V]) Values() []V {
 	return s.set.Values()
 }
 
+func (s Set[V]) Keys() []V {
+	return s.Values()
+}
+
 func (s Set[V]) IsDisjoint(other Set[V]) bool {
 	return s.Intersection(other).Size() > 0
 }

@@ -5,7 +5,7 @@ import (
 	"encoding/gob"
 	"fmt"
 
-	"github.com/zendesk/lockbox-shared-lib/cryptoutil"
+	"github.com/zendesk/go-generics/encryption"
 )
 
 // Item represents a single item in the cache, and if it is expired
@@ -14,27 +14,27 @@ type Item[K comparable, V any] interface {
 	IsExpired() bool
 }
 
-type CryptoCacher[K comparable, V any] struct {
-	ed      *cryptoutil.EncryptorDecryptor
+type EncryptedCache[K comparable, V any] struct {
+	ed      *encryption.EncryptorDecryptor
 	backend CacheBackendAdapter[K, []byte]
 	cfg     CacheCfg[K, V]
 }
 
-// New provides a new CryptoCacher with default configurations that provides a balance of performance and security. Selecting a # of iterations that is difficult to guess
+// New provides a new EncryptedCache with default configurations that provides a balance of performance and security. Selecting a # of iterations that is difficult to guess
 // and high enough to make encrypt / decrypt durations sufficiently long to deter brute force attack is recommended. Minimum 2048 iterations is recommended
-func New[K comparable, V any](backend CacheBackendAdapter[K, []byte], iterations int, opts ...CacheOption[K, V]) (*CryptoCacher[K, V], error) {
+func New[K comparable, V any](backend CacheBackendAdapter[K, []byte], iterations int, opts ...CacheOption[K, V]) (*EncryptedCache[K, V], error) {
 	return NewWithIterations[K, V](backend, iterations, opts...)
 }
 
 // NewWithIterations allows the user to specify a number of iterations which influences work factor for the cache.
-func NewWithIterations[K comparable, V any](backend CacheBackendAdapter[K, []byte], iterations int, opts ...CacheOption[K, V]) (*CryptoCacher[K, V], error) {
+func NewWithIterations[K comparable, V any](backend CacheBackendAdapter[K, []byte], iterations int, opts ...CacheOption[K, V]) (*EncryptedCache[K, V], error) {
 	cfg := SetOpts(opts...)
 
-	ed, err := cryptoutil.NewWithIterations(iterations)
+	ed, err := encryption.NewWithIterations(iterations)
 	if err != nil {
 		return nil, fmt.Errorf("error creating new encryptor: %w", err)
 	}
-	e := &CryptoCacher[K, V]{
+	e := &EncryptedCache[K, V]{
 		ed:      ed,
 		backend: backend,
 		cfg:     cfg,
@@ -43,15 +43,15 @@ func NewWithIterations[K comparable, V any](backend CacheBackendAdapter[K, []byt
 	return e, nil
 }
 
-func NewWithPasswordNonceIterations[K comparable, V any](backend CacheBackendAdapter[K, []byte], password []byte, nonce []byte, iterations int, opts ...CacheOption[K, V]) (*CryptoCacher[K, V], error) {
+func NewWithPasswordNonceIterations[K comparable, V any](backend CacheBackendAdapter[K, []byte], password []byte, nonce []byte, iterations int, opts ...CacheOption[K, V]) (*EncryptedCache[K, V], error) {
 	cfg := SetOpts(opts...)
 
-	ed, err := cryptoutil.NewWithPasswordNonceIterations(password, nonce, iterations)
+	ed, err := encryption.NewWithPasswordNonceIterations(password, nonce, iterations)
 	if err != nil {
 		return nil, fmt.Errorf("error creating new encryptor: %w", err)
 	}
 
-	e := &CryptoCacher[K, V]{
+	e := &EncryptedCache[K, V]{
 		ed:      ed,
 		backend: backend,
 		cfg:     cfg,
@@ -60,7 +60,7 @@ func NewWithPasswordNonceIterations[K comparable, V any](backend CacheBackendAda
 	return e, nil
 }
 
-func (c *CryptoCacher[K, V]) Get(key K) (v V, wasFound bool, err error) {
+func (c *EncryptedCache[K, V]) Get(key K) (v V, wasFound bool, err error) {
 	encryptedBytes, _, err := c.backend.Get(key)
 	if err != nil {
 		return v, false, err
@@ -83,11 +83,11 @@ func (c *CryptoCacher[K, V]) Get(key K) (v V, wasFound bool, err error) {
 	return v, true, nil
 }
 
-func (c *CryptoCacher[K, V]) Delete(key K) error {
+func (c *EncryptedCache[K, V]) Delete(key K) error {
 	return c.backend.Delete(key)
 }
 
-func (c *CryptoCacher[K, V]) Set(key K, value V) error {
+func (c *EncryptedCache[K, V]) Set(key K, value V) error {
 	// Convert the value to binary
 	binaryValue, err := c.encodeToBinary(value)
 	if err != nil {
@@ -111,11 +111,11 @@ func (c *CryptoCacher[K, V]) Set(key K, value V) error {
 	return err
 }
 
-func (c *CryptoCacher[K, V]) Purge() error {
+func (c *EncryptedCache[K, V]) Purge() error {
 	return c.backend.Purge()
 }
 
-func (c *CryptoCacher[K, V]) GetOrSet(key K, orSet func() (V, error)) (val V, wasFoundInCache bool, err error) {
+func (c *EncryptedCache[K, V]) GetOrSet(key K, orSet func() (V, error)) (val V, wasFoundInCache bool, err error) {
 	item, wasFound, err := c.Get(key)
 	if wasFound {
 		return item, wasFound, err
@@ -134,15 +134,15 @@ func (c *CryptoCacher[K, V]) GetOrSet(key K, orSet func() (V, error)) (val V, wa
 	return val, false, err
 }
 
-func (c *CryptoCacher[K, V]) encrypt(value []byte) ([]byte, error) {
+func (c *EncryptedCache[K, V]) encrypt(value []byte) ([]byte, error) {
 	return c.ed.Encrypt(value)
 }
 
-func (c *CryptoCacher[K, V]) decrypt(ciphertext []byte) ([]byte, error) {
+func (c *EncryptedCache[K, V]) decrypt(ciphertext []byte) ([]byte, error) {
 	return c.ed.Decrypt(ciphertext)
 }
 
-func (c *CryptoCacher[K, V]) encodeToBinary(value V) ([]byte, error) {
+func (c *EncryptedCache[K, V]) encodeToBinary(value V) ([]byte, error) {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 
@@ -153,7 +153,7 @@ func (c *CryptoCacher[K, V]) encodeToBinary(value V) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (c *CryptoCacher[K, V]) decodeBinary(b []byte) (V, error) {
+func (c *EncryptedCache[K, V]) decodeBinary(b []byte) (V, error) {
 	r := bytes.NewReader(b)
 	enc := gob.NewDecoder(r)
 

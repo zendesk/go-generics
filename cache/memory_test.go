@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zendesk/lockbox-shared-lib/lockbox/cache"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/test"
+	"github.com/zendesk/go-generics/cache"
+	"github.com/zendesk/go-generics/internal/test"
 )
 
 type MockCache[K comparable, V any] struct {

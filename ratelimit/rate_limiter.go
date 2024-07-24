@@ -3,10 +3,9 @@ package ratelimit
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"math/rand"
 	"time"
-
-	"github.com/zendesk/lockbox-shared-lib/lockbox/utils"
-	logger "github.com/zendesk/zendesk_logging_go"
 )
 
 type GateType bool
@@ -77,7 +76,7 @@ func NewRateLimiter(gateType GateType, backend RateLimitBackend, opts ...rateLim
 		backend:       backend,
 		gateType:      gateType,
 		cfg:           cfg,
-		defaultClient: utils.GenerateRandomLetterString(10),
+		defaultClient: randString(10),
 	}
 }
 
@@ -86,10 +85,10 @@ func (rl *RateLimiter) getRate(ctx context.Context, clientID string) bool {
 
 	if err != nil {
 		if rl.gateType == FailOpen {
-			logger.Errorf(ctx, "Got error attempting to receive rate. Allowing rate b/c gate is FailOpen. Err: %+v", err)
+			slog.ErrorContext(ctx, "Got error attempting to receive rate. Allowing rate b/c gate is FailOpen. Err: %+v", err)
 			return true
 		} else {
-			logger.Errorf(ctx, "Got error attempting to receive rate. Denying rate b/c gate is FailClosed. Err: %+v", err)
+			slog.ErrorContext(ctx, "Got error attempting to receive rate. Denying rate b/c gate is FailClosed. Err: %+v", err)
 			return false
 		}
 	}
@@ -224,4 +223,13 @@ func (rl *RateLimiter) initClientId(clientID string) string {
 	}
 
 	return fmt.Sprintf("%s-%s", rl.cfg.limiterPrefix, clientID)
+}
+
+func randString(n int) string {
+	var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
 }

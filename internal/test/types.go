@@ -1,7 +1,5 @@
 package test
 
-import "github.com/zendesk/lockbox-shared-lib/lockbox/utils"
-
 type Foo struct {
 	Bar   string
 	Baz   string
@@ -17,9 +15,9 @@ func MakeFoos(num int) []*Foo {
 	var foos []*Foo
 	for i := 0; i < num; i++ {
 		foos = append(foos, &Foo{
-			Bar:   utils.GenerateRandomLetterString(utils.RandomNumber(12)),
-			Baz:   utils.GenerateRandomLetterString(utils.RandomNumber(12)),
-			Order: utils.RandomNumber(999999),
+			Bar:   GenerateRandomLetterString(RandomNumber(12)),
+			Baz:   GenerateRandomLetterString(RandomNumber(12)),
+			Order: RandomNumber(999999),
 		})
 	}
 	return foos
@@ -29,8 +27,8 @@ func MakeFoosOrderly(num int) []*Foo {
 	var foos = make([]*Foo, 0)
 	for i := 0; i < num; i++ {
 		foos = append(foos, &Foo{
-			Bar:   utils.GenerateRandomLetterString(utils.RandomNumber(12)),
-			Baz:   utils.GenerateRandomLetterString(utils.RandomNumber(12)),
+			Bar:   GenerateRandomLetterString(RandomNumber(12)),
+			Baz:   GenerateRandomLetterString(RandomNumber(12)),
 			Order: i,
 		})
 	}

@@ -1,14 +1,13 @@
-package types_test
+package types
 
 import (
 	"testing"
 
-	"github.com/zendesk/lockbox-shared-lib/lockbox/generics"
-	"github.com/zendesk/lockbox-shared-lib/lockbox/test"
+	"github.com/zendesk/go-generics/internal/test"
 )
 
 func TestStack(t *testing.T) {
-	stack := generics.Stack[int]{}
+	stack := Stack[int]{}
 	items := []int{1, 2, 3, 4, 5, 6}
 	for _, i := range items {
 		stack.Push(i)

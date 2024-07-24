@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zendesk/lockbox-shared-lib/lockbox/test"
+	"github.com/zendesk/go-generics/internal/test"
 )
 
 func Test_RateLimiter_MultipleLimitersWithDifferentPrefixOnSameBackend(t *testing.T) {

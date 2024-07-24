@@ -5,8 +5,6 @@ import (
 	"math"
 	"testing"
 
-	"k8s.io/apimachinery/pkg/util/rand"
-
 	"github.com/zendesk/go-generics/internal/test"
 )
 
@@ -219,7 +217,7 @@ func Fuzz_Set_Strings_Random_Length(f *testing.F) {
 func makeItems(length uint16) []string {
 	items := make([]string, length)
 	for i := range items {
-		items[i] = fmt.Sprintf("item-%s", rand.String(rand.IntnRange(1, 15)))
+		items[i] = fmt.Sprintf("item-%s", test.GenerateRandomLetterString(500))
 	}
 	return items
 }

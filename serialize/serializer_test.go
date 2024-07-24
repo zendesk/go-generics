@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/zendesk/lockbox-shared-lib/lockbox/test"
+	"github.com/zendesk/go-generics/internal/test"
 )
 
 func validateB64(s string, t *testing.T) {
