@@ -8,7 +8,10 @@ import (
 type HashFn[T any] func(t T) string
 
 func newHashSet[V any]() ISet[V] {
-	return &hashSet[V]{values: make(map[string]V), hashFn: hashAny[V]}
+	return &hashSet[V]{
+		values: make(map[string]V),
+		hashFn: hashAny[V],
+	}
 }
 
 func newHashSetWithHashFn[V any](fn HashFn[V]) ISet[V] {
@@ -26,8 +29,7 @@ type hashSet[V any] struct {
 
 // Put adds 'val' to the hashSet.
 func (s *hashSet[V]) Put(v V) {
-	key := s.hashFn(v)
-	s.values[key] = v
+	s.values[s.hashFn(v)] = v
 }
 
 // Has returns true only if 'val' is in the hashSet.
@@ -65,6 +67,7 @@ func (s *hashSet[V]) Size() int {
 func (s *hashSet[V]) Copy() ISet[V] {
 	return &hashSet[V]{
 		values: s.copyItems(),
+		hashFn: s.hashFn,
 	}
 }
 
