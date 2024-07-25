@@ -15,22 +15,22 @@ type Item[K comparable, V any] interface {
 }
 
 type EncryptedCache[K comparable, V any] struct {
-	ed      *encryption.EncryptorDecryptor
+	ed      *encryption.EncryptorDecryptor[V]
 	backend CacheBackendAdapter[K, []byte]
 	cfg     CacheCfg[K, V]
 }
 
 // New provides a new EncryptedCache with default configurations that provides a balance of performance and security. Selecting a # of iterations that is difficult to guess
 // and high enough to make encrypt / decrypt durations sufficiently long to deter brute force attack is recommended. Minimum 2048 iterations is recommended
-func New[K comparable, V any](backend CacheBackendAdapter[K, []byte], iterations int, opts ...CacheOption[K, V]) (*EncryptedCache[K, V], error) {
-	return NewWithIterations[K, V](backend, iterations, opts...)
+func New[K comparable, V any](backend CacheBackendAdapter[K, []byte], salt []byte, iterations int, opts ...CacheOption[K, V]) (*EncryptedCache[K, V], error) {
+	return NewWithIterations[K, V](backend, salt, iterations, opts...)
 }
 
 // NewWithIterations allows the user to specify a number of iterations which influences work factor for the cache.
-func NewWithIterations[K comparable, V any](backend CacheBackendAdapter[K, []byte], iterations int, opts ...CacheOption[K, V]) (*EncryptedCache[K, V], error) {
+func NewWithIterations[K comparable, V any](backend CacheBackendAdapter[K, []byte], salt []byte, iterations int, opts ...CacheOption[K, V]) (*EncryptedCache[K, V], error) {
 	cfg := SetOpts(opts...)
 
-	ed, err := encryption.NewWithIterations(iterations)
+	ed, err := encryption.New[V](salt, iterations)
 	if err != nil {
 		return nil, fmt.Errorf("error creating new encryptor: %w", err)
 	}
@@ -43,10 +43,10 @@ func NewWithIterations[K comparable, V any](backend CacheBackendAdapter[K, []byt
 	return e, nil
 }
 
-func NewWithPasswordNonceIterations[K comparable, V any](backend CacheBackendAdapter[K, []byte], password []byte, nonce []byte, iterations int, opts ...CacheOption[K, V]) (*EncryptedCache[K, V], error) {
+func NewWithPasswordNonce[K comparable, V any](backend CacheBackendAdapter[K, []byte], password, nonce, salt []byte, iterations int, opts ...CacheOption[K, V]) (*EncryptedCache[K, V], error) {
 	cfg := SetOpts(opts...)
 
-	ed, err := encryption.NewWithPasswordNonceIterations(password, nonce, iterations)
+	ed, err := encryption.NewWithPasswordNonce[V](password, nonce, salt, iterations)
 	if err != nil {
 		return nil, fmt.Errorf("error creating new encryptor: %w", err)
 	}
@@ -71,15 +71,11 @@ func (c *EncryptedCache[K, V]) Get(key K) (v V, wasFound bool, err error) {
 		return v, false, nil
 	}
 
-	decryptedBytes, err := c.decrypt(encryptedBytes)
+	v, err = c.ed.Decrypt(encryptedBytes)
 	if err != nil {
 		return v, false, fmt.Errorf("error decrypting bytes returned from cache: %w", err)
 	}
 
-	v, err = c.decodeBinary(decryptedBytes)
-	if err != nil {
-		return v, false, fmt.Errorf("error decoding binary: %w", err)
-	}
 	return v, true, nil
 }
 
@@ -88,14 +84,8 @@ func (c *EncryptedCache[K, V]) Delete(key K) error {
 }
 
 func (c *EncryptedCache[K, V]) Set(key K, value V) error {
-	// Convert the value to binary
-	binaryValue, err := c.encodeToBinary(value)
-	if err != nil {
-		return fmt.Errorf("error encoding value to binary: %w", err)
-	}
-
 	// Encrypt the binary value
-	encryptedBytes, err := c.encrypt(binaryValue)
+	encryptedBytes, err := c.ed.Encrypt(value)
 	if err != nil {
 		return fmt.Errorf("error encrypting value: %w", err)
 	}
@@ -134,14 +124,6 @@ func (c *EncryptedCache[K, V]) GetOrSet(key K, orSet func() (V, error)) (val V, 
 	return val, false, err
 }
 
-func (c *EncryptedCache[K, V]) encrypt(value []byte) ([]byte, error) {
-	return c.ed.Encrypt(value)
-}
-
-func (c *EncryptedCache[K, V]) decrypt(ciphertext []byte) ([]byte, error) {
-	return c.ed.Decrypt(ciphertext)
-}
-
 func (c *EncryptedCache[K, V]) encodeToBinary(value V) ([]byte, error) {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
@@ -151,15 +133,4 @@ func (c *EncryptedCache[K, V]) encodeToBinary(value V) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
-}
-
-func (c *EncryptedCache[K, V]) decodeBinary(b []byte) (V, error) {
-	r := bytes.NewReader(b)
-	enc := gob.NewDecoder(r)
-
-	var v V
-	if err := enc.Decode(&v); err != nil {
-		return v, fmt.Errorf("error decoding binary: %w", err)
-	}
-	return v, nil
 }

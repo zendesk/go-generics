@@ -4,11 +4,12 @@
 
 Contains generic functions, data structures, and utilities for go programmers, including:
 
-- Functions
-- Rate / Concurrecy Limiters
-- Generic Caches 
-- Data structures
-- Succinct Serialization
+- [Functions](#functions)
+- [Rate](#ratelimiter) / [Concurrency Limiters](#concurrency-limiter)
+- [Caches](#caching)
+- [Data structures](#data-structures)
+- [Succinct Serialization](#succinct-serialization)
+- [Encryption](#encryption)
 
 Brought to you by the Zendesk Lockbox team. 
 
@@ -106,7 +107,7 @@ foos, errs := functions.GoMapWithErrs(fooIds, func(id string) (Foo, error) {
 }, RateLimitOption(10, time.Second), RetryOption(3, time.Millisecond*500), ConcurrencyLimitOption(5))
 ```
 
-## Types
+## Data Structures
 
 The `types` package contains some conspicuously missing go data structures, including:
 - Set
@@ -357,4 +358,37 @@ input := "{\"type\": \"Gorilla\", \"age\": 2}"
 // In this instance, if typ is a struct, `T` will be used to deserialize the input into a struct, if the `typ` is a []byte or string, 
 // then normal deserialization will be used to marshal the input into that type
 gorilla, err := NewSerializer[T]().FromJsonString(input).ToDynamicType(serialize.Reflect, typ)
+```
+
+## Encryption
+
+### Features 
+- Encrypt / decrypt generic types using AES-256 encryption.
+
+### Future enhancements
+- Support for supplying your own custom encryption backend.
+
+### Example
+
+```go
+    type Foo struct {
+        Name string
+        Age int
+    }
+	
+    ed, err := encryption.New[Foo]([]byte("mySalt"), tt.iterations)
+    if err != nil {
+        return err
+    }
+
+    encryptedBytes, err := ed.Encrypt(tt.input)
+    if err != nil {
+        return err
+    }
+        
+    decrypted, err := ed.Decrypt(encryptedBytes)
+    if err != nil {
+		return err
+		
+      }
 ```
