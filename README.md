@@ -21,71 +21,69 @@ client side rate limiting, automated retries, and more.
 Functions **not** prefixed with `Go` will run serially.
 
 Functions prefixed with `Go` will run concurrently, and may be tuned with the additional options:
-- RateLimitOption: Limits maximum iterations that may be executed over a specified timeframe
+- `RateLimitOption`: Limits maximum iterations that may be executed over a specified timeframe
   - e.g. functions.RateLimitOption(10, time.Second)
-- RetryOption: Retries a function if it returns an error with linear progressive backoff (backoff duration * retry number)
+- `RetryOption`: Retries a function if it returns an error with linear progressive backoff (backoff duration * retry number)
   - e.g. functions.RetryOption(3, time.Millisecond * 500)
-- RandomOrderOption: The targeted function will randomly order its execution rather than iterating over elements in the provided order
-- DiscardResultIfErrOption: Mapping functions will discard results when errors are returned
-- ConcurrencyLimitOption: limits the concurrency of a concurrent mapping function to protect against open file limits, connection limits, etc. To run serially, set concurrency to 1.
-
-#### Functions:
+- `RandomOrderOption`: The targeted function will randomly order its execution rather than iterating over elements in the provided order
+- `DiscardResultIfErrOption`: Mapping functions will discard results when errors are returned
+- `ConcurrencyLimitOption`: limits the concurrency of a concurrent mapping function to protect against open file limits, connection limits, etc. To run serially, set concurrency to 1.
 
 ### Comparison:
-- EqualIgnoreOrder[T comparable](slices ...[]T) bool
-- Contains[T comparable](list []T, item T) bool
-- ContainsAny[T comparable](A []T, B []T) bool
-- ContainsDeepEqual[T any](list []T, item T) bool
+- `EqualIgnoreOrder[T comparable](slices ...[]T) bool`
+- `Contains[T comparable](list []T, item T) bool`
+- `ContainsAny[T comparable](A []T, B []T) bool`
+- `ContainsDeepEqual[T any](list []T, item T) bool`
 
 ### Iterative
-- Each[T any](items []T, fn func(T))
-- EachMergeErrs[T any](items []T, fn func(T) error) error
-- GoEach[T any](items []T, fn func(T), opts ...Option)
-- GoEachWithErrs[T any](items []T, fn func(T) error, opts ...Option) (errs []error)
-- GoEachMapWithErrs[K comparable, V any](items map[K]V, fn func(K, V) error, opts ...Option) (errs []error)
+- `Each[T any](items []T, fn func(T))`
+- `EachMergeErrs[T any](items []T, fn func(T) error) error`
+- `GoEach[T any](items []T, fn func(T), opts ...Option)`
+- `GoEachWithErrs[T any](items []T, fn func(T) error, opts ...Option) (errs []error)`
+- `GoEachMapWithErrs[K comparable, V any](items map[K]V, fn func(K, V) error, opts ...Option) (errs []error)`
 
 ### Filters
-- Find[T interface{}](from []T, filter func(T) bool) (item T, wasFound bool)
-- Filter[T any](from []T, filter func(T) bool) []T
-- FilterMap[K comparable, V any](from map[K]V, filter func(k K, v V) bool) map[K]V
+- `Find[T interface{}](from []T, filter func(T) bool) (item T, wasFound bool)`
+- `Filter[T any](from []T, filter func(T) bool) []T`
+- `FilterMap[K comparable, V any](from map[K]V, filter func(k K, v V) bool) map[K]V`
 
 ### Mapping
 
 #### From X to Slice
-- Map[T any, Y any](from []T, converter func(T) Y) []Y
-- MapWithErrs[T any, Y any](from []T, converter func(T) (Y, error)) ([]Y, []error)
-- MapMergeErrs[T any, Y any](from []T, converter func(T) (Y, error)) ([]Y, error)
-- GoMap[T any, Y any](items []T, converter func(T) Y, opts ...Option) []Y
-- GoMapWithErrs[T any, Y any](items []T, f func(T) (Y, error), opts ...Option) (results []Y, errs []error)
-- GoMapToMany[T any, Y any](items []T, converter func(T) []Y, opts ...Option) (results []Y)
-- GoMapToManyWithErrs[T any, Y any](items []T, converter func(T) ([]Y, error), opts ...Option) (results []Y, errs []error)
-- MapToSlice[K comparable, V any, Z any](from map[K]V, converter func(k K, v V) Z) []Z
-- GoMapToSlice[K comparable, V any, Z any](items map[K]V, converter func(K, V) Z, opts ...Option) []Z
-- GoMapToSliceWithErrs[K comparable, V any, Z any](items map[K]V, converter func(K, V) (Z, error), opts ...Option) (results []Z, errs []error)
+- `Map[T any, Y any](from []T, converter func(T) Y) []Y`
+- `MapWithErrs[T any, Y any](from []T, converter func(T) (Y, error)) ([]Y, []error)`
+- `MapMergeErrs[T any, Y any](from []T, converter func(T) (Y, error)) ([]Y, error)`
+- `GoMap[T any, Y any](items []T, converter func(T) Y, opts ...Option) []Y`
+- `GoMapWithErrs[T any, Y any](items []T, f func(T) (Y, error), opts ...Option) (results []Y, errs []error)`
+- `GoMapToMany[T any, Y any](items []T, converter func(T) []Y, opts ...Option) (results []Y)`
+- `GoMapToManyWithErrs[T any, Y any](items []T, converter func(T) ([]Y, error), opts ...Option) (results []Y, errs []error)`
+- `MapToSlice[K comparable, V any, Z any](from map[K]V, converter func(k K, v V) Z) []Z`
+- `GoMapToSlice[K comparable, V any, Z any](items map[K]V, converter func(K, V) Z, opts ...Option) []Z`
+- `GoMapToSliceWithErrs[K comparable, V any, Z any](items map[K]V, converter func(K, V) (Z, error), opts ...Option) (results []Z, errs []error)`
 
 #### From X to Map
-- ToMap[T any, K comparable, V any](from []T, converter func(T) (K, V)) map[K]V
-- GoToMap[T any, K comparable, V any](items []T, f func(T) (K, V), opts ...Option) map[K]V
-- GoToMapWithErrs[T any, K comparable, V any](items []T, f func(T) (K, V, error), opts ...Option) (results map[K]V, errs []error) 
+- `ToMap[T any, K comparable, V any](from []T, converter func(T) (K, V)) map[K]V`
+- `GoToMap[T any, K comparable, V any](items []T, f func(T) (K, V), opts ...Option) map[K]V`
+- `GoToMapWithErrs[T any, K comparable, V any](items []T, f func(T) (K, V, error), opts ...Option) (results map[K]V, errs []error)`
 
 ### Reduce
-- Reduce[T any, Y any](from []T, to Y, reducer func(T, Y) Y) Y
+- `Reduce[T any, Y any](from []T, to Y, reducer func(T, Y) Y) Y`
 
 ### Other
-- RunWithRetries[T any](fn func(t T) error, item T, numRetries int, backoffInterval time.Duration) error
-- Min[T cmp.Ordered](values ...T) T
-- Max[T cmp.Ordered](values ...T) T
-- Copy[K comparable, V any](items map[K]V) map[K]V
-- Convert[T any, Y any](from T, converter func(T) Y) Y
+- `RunWithRetries[T any](fn func(t T) error, item T, numRetries int, backoffInterval time.Duration) error`
+- `Min[T cmp.Ordered](values ...T) T`
+- `Max[T cmp.Ordered](values ...T) T`
+- `Copy[K comparable, V any](items map[K]V) map[K]V`
+- `Convert[T any, Y any](from T, converter func(T) Y) Y`
 
 ### Slice
-- Intersection[T comparable](a, b []T) []T
-- Dedupe[T comparable](items []T) []T
-- DedupeByHash[T comparable](items []T, hashFn func(t T) uint64) []T
-- Shuffle[T any](items []T) []T
-- RemoveNils[T any](from []T) []T
-- Generalize[T any](from []T) []interface{}
-- Join[T any](items []T, separator string) string
+- `Intersection[T comparable](a, b []T) []T`
+- `Dedupe[T comparable](items []T) []T`
+- `DedupeByHash[T comparable](items []T, hashFn func(t T) uint64) []T`
+- `Shuffle[T any](items []T) []T`
+- `RemoveNils[T any](from []T) []T`
+- `Generalize[T any](from []T) []interface{}`
+- `Join[T any](items []T, separator string) string`
 
 
 ### Functions Examples
@@ -109,13 +107,13 @@ foos, errs := functions.GoMapWithErrs(fooIds, func(id string) (Foo, error) {
 ## Types
 
 The `types` package contains some conspicuously missing go data structures, including:
-- Set
-  - NewSet[T comparable](items ...T) *Set[T]
-  - NewHashSet[T any](items ...T) *Set[T] 
-    - ^^ May be used with any data structure, even noncomparable ones
-  - NewHashSetWithHashFn[T](fn HashFn, items ...T)
-    - You may provide your own custom hash function. func(t T) string
-- Stack
+- `Set`
+  - `NewSet[T comparable](items ...T) *Set[T]`
+  - `NewHashSet[T any](items ...T) *Set[T]` 
+    - ^^ May be used with any data structure, even non-comparable ones
+  - `NewHashSetWithHashFn[T](fn HashFn, items ...T)`
+    - You may provide your own custom hash function. `func(t T) string`
+- `Stack`
 
 ### Future plans
 - Add an option to enable synchronization of the datastructures to prevent concurrent modification. Right now these datastructures are not thread safe.
@@ -138,7 +136,7 @@ Future goals / features:
 - Custom eviction (LRU, LFU, etc)
   - In memory cache uses LRU based eviction when capacity is reached.
 
-#### Cache Examples
+### Cache Examples
 
 Example 1: Simple in-memory cache
 
@@ -208,7 +206,7 @@ A generic rate-limiter implementation is provided with support for various backe
 - Adds fail-open or fail-closed configuration for customization of operation in event of backend failure errors (network timeout, etc)
 - Supports custom prefixes, so a single backend may serve many limiters, each with custom client sets.
 
-#### RateLimiter Examples
+### Examples
 
 Example 1: Rate limit by client, and return if rate has been exceeded
 ```go
@@ -269,7 +267,7 @@ Multiple rate limiters with shared redis backend and different rate limits
 
 Limits max concurrency of the Run() function based on config:
 
-## Features
+### Features
 - Allows providing of onComplete callback function after the provided function completes
 
 ```go
@@ -308,7 +306,7 @@ dynamic use cases.
 ### Future plans:
 - Allow the client to provide custom serializer / deserialization functions via an option.
 
-# Examples
+### Examples
 ```go
 // Deserialize a JSON string into a struct
 type Person struct {
