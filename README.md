@@ -27,7 +27,7 @@ Functions prefixed with `Go` will run concurrently, and may be tuned with the ad
   - e.g. functions.RetryOption(3, time.Millisecond * 500)
 - RandomOrderOption: The targeted function will randomly order its execution rather than iterating over elements in the provided order
 - DiscardResultIfErrOption: Mapping functions will discard results when errors are returned
-- ConcurrencyLimitOption: limits the concurrency of a concurrent mapping function to protect against open file limits, connection limits, etc. To run serialize, set concurrency to 1.
+- ConcurrencyLimitOption: limits the concurrency of a concurrent mapping function to protect against open file limits, connection limits, etc. To run serially, set concurrency to 1.
 
 #### Functions:
 
@@ -200,13 +200,13 @@ user, wasFound, err := cache.Get(userID)
 
 ## RateLimiter
 
-A generic rate-limiter implementation is provided, that supports dynamic backends, redis, or in-memory. You may also supply your own backend.
+A generic rate-limiter implementation is provided with support for various backends, including: redis, or in-memory. You may also supply your own backend.
 
 ### Features
-- Supports "Burst" via leaky bucket algorithm.
+- Supports "burst" via leaky bucket algorithm.
 - Supports "clientID" parameter for custom rate-limiting per client
 - Adds fail-open or fail-closed configuration for customization of operation in event of backend failure errors (network timeout, etc)
-- Supports custom prefixes, so a single backend may serve many custom limiters, each with custom client sets.
+- Supports custom prefixes, so a single backend may serve many limiters, each with custom client sets.
 
 #### RateLimiter Examples
 
@@ -267,7 +267,7 @@ Multiple rate limiters with shared redis backend and different rate limits
 
 ## Concurrency Limiter
 
-Limits max concurrency of the Run() Function based on config:
+Limits max concurrency of the Run() function based on config:
 
 ## Features
 - Allows providing of onComplete callback function after the provided function completes
