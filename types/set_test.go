@@ -1,6 +1,7 @@
 package types
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"testing"
@@ -162,60 +163,87 @@ func Test_Set(t *testing.T) {
 	c := []int{99, 100, 101}
 	d := []int{1, 2}
 
-	aSet := NewSet(a...)
-	bSet := NewSet(b...)
-	cSet := NewSet(c...)
-	dSet := NewSet(d...)
-	dSetCopy := NewSet(d...)
+	// NewFunc, Func name (for test errs)
+	var newFuncs = []func(values ...int) (Set[int], string){
+		func(values ...int) (Set[int], string) {
+			return NewSet(values...), "NewSet"
+		},
+		func(values ...int) (Set[int], string) {
+			return NewHashSet[int](values...), "NewHashSet"
+		},
+		func(values ...int) (Set[int], string) {
+			return NewHashSetWithHashFn[int](func(i int) string {
+				return hashAny[int](i)
+			}, values...), "NewHashSetWithHashFn"
+		},
+	}
 
-	// Difference
-	test.CheckComparableEqualIgnoreOrder(aSet.Difference(bSet).Values(), "A - B", []int{1, 2}, t)
-	test.CheckComparableEqualIgnoreOrder(bSet.Difference(aSet).Values(), "B - A", []int{4, 5}, t)
+	for _, newFunc := range newFuncs {
+		aSet, name := newFunc(a...)
+		bSet, _ := newFunc(b...)
+		cSet, _ := newFunc(c...)
+		dSet, _ := newFunc(d...)
+		dSetCopy, _ := newFunc(d...)
 
-	// Intersection
-	test.CheckComparableEqualIgnoreOrder(aSet.Intersection(bSet).Values(), "A ∩ B", []int{3}, t)
-	test.CheckComparableEqualIgnoreOrder(bSet.Intersection(aSet).Values(), "B ∩ A", []int{3}, t)
+		// Difference
+		test.CheckComparableEqualIgnoreOrder(aSet.Difference(bSet).Values(), fmt.Sprintf("%s: %s", name, "A - B"), []int{1, 2}, t)
+		test.CheckComparableEqualIgnoreOrder(bSet.Difference(aSet).Values(), fmt.Sprintf("%s: %s", name, "B - A"), []int{4, 5}, t)
 
-	// Union
-	test.CheckComparableEqualIgnoreOrder(aSet.Union(bSet).Values(), "A U B", []int{1, 2, 3, 4, 5}, t)
-	test.CheckComparableEqualIgnoreOrder(bSet.Union(aSet).Values(), "B U A", []int{1, 2, 3, 4, 5}, t)
+		// Intersection
+		test.CheckComparableEqualIgnoreOrder(aSet.Intersection(bSet).Values(), fmt.Sprintf("%s: %s", name, "A ∩ B"), []int{3}, t)
+		test.CheckComparableEqualIgnoreOrder(bSet.Intersection(aSet).Values(), fmt.Sprintf("%s: %s", name, "B ∩ A"), []int{3}, t)
 
-	// IsDisjoint
-	test.CheckNotOk(aSet.IsDisjoint(bSet), "Not Disjoint", t)
-	test.CheckOk(bSet.IsDisjoint(cSet), "Is Disjoint", t)
+		// Union
+		test.CheckComparableEqualIgnoreOrder(aSet.Union(bSet).Values(), fmt.Sprintf("%s: %s", name, "A U B"), []int{1, 2, 3, 4, 5}, t)
+		test.CheckComparableEqualIgnoreOrder(bSet.Union(aSet).Values(), fmt.Sprintf("%s: %s", name, "B U A"), []int{1, 2, 3, 4, 5}, t)
 
-	// IsSubset
-	test.CheckOk(dSet.IsSubset(aSet), "Is Subset", t)
-	test.CheckNotOk(bSet.IsSubset(aSet), "Not Subset", t)
+		// IsDisjoint
+		test.CheckNotOk(aSet.IsDisjoint(bSet), fmt.Sprintf("%s: %s", name, "Not Disjoint"), t)
+		test.CheckOk(bSet.IsDisjoint(cSet), fmt.Sprintf("%s: %s", name, "Is Disjoint"), t)
 
-	// Superset
-	test.CheckOk(aSet.IsSuperset(dSet), "Is SuperSet", t)
-	test.CheckNotOk(bSet.IsSuperset(aSet), "Not Superset", t)
-	test.CheckNotOk(dSet.IsSuperset(aSet), "Not SuperSet (2)", t)
+		// IsSubset
+		test.CheckOk(dSet.IsSubset(aSet), fmt.Sprintf("%s: %s", name, "Is Subset"), t)
+		test.CheckNotOk(bSet.IsSubset(aSet), fmt.Sprintf("%s: %s", name, "Not Subset"), t)
 
-	// Proper Subset
-	test.CheckOk(dSet.IsProperSubset(aSet), "Proper subset", t)
-	test.CheckNotOk(dSet.IsProperSubset(bSet), "Not Proper subset", t)
-	test.CheckNotOk(dSet.IsProperSubset(dSetCopy), "Not Proper subset (equal)", t)
+		// Superset
+		test.CheckOk(aSet.IsSuperset(dSet), fmt.Sprintf("%s: %s", name, "Is SuperSet"), t)
+		test.CheckNotOk(bSet.IsSuperset(aSet), fmt.Sprintf("%s: %s", name, "Not Superset"), t)
+		test.CheckNotOk(dSet.IsSuperset(aSet), fmt.Sprintf("%s: %s", name, "Not SuperSet (2)"), t)
 
-	// Proper SuperSet
-	test.CheckOk(aSet.IsProperSuperset(dSet), "Proper superset", t)
-	test.CheckNotOk(aSet.IsProperSuperset(bSet), "Not Proper superset", t)
-	test.CheckNotOk(dSet.IsProperSuperset(dSetCopy), "Not Proper superset (equal)", t)
+		// Proper Subset
+		test.CheckOk(dSet.IsProperSubset(aSet), fmt.Sprintf("%s: %s", name, "Proper subset"), t)
+		test.CheckNotOk(dSet.IsProperSubset(bSet), fmt.Sprintf("%s: %s", name, "Not Proper subset"), t)
+		test.CheckNotOk(dSet.IsProperSubset(dSetCopy), fmt.Sprintf("%s: %s", name, "Not Proper subset (equal)"), t)
 
-	// Equal
-	test.CheckOk(dSet.Equal(dSetCopy), "Is Equal", t)
+		// Proper SuperSet
+		test.CheckOk(aSet.IsProperSuperset(dSet), fmt.Sprintf("%s: %s", name, "Proper superset"), t)
+		test.CheckNotOk(aSet.IsProperSuperset(bSet), fmt.Sprintf("%s: %s", name, "Not Proper superset"), t)
+		test.CheckNotOk(dSet.IsProperSuperset(dSetCopy), fmt.Sprintf("%s: %s", name, "Not Proper superset (equal)"), t)
 
-	// SymmetricDifference
-	test.CheckComparableEqualIgnoreOrder(aSet.SymmetricDifference(bSet).Keys(), "Symmetric Diff", []int{1, 2, 4, 5}, t)
+		// Equal
+		test.CheckOk(dSet.Equal(dSetCopy), fmt.Sprintf("%s: %s", name, "Is Equal"), t)
 
-	// In Place
-	aClone := aSet.Clone()
-	test.CheckComparableEqualIgnoreOrder(aClone.InPlaceIntersection(bSet).Values(), "InPlaceIntersection", []int{3}, t)
-	aClone = aSet.Clone()
-	test.CheckComparableEqualIgnoreOrder(aClone.InPlaceUnion(bSet).Values(), "InPlaceUnion", []int{1, 2, 3, 4, 5}, t)
-	aClone = aSet.Clone()
-	test.CheckComparableEqualIgnoreOrder(aClone.InPlaceDifference(bSet).Values(), "InPlaceDifference", []int{1, 2}, t)
+		// SymmetricDifference
+		test.CheckComparableEqualIgnoreOrder(aSet.SymmetricDifference(bSet).Keys(), fmt.Sprintf("%s: %s", name, "Symmetric Diff"), []int{1, 2, 4, 5}, t)
+
+		// In Place
+		aClone := aSet.Clone()
+		test.CheckComparableEqualIgnoreOrder(aClone.InPlaceIntersection(bSet).Values(), fmt.Sprintf("%s: %s", name, "InPlaceIntersection"), []int{3}, t)
+		aClone = aSet.Clone()
+		test.CheckComparableEqualIgnoreOrder(aClone.InPlaceUnion(bSet).Values(), fmt.Sprintf("%s: %s", name, "InPlaceUnion"), []int{1, 2, 3, 4, 5}, t)
+		aClone = aSet.Clone()
+		test.CheckComparableEqualIgnoreOrder(aClone.InPlaceDifference(bSet).Values(), fmt.Sprintf("%s: %s", name, "InPlaceDifference"), []int{1, 2}, t)
+
+		// EachWithErrs
+		errs := aSet.EachWithErrs(func(i int) error {
+			if i%2 == 0 {
+				return errors.New("fake error")
+			}
+			return nil
+		})
+		numExpectedErrs := aSet.Size() / 2
+		test.CheckEqual(len(errs), fmt.Sprintf("%s: %s", name, "EachWithErrs"), numExpectedErrs, t)
+	}
 }
 
 // Fuzz_Set is a fuzz test for the Set operations, byte slice is the only compatible dynamic length input for fuzzing
@@ -229,6 +257,9 @@ func Fuzz_Set(f *testing.F) {
 			return map[string]ISet[byte]{
 				"ComparableSet": newComparableSet[byte](),
 				"HashSet":       newHashSet[byte](),
+				"HashSetWithCustomHasFn": newHashSetWithHashFn[byte](func(t byte) string {
+					return hashAny[byte](t)
+				}),
 			}
 		}
 		for _, tc := range generateSetTests[byte](bytes) {
@@ -258,6 +289,9 @@ func Fuzz_Set_Strings_Random_Length(f *testing.F) {
 			return map[string]ISet[string]{
 				"ComparableSet": newComparableSet[string](),
 				"HashSet":       newHashSet[string](),
+				"HashSetWithCustomHasFn": newHashSetWithHashFn[string](func(t string) string {
+					return hashAny[string](t)
+				}),
 			}
 		}
 		for _, tc := range generateSetTests[string](items) {
