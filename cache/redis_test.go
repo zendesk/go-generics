@@ -34,7 +34,6 @@ func (mc *mockClient) Get(ctx context.Context, key string) *redis.StringCmd {
 		val.SetErr(redis.Nil)
 	} else {
 		val.SetVal(string(mc.setValue))
-		b, err := val.Bytes()
 	}
 	return val
 }

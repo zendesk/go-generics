@@ -116,7 +116,12 @@ func Test_HashSet_Struct(t *testing.T) {
 			},
 			validator: func(s ISet[Person], t *testing.T) {
 				newSet := s.Copy()
-				test.CheckEqual(newSet, "Deep equal", s, t)
+				newValues := newSet.Values()
+				oldValues := s.Values()
+				// Sort before compare
+				sort.Slice(newValues, func(i, j int) bool { return newValues[i].Name < newValues[j].Name })
+				sort.Slice(oldValues, func(i, j int) bool { return newValues[i].Name < newValues[j].Name })
+				test.CheckEqual(newValues, "Deep equal", oldValues, t)
 			},
 		},
 	}
