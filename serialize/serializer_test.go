@@ -238,35 +238,35 @@ func Test_Serializer_Bytes(t *testing.T) {
 func Test_Serializer_Slice_String(t *testing.T) {
 	// Test serialize to and from self
 	from := []string{"a", "b", "cde"}
-	to, err := NewSerializer[string]().FromSlice(from).ToSlice()
+	to, err := NewSerializer[[]string]().FromT(from).ToT()
 	test.CheckErr(err, "Failed to init from", t)
 	test.CheckEqual(to, "From -> To", from, t)
 
 	// Test to and from bytes
-	toBytes, err := NewSerializer[string]().FromSlice(from).ToBytes()
+	toBytes, err := NewSerializer[[]string]().FromT(from).ToBytes()
 	test.CheckErr(err, "Failed to go from slice to bytes", t)
-	toSlice, err := NewSerializer[string]().FromBytes(toBytes).ToSlice()
+	toSlice, err := NewSerializer[[]string]().FromBytes(toBytes).ToT()
 	test.CheckErr(err, "Failed to go from bytes to slice", t)
 	test.CheckEqual(toSlice, "slice -> bytes", from, t)
 
 	// Test to and from json
-	toJsonStr, err := NewSerializer[string]().FromSlice(from).ToJsonString()
+	toJsonStr, err := NewSerializer[[]string]().FromT(from).ToJsonString()
 	test.CheckErr(err, "Failed to go from slice string to json string", t)
-	toSlice, err = NewSerializer[string]().FromJsonString(toJsonStr).ToSlice()
+	toSlice, err = NewSerializer[[]string]().FromJsonString(toJsonStr).ToT()
 	test.CheckErr(err, "Failed to go from jsonStr to slice", t)
 	test.CheckEqual(toSlice, "slice -> Json", from, t)
 
 	// Test to and from B64
-	toB64Bytes, err := NewSerializer[string]().FromSlice(from).ToB64Bytes()
+	toB64Bytes, err := NewSerializer[[]string]().FromT(from).ToB64Bytes()
 	test.CheckErr(err, "Failed to go from b64str string to b64", t)
-	toSlice, err = NewSerializer[string]().FromB64Bytes(toB64Bytes).ToSlice()
+	toSlice, err = NewSerializer[[]string]().FromB64Bytes(toB64Bytes).ToT()
 	test.CheckErr(err, "Failed to go from b64 to slice", t)
 	test.CheckEqual(toSlice, "slice -> b64", from, t)
 
 	//Test to and from b64String
-	toB64Str, err := NewSerializer[string]().FromSlice(from).ToB64String()
+	toB64Str, err := NewSerializer[[]string]().FromT(from).ToB64String()
 	test.CheckErr(err, "Failed to go from b64str string to bytes", t)
-	toSlice, err = NewSerializer[string]().FromB64String(toB64Str).ToSlice()
+	toSlice, err = NewSerializer[[]string]().FromB64String(toB64Str).ToT()
 	test.CheckErr(err, "Failed to go from b64str to slice", t)
 	test.CheckEqual(toSlice, "slice -> b64str", from, t)
 }
@@ -277,35 +277,35 @@ func Test_Serializer_Slice_Struct(t *testing.T) {
 	}
 	// Test serialize to and from self
 	from := []Foo{{Value: "one"}, {Value: "two"}, {Value: "three"}}
-	to, err := NewSerializer[Foo]().FromSlice(from).ToSlice()
+	to, err := NewSerializer[[]Foo]().FromT(from).ToT()
 	test.CheckErr(err, "Failed to init from", t)
 	test.CheckEqual(to, "From -> To", from, t)
 
 	// Test to and from bytes
-	toBytes, err := NewSerializer[Foo]().FromSlice(from).ToBytes()
+	toBytes, err := NewSerializer[[]Foo]().FromT(from).ToBytes()
 	test.CheckErr(err, "Failed to go from slice to bytes", t)
-	toSlice, err := NewSerializer[Foo]().FromBytes(toBytes).ToSlice()
+	toSlice, err := NewSerializer[[]Foo]().FromBytes(toBytes).ToT()
 	test.CheckErr(err, "Failed to go from bytes to slice", t)
 	test.CheckEqual(toSlice, "slice -> bytes", from, t)
 
 	// Test to and from json
-	toJsonStr, err := NewSerializer[Foo]().FromSlice(from).ToJsonString()
+	toJsonStr, err := NewSerializer[[]Foo]().FromT(from).ToJsonString()
 	test.CheckErr(err, "Failed to go from slice string to json string", t)
-	toSlice, err = NewSerializer[Foo]().FromJsonString(toJsonStr).ToSlice()
+	toSlice, err = NewSerializer[[]Foo]().FromJsonString(toJsonStr).ToT()
 	test.CheckErr(err, "Failed to go from jsonStr to slice", t)
 	test.CheckEqual(toSlice, "slice -> Json", from, t)
 
 	// Test to and from B64
-	toB64Bytes, err := NewSerializer[Foo]().FromSlice(from).ToB64Bytes()
+	toB64Bytes, err := NewSerializer[[]Foo]().FromT(from).ToB64Bytes()
 	test.CheckErr(err, "Failed to go from b64str string to b64", t)
-	toSlice, err = NewSerializer[Foo]().FromB64Bytes(toB64Bytes).ToSlice()
+	toSlice, err = NewSerializer[[]Foo]().FromB64Bytes(toB64Bytes).ToT()
 	test.CheckErr(err, "Failed to go from b64 to slice", t)
 	test.CheckEqual(toSlice, "slice -> b64", from, t)
 
 	//Test to and from b64String
-	toB64Str, err := NewSerializer[Foo]().FromSlice(from).ToB64String()
+	toB64Str, err := NewSerializer[[]Foo]().FromT(from).ToB64String()
 	test.CheckErr(err, "Failed to go from b64str string to bytes", t)
-	toSlice, err = NewSerializer[Foo]().FromB64String(toB64Str).ToSlice()
+	toSlice, err = NewSerializer[[]Foo]().FromB64String(toB64Str).ToT()
 	test.CheckErr(err, "Failed to go from b64str to slice", t)
 	test.CheckEqual(toSlice, "slice -> b64str", from, t)
 }
@@ -316,35 +316,35 @@ func Test_Serializer_Slice_PointerToStruct(t *testing.T) {
 	}
 	// Test serialize to and from self
 	from := []*Foo{{Value: "one"}, {Value: "two"}, {Value: "three"}}
-	to, err := NewSerializer[*Foo]().FromSlice(from).ToSlice()
+	to, err := NewSerializer[[]*Foo]().FromT(from).ToT()
 	test.CheckErr(err, "Failed to init from", t)
 	test.CheckEqual(to, "From -> To", from, t)
 
 	// Test to and from bytes
-	toBytes, err := NewSerializer[*Foo]().FromSlice(from).ToBytes()
+	toBytes, err := NewSerializer[[]*Foo]().FromT(from).ToBytes()
 	test.CheckErr(err, "Failed to go from slice to bytes", t)
-	toSlice, err := NewSerializer[*Foo]().FromBytes(toBytes).ToSlice()
+	toSlice, err := NewSerializer[[]*Foo]().FromBytes(toBytes).ToT()
 	test.CheckErr(err, "Failed to go from bytes to slice", t)
 	test.CheckEqual(toSlice, "slice -> bytes", from, t)
 
 	// Test to and from json
-	toJsonStr, err := NewSerializer[*Foo]().FromSlice(from).ToJsonString()
+	toJsonStr, err := NewSerializer[[]*Foo]().FromT(from).ToJsonString()
 	test.CheckErr(err, "Failed to go from slice string to json string", t)
-	toSlice, err = NewSerializer[*Foo]().FromJsonString(toJsonStr).ToSlice()
+	toSlice, err = NewSerializer[[]*Foo]().FromJsonString(toJsonStr).ToT()
 	test.CheckErr(err, "Failed to go from jsonStr to slice", t)
 	test.CheckEqual(toSlice, "slice -> Json", from, t)
 
 	// Test to and from B64
-	toB64Bytes, err := NewSerializer[*Foo]().FromSlice(from).ToB64Bytes()
+	toB64Bytes, err := NewSerializer[[]*Foo]().FromT(from).ToB64Bytes()
 	test.CheckErr(err, "Failed to go from b64str string to b64", t)
-	toSlice, err = NewSerializer[*Foo]().FromB64Bytes(toB64Bytes).ToSlice()
+	toSlice, err = NewSerializer[[]*Foo]().FromB64Bytes(toB64Bytes).ToT()
 	test.CheckErr(err, "Failed to go from b64 to slice", t)
 	test.CheckEqual(toSlice, "slice -> b64", from, t)
 
 	//Test to and from b64String
-	toB64Str, err := NewSerializer[*Foo]().FromSlice(from).ToB64String()
+	toB64Str, err := NewSerializer[[]*Foo]().FromT(from).ToB64String()
 	test.CheckErr(err, "Failed to go from b64str string to bytes", t)
-	toSlice, err = NewSerializer[*Foo]().FromB64String(toB64Str).ToSlice()
+	toSlice, err = NewSerializer[[]*Foo]().FromB64String(toB64Str).ToT()
 	test.CheckErr(err, "Failed to go from b64str to slice", t)
 	test.CheckEqual(toSlice, "slice -> b64str", from, t)
 }
@@ -352,35 +352,35 @@ func Test_Serializer_Slice_PointerToStruct(t *testing.T) {
 func Test_Serializer_Slice_Bytes(t *testing.T) {
 	// Test serialize to and from self
 	from := [][]byte{{1, 2}, {3, 4}, {5, 6}}
-	to, err := NewSerializer[[]byte]().FromSlice(from).ToSlice()
+	to, err := NewSerializer[[][]byte]().FromT(from).ToT()
 	test.CheckErr(err, "Failed to init from", t)
 	test.CheckEqual(to, "From -> To", from, t)
 
 	// Test to and from bytes
-	toBytes, err := NewSerializer[[]byte]().FromSlice(from).ToBytes()
+	toBytes, err := NewSerializer[[][]byte]().FromT(from).ToBytes()
 	test.CheckErr(err, "Failed to go from slice to bytes", t)
-	toSlice, err := NewSerializer[[]byte]().FromBytes(toBytes).ToSlice()
+	toSlice, err := NewSerializer[[][]byte]().FromBytes(toBytes).ToT()
 	test.CheckErr(err, "Failed to go from bytes to slice", t)
 	test.CheckEqual(toSlice, "slice -> bytes", from, t)
 
 	// Test to and from json
-	toJsonStr, err := NewSerializer[[]byte]().FromSlice(from).ToJsonString()
+	toJsonStr, err := NewSerializer[[][]byte]().FromT(from).ToJsonString()
 	test.CheckErr(err, "Failed to go from slice string to json string", t)
-	toSlice, err = NewSerializer[[]byte]().FromJsonString(toJsonStr).ToSlice()
+	toSlice, err = NewSerializer[[][]byte]().FromJsonString(toJsonStr).ToT()
 	test.CheckErr(err, "Failed to go from jsonStr to slice", t)
 	test.CheckEqual(toSlice, "slice -> Json", from, t)
 
 	// Test to and from B64
-	toB64Bytes, err := NewSerializer[[]byte]().FromSlice(from).ToB64Bytes()
+	toB64Bytes, err := NewSerializer[[][]byte]().FromT(from).ToB64Bytes()
 	test.CheckErr(err, "Failed to go from b64str string to b64", t)
-	toSlice, err = NewSerializer[[]byte]().FromB64Bytes(toB64Bytes).ToSlice()
+	toSlice, err = NewSerializer[[][]byte]().FromB64Bytes(toB64Bytes).ToT()
 	test.CheckErr(err, "Failed to go from b64 to slice", t)
 	test.CheckEqual(toSlice, "slice -> b64", from, t)
 
 	//Test to and from b64String
-	toB64Str, err := NewSerializer[[]byte]().FromSlice(from).ToB64String()
+	toB64Str, err := NewSerializer[[][]byte]().FromT(from).ToB64String()
 	test.CheckErr(err, "Failed to go from b64str string to bytes", t)
-	toSlice, err = NewSerializer[[]byte]().FromB64String(toB64Str).ToSlice()
+	toSlice, err = NewSerializer[[][]byte]().FromB64String(toB64Str).ToT()
 	test.CheckErr(err, "Failed to go from b64str to slice", t)
 	test.CheckEqual(toSlice, "slice -> b64str", from, t)
 }

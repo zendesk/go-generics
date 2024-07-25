@@ -25,7 +25,6 @@ const (
 	Bytes      DynamicType = "bytes"
 	B64Bytes   DynamicType = "b64bytes"
 	Struct     DynamicType = "struct"
-	Slice      DynamicType = "slice"
 	Reflect    DynamicType = "reflection" // if provided, T is used
 
 	// custom prefix added to encoded b64 strings to prevent possible misidentification of b64 strings when using Dynamic lookups
@@ -42,8 +41,6 @@ type Serializer[T any] struct {
 	isFromB64String  bool
 	isFromB64Bytes   bool
 	fromString       wrapper[string]
-	isFromSlice      bool
-	fromSlice        wrapper[[]T]
 
 	// isFromFailure is set when the from cannot be determine dynamically
 	isFromFailure bool
@@ -60,7 +57,6 @@ func (s *Serializer[T]) reset() {
 	s.isFromB64String = false
 	s.isFromT = false
 	s.isFromB64Bytes = false
-	s.isFromSlice = false
 	s.isFromFailure = false
 	s.isFromT = false
 	s.fromT = wrapper[T]{T: t}
@@ -111,13 +107,6 @@ func (s *Serializer[T]) FromB64Bytes(b []byte) *Serializer[T] {
 	return s
 }
 
-func (s *Serializer[T]) FromSlice(slice []T) *Serializer[T] {
-	s.reset()
-	s.isFromSlice = true
-	s.fromSlice = wrapper[[]T]{T: slice}
-	return s
-}
-
 func (s *Serializer[T]) fromFailure() *Serializer[T] {
 	s.reset()
 	s.isFromFailure = true
@@ -133,12 +122,6 @@ func (s *Serializer[T]) FromDynamicType(t any) *Serializer[T] {
 		_, isByteSlice := t.([]byte)
 
 		if !isByteSlice {
-			s.isFromSlice = true
-			convertedSlice, isSliceOfT := t.([]T)
-			if isSliceOfT {
-				return s.FromSlice(convertedSlice)
-			}
-
 			converted, isT := t.(T)
 			if isT {
 				return s.FromT(converted)
@@ -226,65 +209,11 @@ func (s *Serializer[T]) ToStruct() (T, error) {
 		return s.fromT.T, nil
 	}
 
-	if s.isFromSlice {
-		// Todo: Support registering converters
-		return t, errors.New("Serializer: Unknown type found, or this type cannot be converted from the source type to this type")
-	}
-
 	return t, errors.New("No From() method was defined. Please call From() before calling To(). e.g. foo, err := NewSerializer[Foo].FromBytes(b).ToStruct()")
-}
-
-// ToSlice converts the from input into a slice. If the from input is a slice, it will return the slice as is.
-// is FromT() is used, ToSlice is not supported.
-func (s *Serializer[T]) ToSlice() ([]T, error) {
-	var t []T
-	if s.isFromBytes {
-		err := decodeBytesToAny(s.fromBytes.T, &t)
-		return t, err
-	}
-
-	if s.isFromJsonString || s.isFromString {
-		return decodeStringToType[[]T](s.fromString.T)
-	}
-
-	if s.isFromB64String {
-		str, err := decodeFromBase64StringToJsonString(s.fromString.T)
-		if err != nil {
-			return nil, fmt.Errorf("Serializer: Failed to decode b64 string to slice. %w. Are the bytes b64 encoded and valid JSON? Use this serialize to create it.", err)
-		}
-		return decodeStringToType[[]T](str)
-	}
-
-	if s.isFromB64Bytes {
-		err := decodeFromBase64BytesToAny(s.fromBytes.T, &t)
-		if err != nil {
-			return t, fmt.Errorf("Serializer: Failed to decode b64 bytes to slice. %w. Are the bytes b64 encoded and valid JSON? Use this serialize to create it.", err)
-		}
-		return t, nil
-	}
-
-	if s.isFromSlice {
-		return s.fromSlice.T, nil
-	}
-
-	if s.isFromT {
-		// Todo: Support registering converters
-		return t, errors.New("Serializer: Unknown type found, or this type cannot be converted from the source type to this type")
-	}
-
-	return t, errors.New("No From() method was defined. Please call From() before calling To(). e.g. json, err := NewSerializer[Foo].FromSlice(b).ToJsonString()")
 }
 
 // ToBytes converts the from input as a byte slice
 func (s *Serializer[T]) ToBytes() ([]byte, error) {
-	if s.isFromSlice {
-		b, err := encodeAnyToBytes(s.fromSlice.T)
-		if err != nil {
-			return b, fmt.Errorf("Serializer: Failed to encode slice to bytes. %w", err)
-		}
-		return b, nil
-	}
-
 	if s.isFromT {
 		b, err := encodeAnyToBytes(s.fromT.T)
 		if err != nil {
@@ -321,10 +250,6 @@ func (s *Serializer[T]) ToB64String() (string, error) {
 		return encodeBytesToB64String(s.fromBytes.T), nil
 	}
 
-	if s.isFromSlice {
-		return encodeToB64String(s.fromSlice.T)
-	}
-
 	if s.isFromT {
 		return encodeToB64String(s.fromT.T)
 	}
@@ -356,10 +281,6 @@ func (s *Serializer[T]) ToB64Bytes() ([]byte, error) {
 
 	if s.isFromB64String {
 		return []byte(s.fromString.T), nil
-	}
-
-	if s.isFromSlice {
-		return encodeToB64Bytes(s.fromSlice.T)
 	}
 
 	if s.isFromB64Bytes {
@@ -402,10 +323,6 @@ func (s *Serializer[T]) ToJsonString() (string, error) {
 
 	}
 
-	if s.isFromSlice {
-		return encodeAnyToJson(s.fromSlice.T)
-	}
-
 	return "", errors.New("No From() method was defined. Please call From() before calling To(). e.g. str, err := NewSerializer[Foo].FromT(f).ToJsonString()")
 }
 
@@ -417,10 +334,6 @@ func (s *Serializer[T]) ToString() (string, error) {
 
 	if s.isFromT {
 		return encodeAnyToJson(s.fromT.T)
-	}
-
-	if s.isFromSlice {
-		return encodeAnyToJson(s.fromSlice.T)
 	}
 
 	if s.isFromB64String {
@@ -461,8 +374,6 @@ func (s *Serializer[T]) ToDynamicType(dynamicType DynamicType, typ any) (any, er
 		return s.ToB64Bytes()
 	case Struct:
 		return s.ToStruct()
-	case Slice:
-		return s.ToSlice()
 	case Reflect:
 		if typ == nil {
 			return nil, fmt.Errorf("Serializer: Failed to infer type. nil provided for parameter: typ")
@@ -478,17 +389,12 @@ func (s *Serializer[T]) ToDynamicType(dynamicType DynamicType, typ any) (any, er
 				return s.ToBytes()
 			}
 
-			_, isSliceOfT := typ.([]T)
-			if isSliceOfT {
-				return s.ToSlice()
-			}
-
 			_, isT := typ.(T)
 			if isT {
 				return s.ToT()
 			}
 
-			return s.ToSlice()
+			return fmt.Errorf("Serializer: Unsupported type: %s. Slice is not []byte or of type T", reflect.ValueOf(typ).Kind().String()), nil
 		case reflect.Struct:
 			return s.ToStruct()
 		default:

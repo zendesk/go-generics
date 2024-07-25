@@ -165,20 +165,20 @@ func Fuzz_Dynamic_SliceOfStructs(f *testing.F) {
 		}
 
 		// To the same type
-		result1, err := NewSerializer[*Foo]().FromDynamicType(foos).ToSlice()
+		result1, err := NewSerializer[[]*Foo]().FromDynamicType(foos).ToT()
 		test.CheckErr(err, "result 1 error", t)
 		test.CheckEqual(result1, "result 1", foos, t)
 
-		result2, err := NewSerializer[*Foo]().FromDynamicType(result1).ToDynamicType(Reflect, foos)
+		result2, err := NewSerializer[[]*Foo]().FromDynamicType(result1).ToDynamicType(Reflect, foos)
 		test.CheckErr(err, "result 2 error", t)
 		test.CheckEqual(result2, "result 2", foos, t)
 		test.CheckEqual(result2, "result 2 (2)", result1, t)
 
 		// To json
-		jsonResult, err := NewSerializer[*Foo]().FromDynamicType(foos).ToJsonString()
+		jsonResult, err := NewSerializer[[]*Foo]().FromDynamicType(foos).ToJsonString()
 		test.CheckErr(err, "(JSON) result error", t)
 
-		fromJson, err := NewSerializer[*Foo]().FromDynamicType(jsonResult).ToDynamicType(Reflect, foos)
+		fromJson, err := NewSerializer[[]*Foo]().FromDynamicType(jsonResult).ToDynamicType(Reflect, foos)
 		test.CheckErr(err, "(JSON) jsonToSlice error", t)
 		converted := fromJson.([]*Foo)
 		for i, val := range converted {
@@ -191,18 +191,18 @@ func Fuzz_Dynamic_SliceOfStructs(f *testing.F) {
 		test.CheckEqualEquateEmpty(fromJson, "JsonToSlice", foos, t)
 
 		// To bytes
-		byteResult, err := NewSerializer[*Foo]().FromDynamicType(foos).ToBytes()
+		byteResult, err := NewSerializer[[]*Foo]().FromDynamicType(foos).ToBytes()
 		test.CheckErr(err, "(byteResult) result error", t)
 
-		fromBytes, err := NewSerializer[*Foo]().FromDynamicType(byteResult).ToDynamicType(Reflect, foos)
+		fromBytes, err := NewSerializer[[]*Foo]().FromDynamicType(byteResult).ToDynamicType(Reflect, foos)
 		test.CheckErr(err, "(byteResult) byteResult error", t)
 		test.CheckEqualEquateEmpty(fromBytes, "byteResult", foos, t)
 
 		// To b64
-		b64Result, err := NewSerializer[*Foo]().FromDynamicType(foos).ToB64Bytes()
+		b64Result, err := NewSerializer[[]*Foo]().FromDynamicType(foos).ToB64Bytes()
 		test.CheckErr(err, "(b64Bytes) result error", t)
 
-		b64Bytes, err := NewSerializer[*Foo]().FromB64Bytes(b64Result).ToDynamicType(Reflect, foos)
+		b64Bytes, err := NewSerializer[[]*Foo]().FromB64Bytes(b64Result).ToDynamicType(Reflect, foos)
 		test.CheckErr(err, "(b64Bytes) b64Bytes error", t)
 		test.CheckEqualEquateEmpty(b64Bytes, "b64Bytes", foos, t)
 	})
