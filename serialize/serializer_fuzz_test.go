@@ -63,7 +63,7 @@ func Fuzz_Dynamic_Struct(f *testing.F) {
 		value := Foo{Value: valBytes}
 
 		// To the same type
-		result1, err := NewSerializer[Foo]().FromDynamicType(value).ToStruct()
+		result1, err := NewSerializer[Foo]().FromDynamicType(value).ToT()
 		test.CheckErr(err, "result 1 error", t)
 		test.CheckEqual(result1, "result 1", value, t)
 
@@ -76,9 +76,9 @@ func Fuzz_Dynamic_Struct(f *testing.F) {
 		jsonResult, err := NewSerializer[Foo]().FromDynamicType(value).ToJsonString()
 		test.CheckErr(err, "(JSON) result error", t)
 
-		jsonToStruct, err := NewSerializer[Foo]().FromDynamicType(jsonResult).ToDynamicType(Reflect, value)
-		test.CheckErr(err, "(JSON) jsonToStruct error", t)
-		test.CheckEqual(jsonToStruct, "jsonToStruct", value, t)
+		jsonToT, err := NewSerializer[Foo]().FromDynamicType(jsonResult).ToDynamicType(Reflect, value)
+		test.CheckErr(err, "(JSON) jsonToT error", t)
+		test.CheckEqual(jsonToT, "jsonToT", value, t)
 
 		// To bytes
 		byteResult, err := NewSerializer[Foo]().FromDynamicType(value).ToBytes()
@@ -100,9 +100,9 @@ func Fuzz_Dynamic_Struct(f *testing.F) {
 		stringResult, err := NewSerializer[Foo]().FromDynamicType(value).ToString()
 		test.CheckErr(err, "(stringResult) result error", t)
 
-		stringToStruct, err := NewSerializer[Foo]().FromDynamicType(stringResult).ToDynamicType(Reflect, value)
+		stringToT, err := NewSerializer[Foo]().FromDynamicType(stringResult).ToDynamicType(Reflect, value)
 		test.CheckErr(err, "(stringResult) stringResult error", t)
-		test.CheckEqual(stringToStruct, "stringResult", value, t)
+		test.CheckEqual(stringToT, "stringResult", value, t)
 
 	})
 }

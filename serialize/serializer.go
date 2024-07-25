@@ -171,8 +171,8 @@ func (s *Serializer[T]) setFrom(t any) *Serializer[T] {
 	}
 }
 
-// ToStruct converts the from input into a struct
-func (s *Serializer[T]) ToStruct() (T, error) {
+// ToT converts From to T
+func (s *Serializer[T]) ToT() (T, error) {
 	var t T
 
 	if s.isFromBytes {
@@ -209,7 +209,7 @@ func (s *Serializer[T]) ToStruct() (T, error) {
 		return s.fromT.T, nil
 	}
 
-	return t, errors.New("No From() method was defined. Please call From() before calling To(). e.g. foo, err := NewSerializer[Foo].FromBytes(b).ToStruct()")
+	return t, errors.New("No From() method was defined. Please call From() before calling To(). e.g. foo, err := NewSerializer[Foo].FromBytes(b).ToT()")
 }
 
 // ToBytes converts the from input as a byte slice
@@ -353,11 +353,6 @@ func (s *Serializer[T]) ToString() (string, error) {
 	return "", errors.New("No From() method was defined. Please call From() before calling To(). e.g. str, err := NewSerializer[Foo].FromT(f).ToJsonString()")
 }
 
-// ToT encodes the from input as T
-func (s *Serializer[T]) ToT() (T, error) {
-	return s.ToStruct()
-}
-
 // ToDynamicType allows a single method to dynamically determine the toType depending on dynamic type. If "reflect" is provided, then parameter
 // typ will be used to determine the target type to convert to. This will be a best-effort conversion.
 func (s *Serializer[T]) ToDynamicType(dynamicType DynamicType, typ any) (any, error) {
@@ -373,7 +368,7 @@ func (s *Serializer[T]) ToDynamicType(dynamicType DynamicType, typ any) (any, er
 	case B64Bytes:
 		return s.ToB64Bytes()
 	case Struct:
-		return s.ToStruct()
+		return s.ToT()
 	case Reflect:
 		if typ == nil {
 			return nil, fmt.Errorf("Serializer: Failed to infer type. nil provided for parameter: typ")
@@ -396,7 +391,7 @@ func (s *Serializer[T]) ToDynamicType(dynamicType DynamicType, typ any) (any, er
 
 			return fmt.Errorf("Serializer: Unsupported type: %s. Slice is not []byte or of type T", reflect.ValueOf(typ).Kind().String()), nil
 		case reflect.Struct:
-			return s.ToStruct()
+			return s.ToT()
 		default:
 			return fmt.Errorf("Serializer: Unsupported type: %s", reflect.ValueOf(typ).Kind().String()), nil
 		}

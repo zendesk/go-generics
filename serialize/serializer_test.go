@@ -24,7 +24,7 @@ func Test_Serializer_Struct(t *testing.T) {
 	// Test to and from json string
 	toStr, err := NewSerializer[Foo]().FromT(from).ToJsonString()
 	test.CheckErr(err, "Failed to go from struct to json string", t)
-	toStruct, err := NewSerializer[Foo]().FromJsonString(toStr).ToStruct()
+	toStruct, err := NewSerializer[Foo]().FromJsonString(toStr).ToT()
 	test.CheckErr(err, "Failed to go from json string to struct", t)
 	test.CheckEqual(toStruct, "Struct", from, t)
 
@@ -32,7 +32,7 @@ func Test_Serializer_Struct(t *testing.T) {
 	toStr, err = NewSerializer[Foo]().FromT(from).ToB64String()
 	test.CheckErr(err, "Failed to go from struct to b64 string string", t)
 	validateB64(toStr, t)
-	toStruct, err = NewSerializer[Foo]().FromB64String(toStr).ToStruct()
+	toStruct, err = NewSerializer[Foo]().FromB64String(toStr).ToT()
 	test.CheckErr(err, "Failed to go from json b64 string to struct", t)
 	test.CheckEqual(toStruct, "Struct", from, t)
 
@@ -40,19 +40,19 @@ func Test_Serializer_Struct(t *testing.T) {
 	toBytes, err := NewSerializer[Foo]().FromT(from).ToB64Bytes()
 	test.CheckErr(err, "Failed to go from struct to b64", t)
 	validateB64(string(toBytes), t)
-	toStruct, err = NewSerializer[Foo]().FromB64Bytes(toBytes).ToStruct()
+	toStruct, err = NewSerializer[Foo]().FromB64Bytes(toBytes).ToT()
 	test.CheckErr(err, "Failed to go from b64 to struct", t)
 	test.CheckEqual(toStruct, "Struct", from, t)
 
 	// Test to and from bytes
 	toBytes, err = NewSerializer[Foo]().FromT(from).ToBytes()
 	test.CheckErr(err, "Failed to go from struct to bytes", t)
-	toStruct, err = NewSerializer[Foo]().FromBytes(toBytes).ToStruct()
+	toStruct, err = NewSerializer[Foo]().FromBytes(toBytes).ToT()
 	test.CheckErr(err, "Failed to go from bytes to struct", t)
 	test.CheckEqual(toStruct, "Struct", from, t)
 
 	// Test to and from stryct
-	toStruct, err = NewSerializer[Foo]().FromT(from).ToStruct()
+	toStruct, err = NewSerializer[Foo]().FromT(from).ToT()
 	test.CheckErr(err, "Failed to go from struct to struct", t)
 	test.CheckEqual(toStruct, "Struct", from, t)
 }
@@ -66,7 +66,7 @@ func Test_Serializer_JSONString(t *testing.T) {
 	from := "{\"Value\":\"abcd\"}"
 
 	// Test to and from json string
-	toStruct, err := NewSerializer[Foo]().FromJsonString(from).ToStruct()
+	toStruct, err := NewSerializer[Foo]().FromJsonString(from).ToT()
 	test.CheckErr(err, "Failed to go from json string to json string", t)
 	toJson, err := NewSerializer[Foo]().FromT(toStruct).ToJsonString()
 	test.CheckErr(err, "Failed to go from json string to json string", t)
@@ -112,7 +112,7 @@ func Test_Serializer_B64String(t *testing.T) {
 	// Test serialize to and from b64String
 
 	// Test to and from struct
-	toStruct, err := NewSerializer[Foo]().FromB64String(from).ToStruct()
+	toStruct, err := NewSerializer[Foo]().FromB64String(from).ToT()
 	test.CheckErr(err, "Failed to go from b64str string to json string", t)
 	result, err := NewSerializer[Foo]().FromT(toStruct).ToB64String()
 	test.CheckErr(err, "Failed to go from b64str string to b64str", t)
@@ -157,7 +157,7 @@ func Test_Serializer_B64Bytes(t *testing.T) {
 	// Test serialize to and from b64String
 
 	// Test to and from struct
-	toStruct, err := NewSerializer[Foo]().FromB64Bytes(from).ToStruct()
+	toStruct, err := NewSerializer[Foo]().FromB64Bytes(from).ToT()
 	test.CheckErr(err, "Failed to go from b64str string to json string", t)
 	result, err := NewSerializer[Foo]().FromT(toStruct).ToB64Bytes()
 	test.CheckErr(err, "Failed to go from b64str string to b64str", t)
@@ -202,7 +202,7 @@ func Test_Serializer_Bytes(t *testing.T) {
 	// Test serialize to and from b64String
 
 	// Test to and from struct
-	toStruct, err := NewSerializer[Foo]().FromBytes(from).ToStruct()
+	toStruct, err := NewSerializer[Foo]().FromBytes(from).ToT()
 	test.CheckErr(err, "Failed to go from b64str string to json string", t)
 	result, err := NewSerializer[Foo]().FromT(toStruct).ToBytes()
 	test.CheckErr(err, "Failed to go from b64str string to b64str", t)
@@ -310,7 +310,7 @@ func Test_Serializer_Slice_Struct(t *testing.T) {
 	test.CheckEqual(toSlice, "slice -> b64str", from, t)
 }
 
-func Test_Serializer_Slice_PointerToStruct(t *testing.T) {
+func Test_Serializer_Slice_PointerToT(t *testing.T) {
 	type Foo struct {
 		Value string
 	}
@@ -437,7 +437,7 @@ func Test_Serializer_InferredType_JSONString(t *testing.T) {
 	from := "{\"Value\":\"abcd\"}"
 
 	// Test to and from struct
-	toStruct, err := NewSerializer[Foo]().FromDynamicType(from).ToStruct()
+	toStruct, err := NewSerializer[Foo]().FromDynamicType(from).ToT()
 	test.CheckErr(err, "Failed to go from json string to json string", t)
 	toJson, err := NewSerializer[Foo]().FromDynamicType(toStruct).ToJsonString()
 	test.CheckErr(err, "Failed to go from json string to json string", t)
@@ -484,7 +484,7 @@ func Test_Serializer_InferredType_B64String(t *testing.T) {
 	test.CheckErr(err, "Failed to init from", t)
 
 	// Test to and from struct
-	toStruct, err := NewSerializer[Foo]().FromB64String(from).ToStruct()
+	toStruct, err := NewSerializer[Foo]().FromB64String(from).ToT()
 	test.CheckErr(err, "Failed to go 1", t)
 	toStructResult, err := NewSerializer[Foo]().FromDynamicType(toStruct).ToB64String()
 	test.CheckErr(err, "Failed to go 2", t)
@@ -527,7 +527,7 @@ func Test_Serializer_InferredType_B64Bytes(t *testing.T) {
 	test.CheckErr(err, "Failed to init from", t)
 
 	// Test to and from struct
-	toStruct, err := NewSerializer[Foo]().FromB64Bytes(from).ToStruct()
+	toStruct, err := NewSerializer[Foo]().FromB64Bytes(from).ToT()
 	test.CheckErr(err, "Failed to go from json inferred to struct", t)
 	tob64b, err := NewSerializer[Foo]().FromDynamicType(toStruct).ToB64Bytes()
 	test.CheckErr(err, "Failed to go from json string to json string", t)
@@ -571,7 +571,7 @@ func Test_Serializer_InferredType_Bytes(t *testing.T) {
 	test.CheckErr(err, "Failed to init from", t)
 
 	// Test to and from struct
-	toStruct, err := NewSerializer[Foo]().FromDynamicType(from).ToStruct()
+	toStruct, err := NewSerializer[Foo]().FromDynamicType(from).ToT()
 	test.CheckErr(err, "Failed to go from json inferred to struct", t)
 	tob64b, err := NewSerializer[Foo]().FromDynamicType(toStruct).ToBytes()
 	test.CheckErr(err, "Failed to go from json string to json string", t)
