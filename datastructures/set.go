@@ -1,4 +1,4 @@
-package types
+package datastructures
 
 // A simple set implementation with comparable keys. Use this instead of manually managing your own map[V]struct{}
 // Inspired by https://github.com/zyedidia/generic
@@ -53,8 +53,8 @@ func NewHashSetWithHashFn[V any](hashFn HashFn[V], values ...V) Set[V] {
 }
 
 // NewCustomSet creates a new set with the provided ISet implementation
-func NewCustomSet[V any](set ISet[V]) Set[V] {
-	return Set[V]{set: set}
+func NewCustomSet[V any](iSet ISet[V]) Set[V] {
+	return Set[V]{set: iSet}
 }
 
 // Intersection returns a new set with the intersection of the current set and others
@@ -116,7 +116,7 @@ func (s Set[V]) Size() int {
 	return s.set.Size()
 }
 
-// Copy returns a copy of this set.
+// Clone returns a copy of this set.
 func (s Set[V]) Clone() Set[V] {
 	new := Set[V]{set: s.set.New()}
 	new.set = s.set.Copy()

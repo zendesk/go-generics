@@ -3,7 +3,7 @@ package functions
 import (
 	"context"
 
-	"github.com/zendesk/go-generics/types"
+	"github.com/zendesk/go-generics/datastructures"
 )
 
 // GoEachMapWithErrs runs a function across each item of a map concurrently. Errors are aggregated and returned.
@@ -21,7 +21,7 @@ func GoEachMapWithErrs[K comparable, V any](items map[K]V, fn func(K, V) error, 
 	// Do not allow user to provision excessive concurrency
 	cfg.ConcurrencyLimit = Min(cfg.ConcurrencyLimit, AbsoluteMaxConcurrency)
 
-	jobChan := make(chan types.Tuple[K, V], len(items))
+	jobChan := make(chan datastructures.Tuple[K, V], len(items))
 	resultChan := make(chan error, len(items))
 	defer close(resultChan)
 
@@ -37,7 +37,7 @@ func GoEachMapWithErrs[K comparable, V any](items map[K]V, fn func(K, V) error, 
 	}
 
 	for k, v := range items {
-		jobChan <- types.Tuple[K, V]{A: k, B: v}
+		jobChan <- datastructures.Tuple[K, V]{A: k, B: v}
 	}
 	close(jobChan)
 

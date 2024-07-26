@@ -1,4 +1,4 @@
-package types
+package datastructures
 
 import (
 	"crypto/sha256"
@@ -71,7 +71,7 @@ func (s *hashSet[V]) Copy() ISet[V] {
 	}
 }
 
-// New returns an empty Set[V]
+// New returns an empty SetOf[V]
 func (s *hashSet[V]) New() ISet[V] {
 	return newHashSet[V]()
 }

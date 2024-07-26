@@ -3,7 +3,7 @@ package functions
 import (
 	"context"
 
-	"github.com/zendesk/go-generics/types"
+	"github.com/zendesk/go-generics/datastructures"
 )
 
 // Map converts a slice of T to a slice of Y via a converter function
@@ -85,7 +85,7 @@ func GoMapWithErrs[T any, Y any](items []T, f func(T) (Y, error), opts ...Option
 	cfg.ConcurrencyLimit = Min(cfg.ConcurrencyLimit, AbsoluteMaxConcurrency)
 
 	jobChan := make(chan T, len(items))
-	resultChan := make(chan types.Tuple[Y, error], len(items))
+	resultChan := make(chan datastructures.Tuple[Y, error], len(items))
 	defer close(resultChan)
 
 	// Run Consumer jobs
@@ -94,7 +94,7 @@ func GoMapWithErrs[T any, Y any](items []T, f func(T) (Y, error), opts ...Option
 			for item := range jobChan {
 				cfg.limiter.WaitForRate(context.Background())
 				converted, err := runMapWithRetries(f, item, cfg.RetryCount, cfg.RetryBackoffInterval)
-				resultChan <- types.Tuple[Y, error]{A: converted, B: err}
+				resultChan <- datastructures.Tuple[Y, error]{A: converted, B: err}
 			}
 		}()
 	}

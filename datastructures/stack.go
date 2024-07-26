@@ -1,4 +1,4 @@
-package types
+package datastructures
 
 // Attribution: https://github.com/zyedidia/generic
 

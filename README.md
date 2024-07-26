@@ -109,8 +109,8 @@ foos, errs := functions.GoMapWithErrs(fooIds, func(id string) (Foo, error) {
 
 The `types` package contains some conspicuously missing go data structures, including:
 - `Set`
-  - `NewSet[T comparable](items ...T) *Set[T]`
-  - `NewHashSet[T any](items ...T) *Set[T]` 
+  - `NewSet[T comparable](items ...T) Set[T]`
+  - `NewHashSet[T any](items ...T) Set[T]` 
     - ^^ May be used with any data structure, even non-comparable ones
   - `NewHashSetWithHashFn[T](fn HashFn, items ...T)`
     - You may provide your own custom hash function. `func(t T) string`
@@ -246,7 +246,7 @@ Multiple rate limiters with shared redis backend and different rate limits
 	
 
 	// if redis is unavailable, rate limiter fails CLOSED, and will not allow any writes
-    writeLimiter, err := ratelimit.NewRateLimiter(ratelimit.FailClosed, backend, ratelimit.WithPrefixOption("writes"))
+    writeLimiter, err := ratelimit.NewRateLimiter(ratelimit.FailOpen, backend, ratelimit.WithPrefixOption("writes"))
 		
 	// If we want to dynamically adjust throughput for writes, we can
 	writeLimiter.SetThroughput(20, time.Second, 50)

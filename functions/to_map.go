@@ -3,7 +3,7 @@ package functions
 import (
 	"context"
 
-	"github.com/zendesk/go-generics/types"
+	"github.com/zendesk/go-generics/datastructures"
 )
 
 // ToMap converts a slice[] to a map[K]V via a provided converter function.
@@ -57,7 +57,7 @@ func GoToMapWithErrs[T any, K comparable, V any](items []T, f func(T) (K, V, err
 	cfg.ConcurrencyLimit = Min(cfg.ConcurrencyLimit, AbsoluteMaxConcurrency)
 
 	jobChan := make(chan T, len(items))
-	resultChan := make(chan types.TupleWithErr[K, V], len(items))
+	resultChan := make(chan datastructures.TupleWithErr[K, V], len(items))
 	defer close(resultChan)
 
 	// Run Consumer jobs
@@ -66,7 +66,7 @@ func GoToMapWithErrs[T any, K comparable, V any](items []T, f func(T) (K, V, err
 			for item := range jobChan {
 				cfg.limiter.WaitForRate(context.Background())
 				k, v, err := runToMapWithRetries(f, item, cfg.RetryCount, cfg.RetryBackoffInterval)
-				resultChan <- types.TupleWithErr[K, V]{A: k, B: v, E: err}
+				resultChan <- datastructures.TupleWithErr[K, V]{A: k, B: v, E: err}
 			}
 		}()
 	}
