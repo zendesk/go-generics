@@ -120,7 +120,7 @@ func Test_HashSet_Struct(t *testing.T) {
 				oldValues := s.Values()
 				// Sort before compare
 				sort.Slice(newValues, func(i, j int) bool { return newValues[i].Name < newValues[j].Name })
-				sort.Slice(oldValues, func(i, j int) bool { return newValues[i].Name < newValues[j].Name })
+				sort.Slice(oldValues, func(i, j int) bool { return oldValues[i].Name < oldValues[j].Name })
 				test.CheckEqual(newValues, "Deep equal", oldValues, t)
 			},
 		},
