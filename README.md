@@ -109,8 +109,8 @@ foos, errs := functions.GoMapWithErrs(fooIds, func(id string) (Foo, error) {
 
 The `types` package contains some conspicuously missing go data structures, including:
 - `Set`
-  - `NewSet[T comparable](items ...T) *Set[T]`
-  - `NewHashSet[T any](items ...T) *Set[T]` 
+  - `NewSet[T comparable](items ...T) Set[T]`
+  - `NewHashSet[T any](items ...T) Set[T]` 
     - ^^ May be used with any data structure, even non-comparable ones
   - `NewHashSetWithHashFn[T](fn HashFn, items ...T)`
     - You may provide your own custom hash function. `func(t T) string`
