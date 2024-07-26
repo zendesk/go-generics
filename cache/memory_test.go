@@ -94,3 +94,20 @@ func Test_InMemory_WithFailThrough(t *testing.T) {
 	// Verify set was only called once
 	test.CheckOk(len(failThrough.WasSet) == 1, "Set should have only called to fail-through once, on the explicit SET at the start", t)
 }
+
+func Test_InMemory_WithFailThroughMiss(t *testing.T) {
+	failThrough := cache.NewInMemoryCache[string, string](time.Second * 1)
+	cash := cache.NewInMemoryCache[string, string](time.Second*1,
+		cache.WithFailThroughCache[string, string](failThrough),
+		cache.WithCapacity[string, string](uint64(100)))
+
+	item, found, err := cash.Get("MISSING")
+	test.CheckNotOk(found, "Found not expected", t)
+	test.CheckErr(err, "No err expected", t)
+	test.CheckEqual(item, "EMpty string expected", "", t)
+
+	item, found, err = cash.Get("MISSING")
+	test.CheckNotOk(found, "Found not expected (2)", t)
+	test.CheckErr(err, "No err expected (2) ", t)
+	test.CheckEqual(item, "EMpty string expected", "", t)
+}

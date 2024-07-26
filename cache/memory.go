@@ -56,9 +56,11 @@ func (c *InMemoryCache[K, V]) Get(key K) (V, bool, error) {
 		}
 
 		// Add item to this cache before returning it. Do **NOT** call public set (c.Set) as it will reset the value in the
-		// fail-through cache so it will never expire (if it's a TTL based cache)
-		_ = c.cache.Set(key, value, c.ttl)
-		return value, true, nil
+		// fail-through cache, so it will never expire (if it's a TTL based cache)
+		if wasFound {
+			_ = c.cache.Set(key, value, c.ttl)
+			return value, true, nil
+		}
 	}
 
 	// If item does not exist, do not return error, just return nil. This matches prior functionality
