@@ -368,13 +368,16 @@ gorilla, err := NewSerializer[T]().FromJsonString(input).ToDynamicType(serialize
 
 ### Example
 
+Encrypt with your own password + nonce.
 ```go
+    // Encrypt / decrypt transparently with a auto-generated passwrod
     type Foo struct {
         Name string
         Age int
     }
-	
-    ed, err := encryption.New[Foo]([]byte("mySalt"), tt.iterations)
+
+    // Encrypt / decrypt transparently with a provided password / nonce. If you are persisting the encrypted data, use this approach.
+    ed, err := NewWithPasswordNonce[Foo]([]byte("password"), []byte("my-nonce-123"), []byte("salt"), 9000)
     if err != nil {
         return err
     }
@@ -388,5 +391,24 @@ gorilla, err := NewSerializer[T]().FromJsonString(input).ToDynamicType(serialize
     if err != nil {
 		return err
 		
-      }
+    }
+```
+
+Encrypt with an auto-generated secure password + nonce. 
+```go
+	// A secure password will be generated, do not use this constructor if you intend to persist the encrypted data.
+    ed, err := encryption.New[Foo]([]byte("mySalt"), tt.iterations)
+    if err != nil {
+        return err
+    }
+
+    encryptedBytes, err := ed.Encrypt(tt.input)
+    if err != nil {
+        return err
+    }
+        
+    decrypted, err := ed.Decrypt(encryptedBytes)
+    if err != nil {
+		return err
+    }
 ```
