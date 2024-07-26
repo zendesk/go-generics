@@ -3,7 +3,7 @@ package functions
 import (
 	"context"
 
-	"github.com/zendesk/go-generics/types"
+	"github.com/zendesk/go-generics/datastructures"
 )
 
 // MapToSlice converts a map[K]V to a slice of type Z via provided converter function.
@@ -50,8 +50,8 @@ func GoMapToSliceWithErrs[K comparable, V any, Z any](items map[K]V, converter f
 	cfg.ConcurrencyLimit = Min(cfg.ConcurrencyLimit, AbsoluteMaxConcurrency)
 
 	// Channel type is a map that contains a batch of values to map
-	jobChan := make(chan types.Tuple[K, V], len(items))
-	resultChan := make(chan types.Tuple[Z, error], len(items))
+	jobChan := make(chan datastructures.Tuple[K, V], len(items))
+	resultChan := make(chan datastructures.Tuple[Z, error], len(items))
 	defer close(resultChan)
 
 	// Run Consumer jobs
@@ -60,13 +60,13 @@ func GoMapToSliceWithErrs[K comparable, V any, Z any](items map[K]V, converter f
 			for item := range jobChan {
 				cfg.limiter.WaitForRate(context.Background())
 				converted, err := runMapToSliceWithRetries(converter, item.A, item.B, cfg.RetryCount, cfg.RetryBackoffInterval)
-				resultChan <- types.Tuple[Z, error]{A: converted, B: err}
+				resultChan <- datastructures.Tuple[Z, error]{A: converted, B: err}
 			}
 		}()
 	}
 
 	for k, v := range items {
-		jobChan <- types.Tuple[K, V]{A: k, B: v}
+		jobChan <- datastructures.Tuple[K, V]{A: k, B: v}
 	}
 	close(jobChan)
 

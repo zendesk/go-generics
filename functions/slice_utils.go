@@ -9,7 +9,7 @@ import (
 
 	"golang.org/x/exp/slices"
 
-	"github.com/zendesk/go-generics/types"
+	"github.com/zendesk/go-generics/datastructures"
 )
 
 // Intersection returns the intersection of two slices
@@ -56,8 +56,8 @@ func Dedupe[T comparable](items []T) []T {
 }
 
 // DedupeByHash dedupes the items between 2 slices using a hashFn that should return equal values for two items that are considered equal
-func DedupeByHash[T any](items []T, hashFn types.HashFn[T]) []T {
-	return types.NewHashSetWithHashFn[T](hashFn, items...).Values()
+func DedupeByHash[T any](items []T, hashFn datastructures.HashFn[T]) []T {
+	return datastructures.NewHashSetWithHashFn[T](hashFn, items...).Values()
 }
 
 // RemoveNils removes any nil values from a slice of T -- this is safe for finding boxed and unboxed nils.

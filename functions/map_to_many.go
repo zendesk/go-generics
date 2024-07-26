@@ -3,7 +3,7 @@ package functions
 import (
 	"context"
 
-	"github.com/zendesk/go-generics/types"
+	"github.com/zendesk/go-generics/datastructures"
 )
 
 // GoMapToMany - Fast Map inside of a goroutine where each function run may return N elements with safe aggregation
@@ -44,7 +44,7 @@ func GoMapToManyWithErrs[T any, Y any](items []T, converter func(T) ([]Y, error)
 	cfg.ConcurrencyLimit = Min(cfg.ConcurrencyLimit, AbsoluteMaxConcurrency)
 
 	jobChan := make(chan T, len(items))
-	resultChan := make(chan types.Tuple[[]Y, error], len(items))
+	resultChan := make(chan datastructures.Tuple[[]Y, error], len(items))
 
 	// Run Consumer jobs
 	for i := 0; i < cfg.ConcurrencyLimit; i++ {
@@ -52,7 +52,7 @@ func GoMapToManyWithErrs[T any, Y any](items []T, converter func(T) ([]Y, error)
 			for item := range jobChan {
 				cfg.limiter.WaitForRate(context.Background())
 				converted, err := converter(item)
-				resultChan <- types.Tuple[[]Y, error]{A: converted, B: err}
+				resultChan <- datastructures.Tuple[[]Y, error]{A: converted, B: err}
 			}
 		}()
 	}

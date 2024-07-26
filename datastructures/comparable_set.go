@@ -1,4 +1,4 @@
-package types
+package datastructures
 
 func newComparableSet[V comparable]() ISet[V] {
 	return &set[V]{values: make(map[V]struct{})}
@@ -54,7 +54,7 @@ func (s *set[V]) Copy() ISet[V] {
 	}
 }
 
-// New returns an empty Set[V]
+// New returns an empty SetOf[V]
 func (s *set[V]) New() ISet[V] {
 	return newComparableSet[V]()
 }

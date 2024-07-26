@@ -1,4 +1,4 @@
-package types
+package datastructures
 
 import (
 	"errors"
@@ -246,7 +246,7 @@ func Test_Set(t *testing.T) {
 	}
 }
 
-// Fuzz_Set is a fuzz test for the Set operations, byte slice is the only compatible dynamic length input for fuzzing
+// Fuzz_Set is a fuzz test for the SetOf operations, byte slice is the only compatible dynamic length input for fuzzing
 func Fuzz_Set(f *testing.F) {
 	f.Add([]byte{})
 	f.Add([]byte{1, 22, 44})
