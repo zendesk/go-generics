@@ -246,7 +246,7 @@ Multiple rate limiters with shared redis backend and different rate limits
 	
 
 	// if redis is unavailable, rate limiter fails CLOSED, and will not allow any writes
-    writeLimiter, err := ratelimit.NewRateLimiter(ratelimit.FailClosed, backend, ratelimit.WithPrefixOption("writes"))
+    writeLimiter, err := ratelimit.NewRateLimiter(ratelimit.FailOpen, backend, ratelimit.WithPrefixOption("writes"))
 		
 	// If we want to dynamically adjust throughput for writes, we can
 	writeLimiter.SetThroughput(20, time.Second, 50)
