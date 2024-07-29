@@ -23,9 +23,9 @@ Functions **not** prefixed with `Go` will run serially.
 
 Functions prefixed with `Go` will run concurrently, and may be tuned with the additional options:
 - `RateLimitOption`: Limits maximum iterations that may be executed over a specified timeframe
-  - e.g. functions.RateLimitOption(10, time.Second)
+  - e.g. `functions.RateLimitOption(10, time.Second)`
 - `RetryOption`: Retries a function if it returns an error with linear progressive backoff (backoff duration * retry number)
-  - e.g. functions.RetryOption(3, time.Millisecond * 500)
+  - e.g. `functions.RetryOption(3, time.Millisecond * 500)`
 - `RandomOrderOption`: The targeted function will randomly order its execution rather than iterating over elements in the provided order
 - `DiscardResultIfErrOption`: Mapping functions will discard results when errors are returned
 - `ConcurrencyLimitOption`: limits the concurrency of a concurrent mapping function to protect against open file limits, connection limits, etc. To run serially, set concurrency to 1.
@@ -36,6 +36,12 @@ Functions prefixed with `Go` will run concurrently, and may be tuned with the ad
 - `ContainsAny[T comparable](A []T, B []T) bool`
 - `ContainsDeepEqual[T any](list []T, item T) bool`
 
+```go
+   functions.EqualIgnoreOrder([]int{1, 2, 3}, []int{3, 2, 1}) // true
+   functions.Contains([]int{1, 2, 3}, 2) // true
+   functions.ContainsAny([]int{1, 2, 3}, []int{4, 5, 6}) // false
+```
+
 ### Iterative
 - `Each[T any](items []T, fn func(T))`
 - `EachMergeErrs[T any](items []T, fn func(T) error) error`
@@ -43,10 +49,62 @@ Functions prefixed with `Go` will run concurrently, and may be tuned with the ad
 - `GoEachWithErrs[T any](items []T, fn func(T) error, opts ...Option) (errs []error)`
 - `GoEachMapWithErrs[K comparable, V any](items map[K]V, fn func(K, V) error, opts ...Option) (errs []error)`
 
+```go
+  
+  // Iterate over slice
+  functions.Each([]int{1, 2, 3}, func(i int) {
+    fmt.Println(i)
+  })
+  
+  // iterate over slice, merge errors and return as a single error.
+  err = functions.EachMergeErrs([]int{1, 2, 3}, func(i int) error {
+    if i == 2 {
+      return fmt.Errorf("Error encountered")
+    }
+    return nil
+  })
+
+  // Iterate over slice concurrently, with rate limiting
+  functions.GoEachWithErrs([]{1,2,3}, func(i int) error {
+	  if i%2 == 0 {
+		  return fmt.Errorf("Error encountered")
+      }
+	  return nil
+  }, functions.RateLimitOption(1, time.Second))
+
+  // Iterate over map  with rate limiting
+  myMap := map[int]string{1: "one", 2: "two", 3: "three"}
+  functions.GoEachMapWithErrs(myMap, func(k int, v string) error {
+    if k == 2 {
+      return fmt.Errorf("Error encountered")
+    }
+    return nil
+  }, functions.RateLimitOption(1, time.Second))
+
+```
+
 ### Filters
 - `Find[T interface{}](from []T, filter func(T) bool) (item T, wasFound bool)`
 - `Filter[T any](from []T, filter func(T) bool) []T`
 - `FilterMap[K comparable, V any](from map[K]V, filter func(k K, v V) bool) map[K]V`
+
+```go 
+  // Find the first even number and return it
+  firstEven, found := functions.Find([]int{1, 2, 3, 4}, func(i int) bool {
+    return i%2 == 0 
+  }) // 2, true
+
+  // Find all evens and return them
+  evens := functions.Filter([]int{1, 2, 3, 4}, func(i int) bool {
+      return i%2 == 0 
+  }) // [2, 4]    
+	
+  // Filter all even keys from the map
+  evenValues := functions.FilterMap(map[int]string{1: "one", 2: "two", 3: "three", 4: "four"}, func(k int, v string) bool {
+    return k%2 == 0
+  }) // {2: "two", 4: "four"}
+```
+
 
 ### Mapping
 
@@ -62,13 +120,55 @@ Functions prefixed with `Go` will run concurrently, and may be tuned with the ad
 - `GoMapToSlice[K comparable, V any, Z any](items map[K]V, converter func(K, V) Z, opts ...Option) []Z`
 - `GoMapToSliceWithErrs[K comparable, V any, Z any](items map[K]V, converter func(K, V) (Z, error), opts ...Option) (results []Z, errs []error)`
 
+```go 
+  // Double each value in the slice
+  doubled := functions.Map([]int{1, 2, 3}, func(i int) int {
+      return i * 2
+  }) // [2, 4, 6]
+  
+  // Convert slice of IDs to []Foo via API lookup
+  // Discard result if error is returned.
+  // Rate limit requests to 10 per second
+  results, errs := functions.GoMapWithErrs([]string{"id1", "id2", "id3"}, func(id string) (Foo, error) {
+        return api.Lookup(i) // returns (Foo, error)
+  }, functions.RateLimitOption(10, time.Second), functions.DiscardResultIfErrOption())
+  
+  // Convert slice to a larger slice where each item returns 1+ items
+  results := functions.GoMapToMany([]int{1, 2, 3}, func(i int) []int {
+      return []int{i, i+1}
+  }) // [1, 2, 2, 3, 3, 4]
+  
+  // Convert map[int]string to slice []string
+  results := functions.GoMapToSlice(map[int]string{1: "one", 2: "two", 3: "three"}, func(k int, v string) string {
+      return fmt.Sprintf("%d: %s", k, v)
+  }) // ["1: one", "2: two", "3: three"]
+
+```
+
+
 #### From X to Map
 - `ToMap[T any, K comparable, V any](from []T, converter func(T) (K, V)) map[K]V`
 - `GoToMap[T any, K comparable, V any](items []T, f func(T) (K, V), opts ...Option) map[K]V`
 - `GoToMapWithErrs[T any, K comparable, V any](items []T, f func(T) (K, V, error), opts ...Option) (results map[K]V, errs []error)`
 
+```go 
+
+  // Convert []int to map[int]string
+  functions.ToMap([]int{1, 2, 3}, func(i int) (int, string) {
+      return i, fmt.Sprintf("string-%d", i)
+  }) // {1: "string-1", 2: "string-2", 3: "string-3"}
+
+```
+
 ### Reduce
 - `Reduce[T any, Y any](from []T, to Y, reducer func(T, Y) Y) Y`
+
+```go 
+  // Reduce to sum of []int
+  sum := functions.Reduce([]int{1, 2, 3}, 0, func(i int, sum int) int {
+      return sum + i
+  }) // 6
+```
 
 ### Other
 - `RunWithRetries[T any](fn func(t T) error, item T, numRetries int, backoffInterval time.Duration) error`
@@ -77,7 +177,19 @@ Functions prefixed with `Go` will run concurrently, and may be tuned with the ad
 - `Copy[K comparable, V any](items map[K]V) map[K]V`
 - `Convert[T any, Y any](from T, converter func(T) Y) Y`
 
+```go 
+  // Run something, and retry if you get an error
+  functions.RunWithRetries(func() error {
+      return api.Call()
+  }, 3, time.Millisecond * 500) // Retry 3 times with 500ms progressive backoff
+
+
+  // Copy a map
+  copied := functions.Copy(map[int]string{1: "one", 2: "two", 3: "three"}) // {1: "one", 2: "two", 3: "three"}
+```
+  
 ### Slice
+  
 - `Intersection[T comparable](a, b []T) []T`
 - `Dedupe[T comparable](items []T) []T`
 - `DedupeByHash[T comparable](items []T, hashFn func(t T) uint64) []T`
@@ -86,6 +198,16 @@ Functions prefixed with `Go` will run concurrently, and may be tuned with the ad
 - `Generalize[T any](from []T) []interface{}`
 - `Join[T any](items []T, separator string) string`
 
+```go 
+    // Return the intersection of two slices
+    intersection := functions.Intersection([]int{1, 2, 3}, []int{2, 3, 4}) // [2, 3]
+
+    // Dedupe a comparable slice
+    uniques := functions.Dedupe([]int{1, 2, 2, 3, 3, 3}) // [1, 2, 3]
+
+    // Shuffle as lice
+    shuffled := functions.Shuffle([]int{1, 2, 3, 4, 5}) // [?, ?, ?, ?, ?]
+```
 
 ### Functions Examples
 
@@ -115,6 +237,30 @@ The `types` package contains some conspicuously missing go data structures, incl
   - `NewHashSetWithHashFn[T](fn HashFn, items ...T)`
     - You may provide your own custom hash function. `func(t T) string`
 - `Stack`
+
+```go
+
+  mySet := datastructures.NewSet(1, 2, 3, 4, 5, 5, 5, 5)
+  // {1, 2, 3, 4, 5} (order is not guaranteed)
+
+  // Hash set automatically dedupes non-comparable types
+  type foo struct {
+    Name string
+    Age int
+  }
+  
+  foos := []foo{{"James", 30}, {"Bob", 44}, {"James", 30}}   
+  myHashSet := datastructures.NewHashSet(foos...)
+  // {{"James", 30}, {"Bob", 44}}
+	
+  // Hash set with custom hash function (only dedupe by name)
+  foos := []foo{{"James", 30}, {"Bob", 44}, {"James", 99}}
+  myHashSet := datastructures.NewHashSetWithHashFn(func(f foo) string {
+      return f.Name
+  }, foos...)
+  // {{"James", 30}, {"Bob", 44}} OR  {{"James", 99}, {"Bob", 44}}
+	
+```
 
 ### Future plans
 - Add an option to enable synchronization of the datastructures to prevent concurrent modification. Right now these datastructures are not thread safe.
