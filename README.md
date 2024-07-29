@@ -209,8 +209,7 @@ Functions prefixed with `Go` will run concurrently, and may be tuned with the ad
     shuffled := functions.Shuffle([]int{1, 2, 3, 4, 5}) // [?, ?, ?, ?, ?]
 ```
 
-### Functions Examples
-
+**Advanced Example**
 ```go
 // Execute an API call concurrently, one for each ID in the list, and return the result, or an error.
 // Rate-limit requests to 10 per second.
