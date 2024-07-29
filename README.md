@@ -57,15 +57,15 @@ Functions prefixed with `Go` will run concurrently, and may be tuned with the ad
   })
   
   // iterate over slice, merge errors and return as a single error.
-  err = functions.EachMergeErrs([]int{1, 2, 3}, func(i int) error {
+  err := functions.EachMergeErrs([]int{1, 2, 3}, func(i int) error {
     if i == 2 {
-      return fmt.Errorf("Error encountered")
+        return fmt.Errorf("Error encountered")
     }
     return nil
   })
 
   // Iterate over slice concurrently, with rate limiting
-  functions.GoEachWithErrs([]{1,2,3}, func(i int) error {
+  errs := functions.GoEachWithErrs([]{1,2,3}, func(i int) error {
 	  if i%2 == 0 {
 		  return fmt.Errorf("Error encountered")
       }
@@ -75,9 +75,9 @@ Functions prefixed with `Go` will run concurrently, and may be tuned with the ad
   // Iterate over map  with rate limiting
   myMap := map[int]string{1: "one", 2: "two", 3: "three"}
   functions.GoEachMapWithErrs(myMap, func(k int, v string) error {
-    if k == 2 {
-      return fmt.Errorf("Error encountered")
-    }
+      if k == 2 {
+          return fmt.Errorf("Error encountered")
+      }
     return nil
   }, functions.RateLimitOption(1, time.Second))
 
@@ -130,7 +130,7 @@ Functions prefixed with `Go` will run concurrently, and may be tuned with the ad
   // Discard result if error is returned.
   // Rate limit requests to 10 per second
   results, errs := functions.GoMapWithErrs([]string{"id1", "id2", "id3"}, func(id string) (Foo, error) {
-        return api.Lookup(i) // returns (Foo, error)
+      return api.Lookup(i) // returns (Foo, error)
   }, functions.RateLimitOption(10, time.Second), functions.DiscardResultIfErrOption())
   
   // Convert slice to a larger slice where each item returns 1+ items
@@ -334,7 +334,7 @@ cache.Set(userID, Person{Name: "James", Age: 30})
 // Get a value from the cache, or if it doesn't exist, look it up from the DB, set it in the cache, and return it
 // This will also be set in the fail-through cache
 cache.GetOrSet(userID, func() (V, error) {
-return db.ReadPerson(userID)
+    return db.ReadPerson(userID)
 })
 
 
@@ -370,8 +370,8 @@ func NewMyServer() *myServer {
 func serveHTTP(w http.ResponseWriter, r *http.Request) {
       clientID := r.Header.Get("X-Client-ID")
       if !limiter.GetRateForClient(clientID) {
-            w.WriteHeader(http.StatusTooManyRequests)
-            return
+          w.WriteHeader(http.StatusTooManyRequests)
+          return
       }
 	  
 	  // Serve request, available rate for client was decremented
@@ -535,7 +535,6 @@ Encrypt with your own password + nonce.
     decrypted, err := ed.Decrypt(encryptedBytes)
     if err != nil {
 		return err
-		
     }
 ```
 
