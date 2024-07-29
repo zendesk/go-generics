@@ -462,20 +462,20 @@ type Person struct {
 
 // From JSON to Person
 input := "{\"name\": \"James\", \"age\": 30}"
-person, err := serialize.NewSerializer[Person]().FromJsonString(input).ToStruct()
+person, err := serialize.NewSerializer[Person]().FromJsonString(input).ToT()
 
 // From Person to JSON
-json, err := serialize.NewSerializer[Person]().FromStruct(person).ToJsonString()
+json, err := serialize.NewSerializer[Person]().FromT(person).ToJsonString()
 
 // From JSON to []*Person
 input = "[{\"name\": \"James\", \"age\": 30}, {\"name\": \"Bob\", \"age\": 44}]"
-people, err := serialize.NewSerializer[[]*Person]().FromJsonString(input).ToStruct()
+people, err := serialize.NewSerializer[[]*Person]().FromJsonString(input).ToT()
 
 // From Person to []byte
-bytes, err := serialize.NewSerializer[any]().FromStruct(person).ToBytes()
+bytes, err := serialize.NewSerializer[any]().FromT(person).ToBytes()
 
 // From Person to B64String
-bytes, err := serialize.NewSerializer[any]().FromStruct(person).ToB64String()
+bytes, err := serialize.NewSerializer[any]().FromT(person).ToB64String()
 
 ```
 
@@ -490,17 +490,18 @@ type Animal struct {
 
 person := Person{Name: "James", Age: 30}
 
-// Test from any to JSON
+// From any to JSON
 jsonStr, err := NewSerializer[any]().FromDynamicType(person).ToJsonString()
 
-// Test to dynamic type
+//  To dynamic type
 var typ T // Animal
-input := "{\"type\": \"Gorilla\", \"age\": 2}"
+input := "{\"type\": \"Gorilla\", \"age\": 2}" // JSON String
 
-// serialize.Reflect indicates that we should use reflection to determine the type of "typ" and deserialize input into that type
+// FromDynamicType: detected the input was of type JSON String,
+// ToDynamicType:   serialize.Reflect indicates that we should use reflection to determine the type of "typ" and deserialize input into that type
 // In this instance, if typ is a struct, `T` will be used to deserialize the input into a struct, if the `typ` is a []byte or string, 
 // then normal deserialization will be used to marshal the input into that type
-gorilla, err := NewSerializer[T]().FromJsonString(input).ToDynamicType(serialize.Reflect, typ)
+gorilla, err := NewSerializer[T]().FromDynamicType(input).ToDynamicType(serialize.Reflect, typ)
 ```
 
 ## Encryption
