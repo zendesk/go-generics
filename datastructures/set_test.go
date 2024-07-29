@@ -310,6 +310,23 @@ func Fuzz_Set_Strings_Random_Length(f *testing.F) {
 	})
 }
 
+func Test_HashSet_CustomType(t *testing.T) {
+	// Hash set automatically dedupes non-comparable types
+	type foo struct {
+		Name string
+		Age  int
+	}
+
+	foos := []foo{{"James", 30}, {"Bob", 44}, {"James", 30}, {"James", 31}}
+	myHashSet := NewHashSet(foos...)
+	// [{"James", 30}, {"Bob", 44}, {"James", 31}]
+
+	test.CheckEqual(myHashSet.Size(), "Size", 3, t)
+	test.CheckContains(myHashSet.Values(), foo{"James", 30}, t)
+	test.CheckContains(myHashSet.Values(), foo{"James", 31}, t)
+	test.CheckContains(myHashSet.Values(), foo{"Bob", 44}, t)
+}
+
 func makeItems(length uint16) []string {
 	items := make([]string, length)
 	for i := range items {
