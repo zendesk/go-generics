@@ -217,13 +217,14 @@ Functions prefixed with `Go` will run concurrently, and may be tuned with the ad
 // If a request returns an error, it will be retried up to 3 times, with a 500 millisecond progressive backoff.
 
 fooIds := []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
+
 foos, errs := functions.GoMapWithErrs(fooIds, func(id string) (Foo, error) {
     foo, err := fooAPI.GetFoo(id)
         if err != nil {
             return Foo{}, fmt.Errorf("Error encountered, this will trigger a retry: %w", err)
         }
     return foo, err
-}, RateLimitOption(10, time.Second), RetryOption(3, time.Millisecond*500), ConcurrencyLimitOption(5))
+}, functions.RateLimitOption(10, time.Second), functions.RetryOption(3, time.Millisecond*500), functions.ConcurrencyLimitOption(5))
 ```
 
 ## Data Structures
