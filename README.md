@@ -192,7 +192,7 @@ Functions prefixed with `Go` will run concurrently, and may be tuned with the ad
   
 - `Intersection[T comparable](a, b []T) []T`
 - `Dedupe[T comparable](items []T) []T`
-- `DedupeByHash[T comparable](items []T, hashFn func(t T) uint64) []T`
+- `DedupeByHash[T comparable](items []T, hashFn func(t T) string) []T`
 - `Shuffle[T any](items []T) []T`
 - `RemoveNils[T any](from []T) []T`
 - `Generalize[T any](from []T) []interface{}`
