@@ -296,7 +296,7 @@ type Person struct {
 ttl := time.Minute
 capacity := uint64(4096)
 cache := cache.NewInMemoryCache[string, Person](ttl,
-    cache.WithCapacity[string, string](capacity)
+    cache.WithCapacity[string, Person](capacity)
 )
 
 // Set a value in the cache
@@ -325,8 +325,8 @@ client, _ := NewRedisClient(redisCfg)
 failThrough := cache.NewRedisCache[K, Person](context.Background(), client, ttl)
 
 cache := cache.NewInMemoryCache[string, Person](ttl,
-    cache.WithCapacity[string, string](capacity),
-    cache.WithFailThroughCache[string, string](failThrough),
+    cache.WithCapacity[string, Person](capacity),
+    cache.WithFailThroughCache[string, Person](failThrough),
 )
 
 // Set a value in the cache (this will also be set in the fail-through cache)
@@ -517,7 +517,6 @@ gorilla, err := NewSerializer[T]().FromDynamicType(input).ToDynamicType(serializ
 
 Encrypt with your own password + nonce.
 ```go
-    // Encrypt / decrypt transparently with a auto-generated passwrod
     type Foo struct {
         Name string
         Age int
@@ -553,7 +552,7 @@ Encrypt with an auto-generated secure password + nonce.
         return err
     }
         
-    decrypted, err := ed.Decrypt(encryptedBytes)
+    decryptedFoo, err := ed.Decrypt(encryptedBytes)
     if err != nil {
 		return err
     }
