@@ -43,6 +43,10 @@ func NewInMemoryCache[K comparable, V any](ttl time.Duration, opts ...CacheOptio
 
 func (c *InMemoryCache[K, V]) Get(key K) (V, bool, error) {
 	var v V
+	if c.cacheIsDisabled() {
+		return v, false, nil
+	}
+
 	item := c.cache.Get(key)
 	if item != nil {
 		return item.Value(), true, nil
@@ -68,6 +72,10 @@ func (c *InMemoryCache[K, V]) Get(key K) (V, bool, error) {
 }
 
 func (c *InMemoryCache[K, V]) Set(key K, val V) error {
+	if c.cacheIsDisabled() {
+		return nil
+	}
+
 	_ = c.cache.Set(key, val, c.ttl)
 
 	// if fail-through is enabled, set in fail-thorugh
@@ -105,6 +113,11 @@ func (c *InMemoryCache[K, V]) Purge() error {
 }
 
 func (c *InMemoryCache[K, V]) GetOrSet(key K, orSet func() (V, error)) (val V, wasFoundInCache bool, err error) {
+	var v V
+	if c.cacheIsDisabled() {
+		return v, false, nil
+	}
+
 	item, wasFound, err := c.Get(key)
 	if wasFound {
 		return item, wasFound, err
@@ -123,4 +136,9 @@ func (c *InMemoryCache[K, V]) GetOrSet(key K, orSet func() (V, error)) (val V, w
 	// Error on SET, so we wrap it in CacheSetError
 	err = CacheSetError{Message: err.Error()}
 	return val, false, err
+}
+
+// TTL is zero, or capacity is 0, we should consider this cache disabled
+func (c *InMemoryCache[K, V]) cacheIsDisabled() bool {
+	return c.ttl == 0 || c.cfg.capacity <= 0
 }

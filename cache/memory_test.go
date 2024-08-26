@@ -111,3 +111,30 @@ func Test_InMemory_WithFailThroughMiss(t *testing.T) {
 	test.CheckErr(err, "No err expected (2) ", t)
 	test.CheckEqual(item, "EMpty string expected", "", t)
 }
+
+func Test_InMemory_ZeroTTL(t *testing.T) {
+	// if no TTL is provided, this cache should not cache anything.
+	cash := cache.NewInMemoryCache[string, string](0,
+		cache.WithCapacity[string, string](uint64(100)))
+
+	err := cash.Set("item1", "foo")
+	test.CheckErr(err, "Unexpecgte derr setting item", t)
+	item, found, err := cash.Get("item1")
+	test.CheckNotOk(found, "Found not expected", t)
+	test.CheckErr(err, "No err expected", t)
+	test.CheckEqual(item, "Empty string expected", "", t)
+
+}
+
+func Test_InMemory_Zero_Size(t *testing.T) {
+	// if size is 0, this should not cache anything.
+	cash := cache.NewInMemoryCache[string, string](time.Second,
+		cache.WithCapacity[string, string](uint64(0)))
+	err := cash.Set("item1", "foo")
+	test.CheckErr(err, "Unexpected err setting item", t)
+	item, found, err := cash.Get("item1")
+	test.CheckNotOk(found, "Found not expected", t)
+	test.CheckErr(err, "No err expected", t)
+	test.CheckEqual(item, "EMpty string expected", "", t)
+
+}
