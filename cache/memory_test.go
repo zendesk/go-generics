@@ -131,7 +131,7 @@ func Test_InMemory_Zero_Size(t *testing.T) {
 	cash := cache.NewInMemoryCache[string, string](time.Second,
 		cache.WithCapacity[string, string](uint64(0)))
 	err := cash.Set("item1", "foo")
-	test.CheckErr(err, "Unexpecgte derr setting item", t)
+	test.CheckErr(err, "Unexpected err setting item", t)
 	item, found, err := cash.Get("item1")
 	test.CheckNotOk(found, "Found not expected", t)
 	test.CheckErr(err, "No err expected", t)

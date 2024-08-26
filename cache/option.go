@@ -9,7 +9,10 @@ type CacheCfg[K comparable, V any] struct {
 type CacheOption[K comparable, V any] func(cfg CacheCfg[K, V]) CacheCfg[K, V]
 
 func SetOpts[K comparable, V any](opts ...CacheOption[K, V]) CacheCfg[K, V] {
-	cfg := CacheCfg[K, V]{}
+	cfg := CacheCfg[K, V]{
+		capacity: ^uint64(0), // default capacity to maximum size,
+	}
+
 	for _, opt := range opts {
 		cfg = opt(cfg)
 	}

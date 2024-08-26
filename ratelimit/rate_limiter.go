@@ -85,10 +85,10 @@ func (rl *RateLimiter) getRate(ctx context.Context, clientID string) bool {
 
 	if err != nil {
 		if rl.gateType == FailOpen {
-			slog.ErrorContext(ctx, "Got error attempting to receive rate. Allowing rate b/c gate is FailOpen. Err: %+v", err)
+			slog.ErrorContext(ctx, fmt.Sprintf("Got error attempting to receive rate. Allowing rate b/c gate is FailOpen. Err: %+v", err))
 			return true
 		} else {
-			slog.ErrorContext(ctx, "Got error attempting to receive rate. Denying rate b/c gate is FailClosed. Err: %+v", err)
+			slog.ErrorContext(ctx, fmt.Sprintf("Got error attempting to receive rate. Denying rate b/c gate is FailClosed. Err: %+v", err))
 			return false
 		}
 	}
