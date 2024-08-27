@@ -112,7 +112,7 @@ func Test_InMemory_WithFailThroughMiss(t *testing.T) {
 	test.CheckEqual(item, "EMpty string expected", "", t)
 }
 
-func Test_InMemory_ZeroTTL(t *testing.T) {
+func Test_InMemory_Zero_TTL(t *testing.T) {
 	// if no TTL is provided, this cache should not cache anything.
 	cash := cache.NewInMemoryCache[string, string](0,
 		cache.WithCapacity[string, string](uint64(100)))
@@ -123,6 +123,13 @@ func Test_InMemory_ZeroTTL(t *testing.T) {
 	test.CheckNotOk(found, "Found not expected", t)
 	test.CheckErr(err, "No err expected", t)
 	test.CheckEqual(item, "Empty string expected", "", t)
+
+	item, found, err = cash.GetOrSet("item1", func() (string, error) {
+		return "foo", nil
+	})
+	test.CheckNotOk(found, "Found not expected", t)
+	test.CheckErr(err, "No err expected", t)
+	test.CheckEqual(item, "Foo expected", "foo", t)
 
 }
 
@@ -136,5 +143,12 @@ func Test_InMemory_Zero_Size(t *testing.T) {
 	test.CheckNotOk(found, "Found not expected", t)
 	test.CheckErr(err, "No err expected", t)
 	test.CheckEqual(item, "EMpty string expected", "", t)
+
+	item, found, err = cash.GetOrSet("item1", func() (string, error) {
+		return "foo", nil
+	})
+	test.CheckNotOk(found, "Found not expected", t)
+	test.CheckErr(err, "No err expected", t)
+	test.CheckEqual(item, "Foo expected", "foo", t)
 
 }
