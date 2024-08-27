@@ -113,9 +113,9 @@ func (c *InMemoryCache[K, V]) Purge() error {
 }
 
 func (c *InMemoryCache[K, V]) GetOrSet(key K, orSet func() (V, error)) (val V, wasFoundInCache bool, err error) {
-	var v V
 	if c.cacheIsDisabled() {
-		return v, false, nil
+		val, err = orSet()
+		return val, false, err
 	}
 
 	item, wasFound, err := c.Get(key)
