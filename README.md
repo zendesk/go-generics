@@ -295,15 +295,15 @@ type Person struct {
 }
 ttl := time.Minute
 capacity := uint64(4096)
-cache := cache.NewInMemoryCache[string, Person](ttl,
+cash := cache.NewInMemoryCache[string, Person](ttl,
     cache.WithCapacity[string, Person](capacity)
 )
 
 // Set a value in the cache
-cache.Set(userID, Person{Name: "James", Age: 30})
+cash.Set(userID, Person{Name: "James", Age: 30})
 
 // Get a value from the cache, or if it doesn't exist, look it up from the DB, set it in the cache, and return it
-cache.GetOrSet(userID, func() (V, error) { 
+cash.GetOrSet(userID, func() (V, error) { 
 	return db.ReadPerson(userID)
 })
 ```
@@ -324,17 +324,17 @@ capacity := uint64(4096)
 client, _ := NewRedisClient(redisCfg)
 failThrough := cache.NewRedisCache[K, Person](context.Background(), client, ttl)
 
-cache := cache.NewInMemoryCache[string, Person](ttl,
+cash := cache.NewInMemoryCache[string, Person](ttl,
     cache.WithCapacity[string, Person](capacity),
     cache.WithFailThroughCache[string, Person](failThrough),
 )
 
 // Set a value in the cache (this will also be set in the fail-through cache)
-cache.Set(userID, Person{Name: "James", Age: 30})
+cash.Set(userID, Person{Name: "James", Age: 30})
 
 // Get a value from the cache, or if it doesn't exist, look it up from the DB, set it in the cache, and return it
 // This will also be set in the fail-through cache
-cache.GetOrSet(userID, func() (V, error) {
+cash.GetOrSet(userID, func() (V, error) {
     return db.ReadPerson(userID)
 })
 
@@ -342,6 +342,64 @@ cache.GetOrSet(userID, func() (V, error) {
 // Get a value from the cache, if it is found in the fail-through cache, it will be added to the primary cache as it is returned.
 user, wasFound, err := cache.Get(userID)
 ```
+
+Example 3: Cache with Datadog Metric Tracking
+
+```go 
+// In Memory Cache with DD metric tracking
+import (
+    "github.com/DataDog/datadog-go/v5/statsd"
+)
+
+type cacheObs[K comparable] struct {
+    statsd *statsd.Client
+	tags []string
+}
+
+func (c *cacheObs[K]) Hit(k K) {
+	c.statsd.Incr("foo.cache.hit", c.tags, 1)
+}
+
+func (c *cacheObs[K]) Miss(k K) {
+    c.statsd.Incr("foo.cache.miss", c.tags, 1)
+}
+
+func (c *cacheObs[K]) Get(k K) {
+	c.statsd.Incr("foo.cache.get", c.tags, 1)
+}
+
+func (c *cacheObs[K]) Set(k K) {
+    c.statsd.Incr("foo.cache.set", c.tags, 1)
+}
+
+func (c *cacheObs[K]) Delete(k K) {
+    c.statsd.Incr("foo.cache.delete", c.tags, 1)
+}
+
+func (c *cacheObs[K]) Purge() {
+	c.statsd.Incr("foo.cache.purge", c.tags, 1)
+}
+
+client, err := statsd.New(fmt.Sprintf("%s:%d", statsdHost, statsdPort), statsd.WithNamespace(fmt.Sprintf("%s.", "foo")))
+if err != nil {
+    return nil, fmt.Errorf("error initialising statsd client: %w", err)
+}
+
+cacheObserver := &cacheObs[K string]{statsd: client, tags: []string{"service:foo"}}
+
+ttl := time.Minute
+capacity := uint64(4096)
+memoryCache := cache.NewInMemoryCache[string, Person](ttl,
+    cache.WithCapacity[string, Person](capacity)
+)
+
+cash := cache.NewCache[string, Person](memoryCache, cache.WithObserver[string, Person](cacheObserver))
+
+// Set a value in the cache
+cash.Set(userID, Person{Name: "James", Age: 30})
+
+```
+
 
 ## RateLimiter
 
