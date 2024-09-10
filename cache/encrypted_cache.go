@@ -17,18 +17,18 @@ type Item[K comparable, V any] interface {
 type EncryptedCache[K comparable, V any] struct {
 	ed      *encryption.EncryptorDecryptor[V]
 	backend CacheBackendAdapter[K, []byte]
-	cfg     CacheCfg[K, V]
+	cfg     cacheBackendCfg[K, V]
 }
 
 // NewEncryptedCache provides a new EncryptedCache with default configurations that provides a balance of performance and security. Selecting a # of iterations that is difficult to guess
 // and high enough to make encrypt / decrypt durations sufficiently long to deter brute force attack is recommended. Minimum 2048 iterations is recommended
-func NewEncryptedCache[K comparable, V any](backend CacheBackendAdapter[K, []byte], salt []byte, iterations int, opts ...CacheOption[K, V]) (*EncryptedCache[K, V], error) {
+func NewEncryptedCache[K comparable, V any](backend CacheBackendAdapter[K, []byte], salt []byte, iterations int, opts ...CacheBackendOption[K, V]) (*EncryptedCache[K, V], error) {
 	return NewEncryptedCacheWithIterations[K, V](backend, salt, iterations, opts...)
 }
 
 // NewEncryptedCacheWithIterations allows the user to specify a number of iterations which influences work factor for the cache.
-func NewEncryptedCacheWithIterations[K comparable, V any](backend CacheBackendAdapter[K, []byte], salt []byte, iterations int, opts ...CacheOption[K, V]) (*EncryptedCache[K, V], error) {
-	cfg := SetOpts(opts...)
+func NewEncryptedCacheWithIterations[K comparable, V any](backend CacheBackendAdapter[K, []byte], salt []byte, iterations int, opts ...CacheBackendOption[K, V]) (*EncryptedCache[K, V], error) {
+	cfg := setBackendOpts(opts...)
 
 	ed, err := encryption.New[V](salt, iterations)
 	if err != nil {
@@ -43,8 +43,8 @@ func NewEncryptedCacheWithIterations[K comparable, V any](backend CacheBackendAd
 	return e, nil
 }
 
-func NewEncryptedCacheWithPasswordNonce[K comparable, V any](backend CacheBackendAdapter[K, []byte], password, nonce, salt []byte, iterations int, opts ...CacheOption[K, V]) (*EncryptedCache[K, V], error) {
-	cfg := SetOpts(opts...)
+func NewEncryptedCacheWithPasswordNonce[K comparable, V any](backend CacheBackendAdapter[K, []byte], password, nonce, salt []byte, iterations int, opts ...CacheBackendOption[K, V]) (*EncryptedCache[K, V], error) {
+	cfg := setBackendOpts(opts...)
 
 	ed, err := encryption.NewWithPasswordNonce[V](password, nonce, salt, iterations)
 	if err != nil {

@@ -22,12 +22,12 @@ type RedisCache[K comparable, V any] struct {
 	client Redis
 	ctx    context.Context
 	ttl    time.Duration
-	cfg    CacheCfg[K, V]
+	cfg    cacheBackendCfg[K, V]
 }
 
 // NewRedisCache provisions a new RedisCache
-func NewRedisCache[K comparable, V any](ctx context.Context, client Redis, ttl time.Duration, opts ...CacheOption[K, V]) CacheBackendAdapter[K, V] {
-	cfg := SetOpts(opts...)
+func NewRedisCache[K comparable, V any](ctx context.Context, client Redis, ttl time.Duration, opts ...CacheBackendOption[K, V]) CacheBackendAdapter[K, V] {
+	cfg := setBackendOpts(opts...)
 
 	cache := RedisCache[K, V]{
 		ctx:    ctx,

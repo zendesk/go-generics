@@ -11,12 +11,12 @@ type InMemoryCache[K comparable, V any] struct {
 	cache       *ttlcache.Cache[K, V]
 	ttl         time.Duration
 	failThrough CacheBackendAdapter[K, V]
-	cfg         CacheCfg[K, V]
+	cfg         cacheBackendCfg[K, V]
 }
 
 // NewInMemoryCache provisions a new InMemoryCache
-func NewInMemoryCache[K comparable, V any](ttl time.Duration, opts ...CacheOption[K, V]) CacheBackendAdapter[K, V] {
-	cfg := SetOpts(opts...)
+func NewInMemoryCache[K comparable, V any](ttl time.Duration, opts ...CacheBackendOption[K, V]) CacheBackendAdapter[K, V] {
+	cfg := setBackendOpts(opts...)
 
 	ttlOpts := []ttlcache.Option[K, V]{
 		ttlcache.WithTTL[K, V](ttl),
