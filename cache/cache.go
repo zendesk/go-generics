@@ -37,8 +37,8 @@ type CacheObserver[K comparable] interface {
 	Purge()
 }
 
-func NewCache[K comparable, V any](backend CacheBackendAdapter[K, V], opts CacheOption[K, V]) Cache[K, V] {
-	cfg := setCacheOpts(opts)
+func NewCache[K comparable, V any](backend CacheBackendAdapter[K, V], opts ...CacheOption[K, V]) Cache[K, V] {
+	cfg := setCacheOpts(opts...)
 
 	cash := &cache[K, V]{
 		cfg:     cfg,
