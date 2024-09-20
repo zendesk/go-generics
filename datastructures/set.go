@@ -1,5 +1,7 @@
 package datastructures
 
+import "iter"
+
 // A simple set implementation with comparable keys. Use this instead of manually managing your own map[V]struct{}
 // Inspired by https://github.com/zyedidia/generic
 // For more complex uses (hashset, mapset), try: https://github.com/zyedidia/generic
@@ -14,6 +16,7 @@ type ISet[V any] interface {
 	Size() int
 	Values() []V
 	New() ISet[V]
+	All() iter.Seq2[int, V]
 }
 
 type Set[V any] struct {

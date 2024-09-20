@@ -262,6 +262,24 @@ The `types` package contains some conspicuously missing go data structures, incl
 	
 ```
 
+#### Iteration
+
+Both `hashSet` and `comparableSet` now support iterating over the elements in the order they were inserted using the `All` method.
+
+```go
+// Iterate over hashSet
+set := datastructures.NewHashSet(myObjects...)
+for i, v := range set.All() {
+    fmt.Println(v)
+}
+
+// Iterate over comparableSet
+set := datastructures.NewComparableSet(myValues...)
+for i, v := range set.All() {
+    fmt.Println(v)
+}
+```
+
 ### Future plans
 - Add an option to enable synchronization of the datastructures to prevent concurrent modification. Right now these datastructures are not thread safe.
 
