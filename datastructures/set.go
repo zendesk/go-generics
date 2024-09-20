@@ -116,6 +116,9 @@ func (s Set[V]) Clear() {
 
 // Size returns the number of elements in the set.
 func (s Set[V]) Size() int {
+	if s.set == nil {
+		return 0
+	}
 	return s.set.Size()
 }
 

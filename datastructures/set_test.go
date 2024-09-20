@@ -246,6 +246,15 @@ func Test_Set(t *testing.T) {
 	}
 }
 
+// Test_Size_Should_Not_Panic tests that calling Size() on a struct with a Set field should not panic
+func Test_Size_Should_Not_Panic(t *testing.T) {
+	type SomeStruct struct {
+		MySet Set[int]
+	}
+	s := SomeStruct{}
+	s.MySet.Size()
+}
+
 // Fuzz_Set is a fuzz test for the SetOf operations, byte slice is the only compatible dynamic length input for fuzzing
 func Fuzz_Set(f *testing.F) {
 	f.Add([]byte{})
