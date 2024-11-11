@@ -1,7 +1,9 @@
 package functions
 
 import (
+	"fmt"
 	"sort"
+	"strings"
 	"testing"
 	"time"
 
@@ -159,4 +161,40 @@ func FuzzGoMapToManyWithErrsRateLimitTest(f *testing.F) {
 			t.Fatalf("FAILURE: Process took %f millis. Expected at least %f", totalTime, minProcessTime)
 		}
 	})
+}
+
+func Test_GoMapToMany_DiscardResultsIfErr(t *testing.T) {
+	errOnEvens := func(i int) ([]int, error) {
+		if i%2 == 0 {
+			return []int{i, i}, fmt.Errorf("error: %d.", i)
+		} else {
+			return []int{i, i}, nil
+		}
+	}
+
+	items := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	expected := []int{1, 1, 3, 3, 5, 5, 7, 7, 9, 9}
+	results, foundErrs := GoMapToManyWithErrs(items, errOnEvens, DiscardResultIfErrOption(), RandomOrderOption())
+	sort.Slice(results, func(i, j int) bool {
+		return results[i] < results[j]
+	})
+
+	foundMergedErrs := MergeErrors(foundErrs...)
+	expectedErrsFound := strings.Contains(foundMergedErrs.Error(), "error: 2.") &&
+		strings.Contains(foundMergedErrs.Error(), "error: 4.") &&
+		strings.Contains(foundMergedErrs.Error(), "error: 6.") &&
+		strings.Contains(foundMergedErrs.Error(), "error: 8.") &&
+		strings.Contains(foundMergedErrs.Error(), "error: 10.")
+
+	missingErrorsAreMissing := strings.Contains(foundMergedErrs.Error(), "error: 1.") ||
+		strings.Contains(foundMergedErrs.Error(), "error: 3.") ||
+		strings.Contains(foundMergedErrs.Error(), "error: 5.") ||
+		strings.Contains(foundMergedErrs.Error(), "error: 7.") ||
+		strings.Contains(foundMergedErrs.Error(), "error: 9.")
+
+	test.CheckEqual(results, "Expected Odds", expected, t)
+	t.Logf("results: %+v", results)
+
+	test.CheckOk(expectedErrsFound, "Expected errors do not exist", t)
+	test.CheckOk(!missingErrorsAreMissing, "Errors have been found that shouldn't be here!", t)
 }
