@@ -34,12 +34,14 @@ Functions prefixed with `Go` will run concurrently, and may be tuned with the ad
 - `EqualIgnoreOrder[T comparable](slices ...[]T) bool`
 - `Contains[T comparable](list []T, item T) bool`
 - `ContainsAny[T comparable](A []T, B []T) bool`
+- `ContainsAll[T comparable](A[]T, B[]T) bool`
 - `ContainsDeepEqual[T any](list []T, item T) bool`
 
 ```go
    functions.EqualIgnoreOrder([]int{1, 2, 3}, []int{3, 2, 1}) // true
    functions.Contains([]int{1, 2, 3}, 2) // true
    functions.ContainsAny([]int{1, 2, 3}, []int{4, 5, 6}) // false
+   functions.ContainsAll([]int{1, 2, 3}, []int{1, 2}) // true
 ```
 
 ### Iterative

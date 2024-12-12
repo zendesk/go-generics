@@ -24,6 +24,64 @@ func TestContains(t *testing.T) {
 	test.CheckEqual(Contains([]int{1, 2, 3, 4}, 0), "Test1", false, t)
 	test.CheckEqual(Contains([]float64{1.11, 2.22, 3.33, 4.44}, 4.444), "Test1", false, t)
 }
+func TestContainsSublist(t *testing.T) {
+	tests := []struct {
+		name     string
+		list1    []int
+		list2    []int
+		expected bool
+	}{
+		{
+			name:     "Sublist exists in the middle",
+			list1:    []int{1, 2, 3, 4, 5},
+			list2:    []int{2, 3},
+			expected: true,
+		},
+		{
+			name:     "Sublist exists at the start",
+			list1:    []int{1, 2, 3, 4, 5},
+			list2:    []int{1, 2},
+			expected: true,
+		},
+		{
+			name:     "Sublist exists at the end",
+			list1:    []int{1, 2, 3, 4, 5},
+			list2:    []int{4, 5},
+			expected: true,
+		},
+		{
+			name:     "Sublist does not need to be contiguous",
+			list1:    []int{1, 2, 3, 4, 5},
+			list2:    []int{3, 5}, // Not contiguous
+			expected: true,
+		},
+		{
+			name:     "Empty sublist",
+			list1:    []int{1, 2, 3, 4, 5},
+			list2:    []int{},
+			expected: false,
+		},
+		{
+			name:     "Sublist larger than main list",
+			list1:    []int{1, 2},
+			list2:    []int{1, 2, 3},
+			expected: false,
+		},
+		{
+			name:     "Identical lists",
+			list1:    []int{1, 2, 3},
+			list2:    []int{1, 2, 3},
+			expected: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := ContainsAll(tt.list1, tt.list2)
+			test.CheckEqual(result, tt.name, tt.expected, t)
+		})
+	}
+}
 
 type thing1 struct{}
 type IsAThing = string

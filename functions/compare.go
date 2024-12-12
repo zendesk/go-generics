@@ -77,3 +77,30 @@ func ContainsDeepEqual[T any](list []T, item T) bool {
 	}
 	return false
 }
+
+// ContainsAll checks if all elements of the second list exist in the first list, ignoring order.
+func ContainsAll[T comparable](list1, list2 []T) bool {
+
+	if len(list2) == 0 {
+		return false
+	}
+
+	// Create a map to count occurrences of elements in list1
+	countMap := make(map[T]int)
+
+	// Populate the map with counts of each element in list1
+	for _, item := range list1 {
+		countMap[item]++
+	}
+
+	// Check if all elements in list2 exist in the countMap
+	for _, item := range list2 {
+		if countMap[item] == 0 {
+			return false // If an element in list2 is not found in list1, return false
+		}
+		countMap[item]-- // Decrease the count for the found element
+	}
+
+	// All elements in list2 are found in list1
+	return true
+}
