@@ -33,44 +33,50 @@ func TestContainsSublist(t *testing.T) {
 	}{
 		{
 			name:     "Sublist exists in the middle",
-			list1:    []int{1, 2, 3, 4, 5},
-			list2:    []int{2, 3},
+			list1:    []int{2, 3},
+			list2:    []int{1, 2, 3, 4, 5},
 			expected: true,
 		},
 		{
 			name:     "Sublist exists at the start",
-			list1:    []int{1, 2, 3, 4, 5},
-			list2:    []int{1, 2},
+			list1:    []int{1, 2},
+			list2:    []int{1, 2, 3, 4, 5},
 			expected: true,
 		},
 		{
 			name:     "Sublist exists at the end",
-			list1:    []int{1, 2, 3, 4, 5},
-			list2:    []int{4, 5},
+			list1:    []int{4, 5},
+			list2:    []int{1, 2, 3, 4, 5},
 			expected: true,
 		},
 		{
 			name:     "Sublist does not need to be contiguous",
-			list1:    []int{1, 2, 3, 4, 5},
-			list2:    []int{3, 5}, // Not contiguous
+			list1:    []int{3, 5}, // Not contiguous
+			list2:    []int{1, 2, 3, 4, 5},
 			expected: true,
 		},
 		{
-			name:     "Empty sublist",
-			list1:    []int{1, 2, 3, 4, 5},
-			list2:    []int{},
-			expected: false,
+			name:     "Empty list 1",
+			list1:    []int{},
+			list2:    []int{1, 2, 3, 4, 5},
+			expected: true,
 		},
 		{
 			name:     "Sublist larger than main list",
-			list1:    []int{1, 2},
-			list2:    []int{1, 2, 3},
+			list1:    []int{1, 2, 3},
+			list2:    []int{1, 2},
 			expected: false,
 		},
 		{
 			name:     "Identical lists",
 			list1:    []int{1, 2, 3},
 			list2:    []int{1, 2, 3},
+			expected: true,
+		},
+		{
+			name:     "list 2 is longer, but still contains all elements from list 1",
+			list1:    []int{1, 2, 3},
+			list2:    []int{1, 2, 3, 4, 5},
 			expected: true,
 		},
 	}
