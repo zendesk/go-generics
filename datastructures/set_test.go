@@ -164,6 +164,7 @@ func Test_Set(t *testing.T) {
 	c := []int{99, 100, 101}
 	d := []int{1, 2}
 	nilSet := Set[int]{}
+	nilSet2 := Set[int]{}
 
 	// NewFunc, Func name (for test errs)
 	var newFuncs = []func(values ...int) (Set[int], string){
@@ -193,6 +194,7 @@ func Test_Set(t *testing.T) {
 
 		// Diff with nil
 		test.CheckComparableEqualIgnoreOrder(aSet.Difference(nilSet).Values(), fmt.Sprintf("%s: %s", name, "A - nil"), []int{1, 2, 3}, t)
+		test.CheckComparableEqualIgnoreOrder(nilSet.Difference(nilSet2).Values(), fmt.Sprintf("%s: %s", name, "nil - nil"), []int{}, t)
 
 		// Intersection
 		test.CheckComparableEqualIgnoreOrder(aSet.Intersection(bSet).Values(), fmt.Sprintf("%s: %s", name, "A ∩ B"), []int{3}, t)
@@ -236,7 +238,7 @@ func Test_Set(t *testing.T) {
 
 		// SymmetricDifference
 		test.CheckComparableEqualIgnoreOrder(aSet.SymmetricDifference(bSet).Keys(), fmt.Sprintf("%s: %s", name, "Symmetric Diff"), []int{1, 2, 4, 5}, t)
-
+		
 		// In Place
 		aClone := aSet.Clone()
 		test.CheckComparableEqualIgnoreOrder(aClone.InPlaceIntersection(bSet).Values(), fmt.Sprintf("%s: %s", name, "InPlaceIntersection"), []int{3}, t)
