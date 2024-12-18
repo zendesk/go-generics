@@ -1,6 +1,9 @@
 package datastructures
 
-import "iter"
+import (
+	"encoding/json"
+	"iter"
+)
 
 // A simple set implementation with comparable keys. Use this instead of manually managing your own map[V]struct{}
 // Inspired by https://github.com/zyedidia/generic
@@ -252,4 +255,8 @@ func (s Set[V]) init() Set[V] {
 	}
 
 	return s
+}
+
+func (s Set[V]) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.set.Values())
 }

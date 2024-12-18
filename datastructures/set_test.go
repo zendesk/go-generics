@@ -1,6 +1,7 @@
 package datastructures
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
@@ -374,4 +375,16 @@ func dedupe[T comparable](items []T) []T {
 	}
 
 	return deduped
+}
+
+func Test_JSON_Support(t *testing.T) {
+	set := NewSet(1, 2, 3, 4, 5)
+	jsonBytes, err := json.Marshal(set)
+	test.CheckErr(err, "error marshalling json", t)
+	test.CheckEqual("[1,2,3,4,5]", "integers", string(jsonBytes), t)
+
+	set2 := NewSet("1", "2", "3")
+	jsonBytes, err = json.Marshal(set2)
+	test.CheckErr(err, "error marshalling json", t)
+	test.CheckEqual(`["1","2","3"]`, "strings", string(jsonBytes), t)
 }
