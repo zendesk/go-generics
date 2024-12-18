@@ -1,6 +1,9 @@
 package datastructures
 
-import "iter"
+import (
+	"encoding/json"
+	"iter"
+)
 
 // A simple set implementation with comparable keys. Use this instead of manually managing your own map[V]struct{}
 // Inspired by https://github.com/zyedidia/generic
@@ -240,4 +243,8 @@ func (s Set[V]) IsProperSuperset(to Set[V]) bool {
 // All returns an iterator that yields all elements in the set in the order they were inserted.
 func (s Set[V]) All() iter.Seq2[int, V] {
 	return s.set.All()
+}
+
+func (s Set[V]) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.set.Values())
 }
