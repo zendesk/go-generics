@@ -163,6 +163,7 @@ func Test_Set(t *testing.T) {
 	b := []int{3, 4, 5}
 	c := []int{99, 100, 101}
 	d := []int{1, 2}
+	nilSet := Set[int]{}
 
 	// NewFunc, Func name (for test errs)
 	var newFuncs = []func(values ...int) (Set[int], string){
@@ -190,13 +191,22 @@ func Test_Set(t *testing.T) {
 		test.CheckComparableEqualIgnoreOrder(aSet.Difference(bSet).Values(), fmt.Sprintf("%s: %s", name, "A - B"), []int{1, 2}, t)
 		test.CheckComparableEqualIgnoreOrder(bSet.Difference(aSet).Values(), fmt.Sprintf("%s: %s", name, "B - A"), []int{4, 5}, t)
 
+		// Diff with nil
+		test.CheckComparableEqualIgnoreOrder(aSet.Difference(nilSet).Values(), fmt.Sprintf("%s: %s", name, "A - nil"), []int{1, 2, 3}, t)
+
 		// Intersection
 		test.CheckComparableEqualIgnoreOrder(aSet.Intersection(bSet).Values(), fmt.Sprintf("%s: %s", name, "A ∩ B"), []int{3}, t)
 		test.CheckComparableEqualIgnoreOrder(bSet.Intersection(aSet).Values(), fmt.Sprintf("%s: %s", name, "B ∩ A"), []int{3}, t)
 
+		// Intersect with nil
+		test.CheckComparableEqualIgnoreOrder(aSet.Intersection(nilSet).Values(), fmt.Sprintf("%s: %s", name, "A ∩ nil"), []int{}, t)
+
 		// Union
 		test.CheckComparableEqualIgnoreOrder(aSet.Union(bSet).Values(), fmt.Sprintf("%s: %s", name, "A U B"), []int{1, 2, 3, 4, 5}, t)
 		test.CheckComparableEqualIgnoreOrder(bSet.Union(aSet).Values(), fmt.Sprintf("%s: %s", name, "B U A"), []int{1, 2, 3, 4, 5}, t)
+
+		// Union with nil
+		test.CheckComparableEqualIgnoreOrder(aSet.Union(nilSet).Values(), fmt.Sprintf("%s: %s", name, "A U nil"), []int{1, 2, 3}, t)
 
 		// IsDisjoint
 		test.CheckNotOk(aSet.IsDisjoint(bSet), fmt.Sprintf("%s: %s", name, "Not Disjoint"), t)
@@ -231,9 +241,17 @@ func Test_Set(t *testing.T) {
 		aClone := aSet.Clone()
 		test.CheckComparableEqualIgnoreOrder(aClone.InPlaceIntersection(bSet).Values(), fmt.Sprintf("%s: %s", name, "InPlaceIntersection"), []int{3}, t)
 		aClone = aSet.Clone()
+		test.CheckComparableEqualIgnoreOrder(aClone.InPlaceIntersection(nilSet).Values(), fmt.Sprintf("%s: %s", name, "InPlaceIntersection nil"), []int{}, t)
+
+		aClone = aSet.Clone()
 		test.CheckComparableEqualIgnoreOrder(aClone.InPlaceUnion(bSet).Values(), fmt.Sprintf("%s: %s", name, "InPlaceUnion"), []int{1, 2, 3, 4, 5}, t)
 		aClone = aSet.Clone()
+		test.CheckComparableEqualIgnoreOrder(aClone.InPlaceUnion(nilSet).Values(), fmt.Sprintf("%s: %s", name, "InPlaceUnion nil"), []int{1, 2, 3}, t)
+
+		aClone = aSet.Clone()
 		test.CheckComparableEqualIgnoreOrder(aClone.InPlaceDifference(bSet).Values(), fmt.Sprintf("%s: %s", name, "InPlaceDifference"), []int{1, 2}, t)
+		aClone = aSet.Clone()
+		test.CheckComparableEqualIgnoreOrder(aClone.InPlaceDifference(nilSet).Values(), fmt.Sprintf("%s: %s", name, "InPlaceDifference nil"), []int{1, 2, 3}, t)
 
 		// EachWithErrs
 		errs := aSet.EachWithErrs(func(i int) error {
