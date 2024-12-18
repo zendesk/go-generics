@@ -246,7 +246,7 @@ func (s Set[V]) IsProperSuperset(to Set[V]) bool {
 
 // All returns an iterator that yields all elements in the set in the order they were inserted.
 func (s Set[V]) All() iter.Seq2[int, V] {
-	return s.init().All()
+	return s.init().set.All()
 }
 
 func (s Set[V]) init() Set[V] {
