@@ -258,5 +258,5 @@ func (s Set[V]) init() Set[V] {
 }
 
 func (s Set[V]) MarshalJSON() ([]byte, error) {
-	return json.Marshal(s.set.Values())
+	return json.Marshal(s.init().set.Values())
 }
