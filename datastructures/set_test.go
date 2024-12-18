@@ -378,8 +378,14 @@ func dedupe[T comparable](items []T) []T {
 }
 
 func Test_JSON_Support(t *testing.T) {
-	set := NewSet(1, 2, 3, 4, 5)
+	// Test if set is uniitialized
+	set := Set[int]{}
 	jsonBytes, err := json.Marshal(set)
+	test.CheckErr(err, "error marshalling json", t)
+	test.CheckEqual("[]", "nil set", string(jsonBytes), t)
+
+	set = NewSet(1, 2, 3, 4, 5)
+	jsonBytes, err = json.Marshal(set)
 	test.CheckErr(err, "error marshalling json", t)
 	test.CheckEqual("[1,2,3,4,5]", "integers", string(jsonBytes), t)
 
