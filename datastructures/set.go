@@ -96,22 +96,22 @@ func (s Set[V]) EachWithErrs(fn func(key V) error) []error {
 
 // Has returns true only if 'val' is in the set.
 func (s Set[V]) Has(k V) bool {
-	return s.set.Has(k)
+	return s.init().set.Has(k)
 }
 
 // Remove removes 'val' from the set.
 func (s Set[V]) Remove(k V) {
-	s.set.Remove(k)
+	s.init().set.Remove(k)
 }
 
 // Put adds 'val' to the set.
 func (s Set[V]) Put(k V) {
-	s.set.Put(k)
+	s.init().set.Put(k)
 }
 
 // Clear removes all elements from the set.
 func (s Set[V]) Clear() {
-	s.set.Clear()
+	s.init().set.Clear()
 }
 
 // Size returns the number of elements in the set.
@@ -119,13 +119,17 @@ func (s Set[V]) Size() int {
 	if s.set == nil {
 		return 0
 	}
-	return s.set.Size()
+	return s.init().set.Size()
 }
 
 // Clone returns a copy of this set.
 func (s Set[V]) Clone() Set[V] {
-	new := Set[V]{set: s.set.New()}
-	new.set = s.set.Copy()
+	if s.set == nil {
+		s.set = newHashSet[V]()
+	}
+
+	new := Set[V]{set: s.init().set.New()}
+	new.set = s.init().set.Copy()
 	return new
 }
 
@@ -179,7 +183,7 @@ func (s Set[V]) InPlaceUnion(others ...Set[V]) Set[V] {
 }
 
 func (s Set[V]) Values() []V {
-	return s.set.Values()
+	return s.init().set.Values()
 }
 
 func (s Set[V]) Keys() []V {
@@ -239,5 +243,13 @@ func (s Set[V]) IsProperSuperset(to Set[V]) bool {
 
 // All returns an iterator that yields all elements in the set in the order they were inserted.
 func (s Set[V]) All() iter.Seq2[int, V] {
-	return s.set.All()
+	return s.init().All()
+}
+
+func (s Set[V]) init() Set[V] {
+	if s.set == nil {
+		s.set = newHashSet[V]()
+	}
+
+	return s
 }
