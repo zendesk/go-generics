@@ -125,3 +125,18 @@ func (s *hashSet[V]) All() iter.Seq2[int, V] {
 		}
 	}
 }
+
+// String returns a string representation of the hashSet.
+func (s *hashSet[V]) String() string {
+	str := ""
+	for i, key := range s.order {
+		if i > 0 {
+			str += ", "
+		}
+		str += fmt.Sprintf("%v", s.values[key])
+	}
+	return str
+}
+
+// ensure hashSet conforms to the ISet interface
+var _ ISet[int] = &hashSet[int]{}

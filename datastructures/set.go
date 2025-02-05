@@ -17,6 +17,7 @@ type ISet[V any] interface {
 	Clear()
 	Copy() ISet[V]
 	Size() int
+	String() string
 	Values() []V
 	New() ISet[V]
 	All() iter.Seq2[int, V]
@@ -83,6 +84,11 @@ func (s Set[V]) Each(fn func(v V)) {
 	for _, val := range s.Values() {
 		fn(val)
 	}
+}
+
+// String returns a string representation of the set.
+func (s Set[V]) String() string {
+	return s.init().set.String()
 }
 
 // EachWithErrs calls 'fn' on every item in the set in no particular order. All errors are aggregated and returned

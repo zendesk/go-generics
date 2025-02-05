@@ -3,6 +3,7 @@ package datastructures
 import (
 	"reflect"
 	"sort"
+	"strconv"
 	"testing"
 
 	"github.com/zendesk/go-generics/internal/test"
@@ -12,6 +13,11 @@ import (
 type Person struct {
 	Name string
 	Age  int
+}
+
+// String returns a string representation of the Person struct
+func (p Person) String() string {
+	return p.Name + " is " + strconv.Itoa(p.Age) + " years old"
 }
 
 func Test_HashSet_Struct(t *testing.T) {
@@ -282,6 +288,57 @@ func Test_HashSet_OrderMaintained(t *testing.T) {
 			if !reflect.DeepEqual(iterated, tc.expected) {
 				t.Errorf("Test %s failed: expected %v, got %v", tc.name, tc.expected, iterated)
 			}
+		})
+	}
+}
+
+func Test_HashSet_String(t *testing.T) {
+	alice := Person{"Alice", 30}
+	bob := Person{"Bob", 25}
+	steve := Person{"Steve", 14}
+
+	tests := []struct {
+		name     string
+		input    []Person
+		expected string
+	}{
+		{
+			name:     "Empty Set",
+			input:    []Person{},
+			expected: "",
+		},
+		{
+			name: "Single Element Set",
+			input: []Person{
+				alice,
+			},
+			expected: "Alice is 30 years old",
+		},
+		{
+			name: "Multiple Elements Set",
+			input: []Person{
+				alice, bob, steve,
+			},
+			expected: "Alice is 30 years old, Bob is 25 years old, Steve is 14 years old",
+		},
+		{
+			name: "Elements with the same values",
+			input: []Person{
+				alice, alice, bob,
+			},
+			expected: "Alice is 30 years old, Bob is 25 years old",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			set := newHashSet[Person]()
+			for _, p := range tc.input {
+				set.Put(p)
+			}
+
+			actual := set.String()
+			test.CheckEqual(actual, "String representation", tc.expected, t)
 		})
 	}
 }

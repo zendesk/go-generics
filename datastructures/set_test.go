@@ -238,7 +238,7 @@ func Test_Set(t *testing.T) {
 
 		// SymmetricDifference
 		test.CheckComparableEqualIgnoreOrder(aSet.SymmetricDifference(bSet).Keys(), fmt.Sprintf("%s: %s", name, "Symmetric Diff"), []int{1, 2, 4, 5}, t)
-		
+
 		// In Place
 		aClone := aSet.Clone()
 		test.CheckComparableEqualIgnoreOrder(aClone.InPlaceIntersection(bSet).Values(), fmt.Sprintf("%s: %s", name, "InPlaceIntersection"), []int{3}, t)

@@ -1,6 +1,9 @@
 package datastructures
 
-import "iter"
+import (
+	"fmt"
+	"iter"
+)
 
 func newComparableSet[V comparable]() ISet[V] {
 	return &comparableSet[V]{
@@ -91,3 +94,18 @@ func (s *comparableSet[V]) All() iter.Seq2[int, V] {
 		}
 	}
 }
+
+// String returns a string representation of the comparableSet.
+func (s *comparableSet[V]) String() string {
+	str := ""
+	for i, val := range s.order {
+		if i > 0 {
+			str += ", "
+		}
+		str += fmt.Sprintf("%v", val)
+	}
+	return str
+}
+
+// ensure at compile time this satisfies the ISet[V] interface
+var _ ISet[int] = &comparableSet[int]{}
