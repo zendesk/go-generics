@@ -90,3 +90,21 @@ func Test_Items(t *testing.T) {
 	got := queue.Items()
 	test.CheckEqual(got, "Items", expected, t)
 }
+
+func Test_PushPop(t *testing.T) {
+
+	capacity := 2
+	queue := NewRingQueue[bool](capacity, false)
+	queue.Push(true)
+	queue.Push(false)
+	test.CheckEqual(queue.Items(), "Items", []bool{true, false}, t)
+
+	queue.Pop()
+	test.CheckEqual(queue.Items(), "Items", []bool{false}, t)
+
+	queue.Pop()
+	test.CheckEqual(queue.Items(), "Items", []bool{}, t)
+
+	queue.Pop()
+	test.CheckEqual(queue.Items(), "Items", []bool{}, t)
+}
