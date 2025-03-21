@@ -78,6 +78,7 @@ func (r *RingQueue[T]) Items() []T {
 	return r.toSlice()
 }
 
+// Size returns the number of non-zero elements in the queue.
 func (r *RingQueue[T]) Size() int {
 	if r.synchronized {
 		r.mu.RLock()
