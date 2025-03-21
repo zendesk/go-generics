@@ -78,6 +78,14 @@ func (r *RingQueue[T]) Items() []T {
 	return r.toSlice()
 }
 
+func (r *RingQueue[T]) Size() int {
+	if r.synchronized {
+		r.mu.RLock()
+		defer r.mu.RUnlock()
+	}
+	return r.size
+}
+
 // Iter2 returns an iterator that yields all elements in the ring queue oldest to newest. Empty elements are not yielded
 func (r *RingQueue[T]) Iter2() iter.Seq2[int, T] {
 	return func(yield func(int, T) bool) {

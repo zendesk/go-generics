@@ -17,7 +17,6 @@ func Test_Iter2(t *testing.T) {
 
 	for i, val := range queue.Iter2() {
 		test.CheckEqual(val, fmt.Sprintf("Item: %d", i), numItems-capacity+i, t)
-		t.Logf("i: %d, value: %d", i, val)
 	}
 }
 
@@ -44,13 +43,39 @@ func Test_Push(t *testing.T) {
 		queue.Push(i)
 	}
 
-	t.Log(queue.Items())
 	var expected []int
 	for i := overlap; i < capacity+overlap; i++ {
 		expected = append(expected, i)
 	}
 
 	test.CheckEqual(queue.Items(), "Expected mismatch", expected, t)
+}
+
+func Test_Pop(t *testing.T) {
+	capacity := 7
+	queue := NewRingQueue[int](capacity, false)
+	for i := 0; i < capacity; i++ {
+		queue.Push(i)
+	}
+
+	t.Log(queue.Items())
+	for i := 0; i < capacity; i++ {
+		val := queue.Pop()
+		test.CheckEqual(val, fmt.Sprintf("I: %d Val: %d", i, val), i, t)
+	}
+
+	test.CheckEqual(queue.Size(), "size", 0, t)
+}
+
+func Test_Size(t *testing.T) {
+	capacity := 7
+	size := 5
+	queue := NewRingQueue[int](capacity, false)
+	for i := 0; i < size; i++ {
+		queue.Push(i)
+	}
+
+	test.CheckEqual(queue.Size(), "size", size, t)
 }
 
 func Test_Items(t *testing.T) {
