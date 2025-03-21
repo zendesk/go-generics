@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	AbsoluteMaxConcurrency = 100
+	AbsoluteMaxConcurrency = 200
 	DefaultMaxConcurrency  = 20
 )
 
