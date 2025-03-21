@@ -83,7 +83,6 @@ func GoMapWithErrs[T any, Y any](items []T, f func(T) (Y, error), opts ...Option
 
 	// Do not allow user to provision excessive concurrency
 	cfg.ConcurrencyLimit = Min(cfg.ConcurrencyLimit, AbsoluteMaxConcurrency)
-
 	jobChan := make(chan T, len(items))
 	resultChan := make(chan datastructures.Tuple[Y, error], len(items))
 	defer close(resultChan)
