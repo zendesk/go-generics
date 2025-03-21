@@ -139,6 +139,9 @@ func (r *RingQueue[T]) toSlice() []T {
 	}
 
 	part1 := r.data[r.start:]
+	if r.start+r.size < r.capacity {
+		part1 = r.data[r.start : r.start+r.size]
+	}
 	var queueCopy = make([]T, 0)
 	queueCopy = append(queueCopy, part1...)
 	if r.end < r.start {
