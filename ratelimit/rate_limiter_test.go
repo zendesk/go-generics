@@ -72,3 +72,40 @@ func Test_RateLimiter_AdjustThroughput(t *testing.T) {
 	ok = limiter1.GetRateForClient(ctx, "client1")
 	test.CheckNotOk(ok, "Rate not expected but as available for client1", t)
 }
+
+func Test_RateLimiter_AdjustThroughput_WithThroughputProvider(t *testing.T) {
+	var throughput = 1
+	rateDuration := time.Millisecond * 50
+	provider := func() (rate int, overTime time.Duration, burstCapacity int) {
+		return throughput, rateDuration, 0
+	}
+
+	backend := NewMemoryRateLimiterBackend(1, rateDuration, 0)
+	limiter1 := NewRateLimiter(FailClosed, backend, WithThroughputProvider(provider, time.Millisecond))
+
+	ctx := context.Background()
+	ok := limiter1.GetRateForClient(ctx, "client1")
+	test.CheckOk(ok, "Rate expected but was not available for client1", t)
+
+	ok = limiter1.GetRateForClient(ctx, "client2")
+	test.CheckOk(ok, "Rate expected but was not available for client2", t)
+
+	ok = limiter1.GetRateForClient(ctx, "client1")
+	test.CheckNotOk(ok, "Rate not expected but as available for client1", t)
+
+	// Wait for new rate to be available
+	time.Sleep(rateDuration)
+
+	// Change rate to 10/s
+	throughput = 10
+	time.Sleep(time.Millisecond * 2)
+
+	for i := 0; i < 10; i++ {
+		ok = limiter1.GetRateForClient(ctx, "client1")
+		test.CheckOk(ok, fmt.Sprintf("Rate expected but was not available for client1: %d", i), t)
+	}
+
+	// Client should be throttled with no rate left
+	ok = limiter1.GetRateForClient(ctx, "client1")
+	test.CheckNotOk(ok, "Rate not expected but as available for client1", t)
+}
