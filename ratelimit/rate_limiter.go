@@ -56,8 +56,8 @@ var WithRateWaitDuration = func(duration time.Duration) rateLimitOption {
 	}
 }
 
-// WithThroughputProvider - if provided, the rate limiter consult this provider function and  update the rate limiter backed to the
-// what the throughput returned by this function. The provided updateThroughputFrequency guides how often the rate limiter adjusts throughput.
+// WithThroughputProvider - if provided, the rate limiter consult this provider function and update the rate limiter backend to the
+// throughput returned by this function. The provided updateThroughputFrequency variable guides how often the rate limiter adjusts throughput.
 // This is useful if you want your rate limiter to continually adjust allowed throughput based on some external variable.
 var WithThroughputProvider = func(throughputProvider ThroughputProvider, throughputCheckFrequency time.Duration) rateLimitOption {
 	return func(cfg RateLimitConfig) RateLimitConfig {
