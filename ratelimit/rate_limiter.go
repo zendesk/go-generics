@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"math/rand"
+	"sync"
 	"time"
 )
 
@@ -20,8 +21,10 @@ const (
 )
 
 type RateLimitConfig struct {
-	limiterPrefix    string
-	rateWaitDuration time.Duration
+	limiterPrefix            string
+	rateWaitDuration         time.Duration
+	throughputProvider       ThroughputProvider
+	throughputCheckFrequency time.Duration
 }
 
 func NewRateLimitConfig() RateLimitConfig {
@@ -31,6 +34,8 @@ func NewRateLimitConfig() RateLimitConfig {
 }
 
 type rateLimitOption func(cfg RateLimitConfig) RateLimitConfig
+
+type ThroughputProvider func() (rate int, overTime time.Duration, burstCapacity int)
 
 // WithPrefixOption - if provided, all keys used in the backend will be prefixed with the provided string `${prefix}-${clientID}`
 // This is useful if you're using multiple rate limiters with the same backend and the same client set but wish to rate-limit them
@@ -51,6 +56,17 @@ var WithRateWaitDuration = func(duration time.Duration) rateLimitOption {
 	}
 }
 
+// WithThroughputProvider - if provided, the rate limiter consult this provider function and update the rate limiter backend to the
+// throughput returned by this function. The provided updateThroughputFrequency variable guides how often the rate limiter adjusts throughput.
+// This is useful if you want your rate limiter to continually adjust allowed throughput based on some external variable.
+var WithThroughputProvider = func(throughputProvider ThroughputProvider, throughputCheckFrequency time.Duration) rateLimitOption {
+	return func(cfg RateLimitConfig) RateLimitConfig {
+		cfg.throughputProvider = throughputProvider
+		cfg.throughputCheckFrequency = throughputCheckFrequency
+		return cfg
+	}
+}
+
 type RateLimitBackend interface {
 	GetRate(ctx context.Context, clientID string) (bool, error)
 	SetThroughput(rate int, overTime time.Duration, burstCapacity int)
@@ -58,11 +74,13 @@ type RateLimitBackend interface {
 }
 
 type RateLimiter struct {
-	backend          RateLimitBackend
-	gateType         GateType
-	cfg              RateLimitConfig
-	rateWaitDuration time.Duration
-	defaultClient    string
+	backend             RateLimitBackend
+	gateType            GateType
+	cfg                 RateLimitConfig
+	rateWaitDuration    time.Duration
+	defaultClient       string
+	lastThroughputCheck time.Time
+	throughputSync      sync.Mutex
 }
 
 // NewRateLimiter creates a new rate limiter with a redis backend
@@ -81,6 +99,19 @@ func NewRateLimiter(gateType GateType, backend RateLimitBackend, opts ...rateLim
 }
 
 func (rl *RateLimiter) getRate(ctx context.Context, clientID string) bool {
+	if rl.cfg.throughputProvider != nil {
+		if time.Since(rl.lastThroughputCheck) > rl.cfg.throughputCheckFrequency {
+			rl.throughputSync.Lock()
+			rate, overTime, burstCapacity := rl.cfg.throughputProvider()
+			currentRate, currentOverTime, currentBurst := rl.backend.GetThroughput()
+			// Only update (b/c it requires locks) if the rate has changed
+			if currentRate != rate || currentOverTime != overTime || currentBurst != burstCapacity {
+				rl.backend.SetThroughput(rate, overTime, burstCapacity)
+			}
+			rl.throughputSync.Unlock()
+		}
+	}
+
 	hasRate, err := rl.getRateFromBackend(ctx, clientID)
 
 	if err != nil {
