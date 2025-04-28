@@ -27,6 +27,8 @@ publish() {
   export JFROG_CLI_OFFER_CONFIG=false
   ~/jfrog rt go-publish go-pkg "$TAG_NAME" --url=https://zdrepo.jfrog.io/zdrepo --user="$ARTIFACTORY_USERNAME" --password="$ARTIFACTORY_API_KEY"
   echo "Publish succeeded!"
+  # sleep to guarantee that the publish save is complete before it possibly being necessary fro the next build
+  sleep 5
 }
 
 # Must publish packages in order based on dependencies.
