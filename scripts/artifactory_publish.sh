@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export GOWORK=off
 set -euo pipefail;
 
 if ! [[ "$ARTIFACT_VERSION" =~ ^(v[0-9.]+(-[0-9A-Za-z_.\\-]*)?)$ ]]; then
