@@ -31,7 +31,7 @@ publish() {
   package=$1
   echo "Publishing package: $package"
   echo "Publishing $TAG_NAME to Artifactory as $ARTIFACTORY_USERNAME"
-  ~/jfrog go-publish go-pkg "$TAG_NAME" --exclusions="*test.go;*.md"
+  ~/jfrog go-publish "$TAG_NAME" --exclusions="*test.go;*.md"
   echo "Publish succeeded!"
   # sleep to guarantee that the publish save is complete before it possibly being necessary fro the next build
   sleep 5
