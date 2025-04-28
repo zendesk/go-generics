@@ -41,7 +41,7 @@ func NewRedisCache[K comparable, V any](ctx context.Context, client Redis, ttl t
 
 func (c *RedisCache[K, V]) Get(key K) (V, bool, error) {
 	var v V
-	bytes, err := c.client.Get(c.ctx, hashAny(key)).Bytes()
+	bytes, err := c.client.Get(c.ctx, HashAny(key)).Bytes()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			return v, false, nil
@@ -66,7 +66,7 @@ func (c *RedisCache[K, V]) Set(key K, val V) error {
 	if err != nil {
 		return err
 	}
-	err = c.client.Set(c.ctx, hashAny(key), bytes, c.ttl).Err()
+	err = c.client.Set(c.ctx, HashAny(key), bytes, c.ttl).Err()
 
 	if err == nil || c.cfg.ignoreCacheSetErrors {
 		return nil
@@ -78,7 +78,7 @@ func (c *RedisCache[K, V]) Set(key K, val V) error {
 }
 
 func (c *RedisCache[K, V]) Delete(key K) error {
-	return c.client.Del(c.ctx, hashAny(key)).Err()
+	return c.client.Del(c.ctx, HashAny(key)).Err()
 }
 
 func (c *RedisCache[K, V]) Purge() error {

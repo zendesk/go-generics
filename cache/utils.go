@@ -6,7 +6,7 @@ import (
 )
 
 // Redis keys must be strings so always use the hash
-func hashAny(obj any) string {
+func HashAny(obj any) string {
 	h := sha256.New()
 	h.Write([]byte(fmt.Sprintf("%v", obj)))
 

@@ -6,6 +6,10 @@ github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRI
 github.com/stretchr/objx v0.5.2 h1:xuMeJ0Sdp5ZMRXx/aWO6RZxdr3beISkG5/G/aIRr3pY=
 github.com/stretchr/objx v0.5.2/go.mod h1:FRsXN1f5AsAjCGJKqEizvkpNtU+EGNCLh3NxZ/8L+MA=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
+github.com/zendesk/go-generics/datastructures v1.4.16/go.mod h1:UvzamjmdSykK2QLYRxmbYdc48MTBxknBSBlIGPpfkjY=
+github.com/zendesk/go-generics/encryption v1.4.16/go.mod h1:NNTBq1Xe8lbW5FWuM2tqMwFKBxKJExWigvWoXqLcHrI=
+github.com/zendesk/go-generics/ratelimit v1.4.16/go.mod h1:VIrqxLeN2Kr6Yy6ki9YDemMgXYuzj9+mttm5CIRU2ao=
+github.com/zendesk/go-generics/serialize v1.4.16/go.mod h1:tFxIcDixRnmzNd1AccpsMhJTKF5d4KeKNh461A3fsYs=
 go.uber.org/goleak v1.2.1 h1:NBol2c7O1ZokfZ0LEU9K6Whx/KnwvepVetCUhtKja4A=
 go.uber.org/goleak v1.2.1/go.mod h1:qlT2yGI9QafXHhZZLxlSuNsMw3FFLxBr+tBRlmO1xH4=
 golang.org/x/mod v0.24.0 h1:ZfthKaKaT4NrhGVZHO1/WDTwGES4De8KtWO0SIbNJMU=

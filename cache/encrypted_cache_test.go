@@ -1,9 +1,10 @@
-package cache
+package cache_test
 
 import (
 	"testing"
 	"time"
 
+	"github.com/zendesk/go-generics/cache"
 	"github.com/zendesk/go-generics/cache/internal/test"
 )
 
@@ -12,17 +13,17 @@ const (
 )
 
 func TestNew(t *testing.T) {
-	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
+	ttlCache := cache.NewInMemoryCache[string, []byte](10 * time.Second)
 
-	c, err := NewEncryptedCache[string, int](ttlCache, []byte(salt), 25)
+	c, err := cache.NewEncryptedCache[string, int](ttlCache, []byte(salt), 25)
 	test.CheckErr(err, "Unexpected err", t)
 	test.ExpectNotNil("cache", c, t)
 }
 
 func TestSetGetDelete(t *testing.T) {
-	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
+	ttlCache := cache.NewInMemoryCache[string, []byte](10 * time.Second)
 
-	c, err := NewEncryptedCache[string, string](ttlCache, []byte(salt), 25)
+	c, err := cache.NewEncryptedCache[string, string](ttlCache, []byte(salt), 25)
 	test.CheckErr(err, "Unexpected err", t)
 
 	// Set a value in the cache
@@ -42,10 +43,10 @@ func TestSetGetDelete(t *testing.T) {
 }
 
 func TestGetError(t *testing.T) {
-	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
+	ttlCache := cache.NewInMemoryCache[string, []byte](10 * time.Second)
 
 	// Create a new EncryptedCache
-	c, err := NewEncryptedCache[string, string](ttlCache, []byte(salt), 25)
+	c, err := cache.NewEncryptedCache[string, string](ttlCache, []byte(salt), 25)
 	test.CheckErr(err, "Unexpected err", t)
 
 	// Try to get a value that hasn't been set
@@ -71,8 +72,8 @@ func TestSetGetComplexStruct(t *testing.T) {
 	}
 
 	// Create a new EncryptedCache
-	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
-	c, err := NewEncryptedCache[string, ComplexStruct](ttlCache, []byte(salt), 25)
+	ttlCache := cache.NewInMemoryCache[string, []byte](10 * time.Second)
+	c, err := cache.NewEncryptedCache[string, ComplexStruct](ttlCache, []byte(salt), 25)
 	test.CheckErr(err, "Unexpected err", t)
 
 	// Create a complex struct
@@ -118,8 +119,8 @@ func TestSetGetComplexKey(t *testing.T) {
 	}
 
 	// Create a new EncryptedCache
-	ttlCache := NewInMemoryCache[ComplexKey, []byte](10 * time.Second)
-	c, err := NewEncryptedCache[ComplexKey, string](ttlCache, []byte(salt), 25)
+	ttlCache := cache.NewInMemoryCache[ComplexKey, []byte](10 * time.Second)
+	c, err := cache.NewEncryptedCache[ComplexKey, string](ttlCache, []byte(salt), 25)
 	test.CheckErr(err, "Unexpected err", t)
 
 	// Create a complex key
@@ -141,8 +142,8 @@ func TestSetGetComplexKey(t *testing.T) {
 func TestSetInvalidValue(t *testing.T) {
 
 	// Create a new EncryptedCache
-	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
-	c, err := NewEncryptedCache[string, chan int](ttlCache, []byte(salt), 25)
+	ttlCache := cache.NewInMemoryCache[string, []byte](10 * time.Second)
+	c, err := cache.NewEncryptedCache[string, chan int](ttlCache, []byte(salt), 25)
 	test.CheckErr(err, "Unexpected err", t)
 
 	// Try to set an invalid value
@@ -156,8 +157,8 @@ func BenchmarkEncrypt(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		// Include key generation in benchmark test since that's the part that takes the longest
-		ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
-		c, err := NewEncryptedCache[string, string](ttlCache, []byte(salt), 25)
+		ttlCache := cache.NewInMemoryCache[string, []byte](10 * time.Second)
+		c, err := cache.NewEncryptedCache[string, string](ttlCache, []byte(salt), 25)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -179,8 +180,8 @@ func BenchmarkDecrypt(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		// Include key generation in benchmark test since that's the part that takes the longest
-		ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
-		c, err := NewEncryptedCache[string, string](ttlCache, []byte(salt), 25)
+		ttlCache := cache.NewInMemoryCache[string, []byte](10 * time.Second)
+		c, err := cache.NewEncryptedCache[string, string](ttlCache, []byte(salt), 25)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -202,9 +203,9 @@ func BenchmarkDecrypt(b *testing.B) {
 }
 
 func TestPurge(t *testing.T) {
-	ttlCache := NewInMemoryCache[string, []byte](10 * time.Second)
+	ttlCache := cache.NewInMemoryCache[string, []byte](10 * time.Second)
 
-	c, err := NewEncryptedCache[string, string](ttlCache, []byte(salt), 25)
+	c, err := cache.NewEncryptedCache[string, string](ttlCache, []byte(salt), 25)
 	test.CheckErr(err, "Unexpected err", t)
 
 	// Set a value in the cache
