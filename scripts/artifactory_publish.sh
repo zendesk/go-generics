@@ -21,7 +21,7 @@ echo "Preparing go.mod files for publish"
 go run build.go $ARTIFACT_VERSION
 
 publish() {
-  package=$(pwd)
+  package=$1
   echo "Publishing package: $package"
   echo "Publishing $TAG_NAME to Artifactory as $ARTIFACTORY_USERNAME"
   export JFROG_CLI_OFFER_CONFIG=false
@@ -41,23 +41,23 @@ publish() {
 
 cd ./serialize
 
-publish
+publish serialize
 cd ../datastructures
 
-publish
+publish datastructures
 
 cd ../ratelimit
 
-publish
+publish ratelimit
 
 cd ../encryption
 
-publish
+publish encryption
 
 cd ../cache
 
-publish
+publish cache
 
 cd ../functions
 
-publish
+publish functions
