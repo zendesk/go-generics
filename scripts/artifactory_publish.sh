@@ -18,7 +18,7 @@ curl --location --fail --silent --show-error --output ~/jfrog "$JFROG_DOWNLOAD_U
 chmod +x ~/jfrog
 
 echo "Preparing go.mod files for publish"
-go run build.go
+go run build.go $ARTIFACT_VERSION
 
 publish() {
   package=$(pwd)
