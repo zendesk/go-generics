@@ -24,7 +24,12 @@ test: test-unit
 .PHONY: test-unit
 test-unit:
 	go clean -testcache
-	go test -v -timeout 45m ./...
+	go test -v -timeout 20m ./cache
+	go test -v -timeout 20m ./datastructures
+	go test -v -timeout 20m ./encryption
+	go test -v -timeout 20m ./functions
+	go test -v -timeout 20m ./ratelimit
+	go test -v -timeout 20m ./serialize
 
 .PHONY: test-fuzz
 test-fuzz:
@@ -39,3 +44,4 @@ test-unit-with-coverage:
 test-one:
 	go clean -testcache
 	go test -v -timeout 45m ./... -run ^$(TEST)$
+

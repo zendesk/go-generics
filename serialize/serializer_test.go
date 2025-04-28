@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/serialize/internal/test"
 )
 
 func validateB64(s string, t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/functions/internal/test"
 )
 
 func TestDedupe(t *testing.T) {

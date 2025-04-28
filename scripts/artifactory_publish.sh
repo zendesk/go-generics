@@ -17,7 +17,45 @@ JFROG_DOWNLOAD_URL="https://releases.jfrog.io/artifactory/jfrog-cli/v1/${JFROG_V
 curl --location --fail --silent --show-error --output ~/jfrog "$JFROG_DOWNLOAD_URL"
 chmod +x ~/jfrog
 
-echo "Publishing $TAG_NAME to Artifactory as $ARTIFACTORY_USERNAME"
-export JFROG_CLI_OFFER_CONFIG=false
-~/jfrog rt go-publish go-pkg "$TAG_NAME" --url=https://zdrepo.jfrog.io/zdrepo --user="$ARTIFACTORY_USERNAME" --password="$ARTIFACTORY_API_KEY"
-echo "Publish succeeded!"
+echo "Preparing go.mod files for publish"
+go run build.go
+
+publish() {
+  package=$(pwd)
+  echo "Publishing package: $package"
+  echo "Publishing $TAG_NAME to Artifactory as $ARTIFACTORY_USERNAME"
+  export JFROG_CLI_OFFER_CONFIG=false
+  ~/jfrog rt go-publish go-pkg "$TAG_NAME" --url=https://zdrepo.jfrog.io/zdrepo --user="$ARTIFACTORY_USERNAME" --password="$ARTIFACTORY_API_KEY"
+  echo "Publish succeeded!"
+}
+
+# Must publish packages in order based on dependencies.
+# 1. serialize
+# 2. datastructure
+# 3. ratelimit
+# 4. encryption
+# 5. cache
+# 6. functions
+
+cd ./serialize
+
+publish
+cd ../datastructures
+
+publish
+
+cd ../ratelimit
+
+publish
+
+cd ../encryption
+
+publish
+
+cd ../cache
+
+publish
+
+cd ../functions
+
+publish

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/functions/internal/test"
 )
 
 func TestMergeErrors(t *testing.T) {

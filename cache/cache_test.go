@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/zendesk/go-generics/cache"
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/cache/internal/test"
 )
 
 type cacheObs[K comparable] struct {

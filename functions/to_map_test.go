@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/functions/internal/test"
 )
 
 func TestToMap(t *testing.T) {

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/cache/internal/test"
 )
 
 const (

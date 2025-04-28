@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/functions/internal/test"
 )
 
 func TestRunEachWithRetries(t *testing.T) {
@@ -33,7 +33,7 @@ func TestRunEachWithRetries(t *testing.T) {
 	}
 }
 
-func TestrunMapWithRetries(t *testing.T) {
+func TestRunMapWithRetries(t *testing.T) {
 	maxRetries := 4
 	backoffInterval := time.Millisecond * 10
 
@@ -62,7 +62,7 @@ func TestrunMapWithRetries(t *testing.T) {
 
 	test.CheckEqual(result, "Total Result", expectedResult, t)
 }
-func TestrunToMapWithRetries(t *testing.T) {
+func TestRunToMapWithRetries(t *testing.T) {
 	maxRetries := 4
 	backoffInterval := time.Millisecond * 10
 
@@ -93,7 +93,7 @@ func TestrunToMapWithRetries(t *testing.T) {
 	test.CheckEqual(val, "Val", expectedResult*2, t)
 }
 
-func TestrunMapToManyWithRetries(t *testing.T) {
+func TestRunMapToManyWithRetries(t *testing.T) {
 	maxRetries := 4
 	backoffInterval := time.Millisecond * 10
 
@@ -125,7 +125,7 @@ func TestrunMapToManyWithRetries(t *testing.T) {
 	test.CheckEqual(results, "results", expectedResult, t)
 }
 
-func TestrunMapToSliceWithRetries(t *testing.T) {
+func TestRunMapToSliceWithRetries(t *testing.T) {
 	maxRetries := 4
 	backoffInterval := time.Millisecond * 10
 

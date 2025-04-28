@@ -3,7 +3,7 @@ package functions
 import (
 	"testing"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/functions/internal/test"
 )
 
 func TestJoin(t *testing.T) {

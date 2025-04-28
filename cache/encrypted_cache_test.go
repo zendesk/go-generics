@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/cache/internal/test"
 )
 
 const (

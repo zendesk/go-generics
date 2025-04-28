@@ -4,7 +4,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/serialize/internal/test"
 )
 
 func Fuzz_Dynamic_Bytes(f *testing.F) {
