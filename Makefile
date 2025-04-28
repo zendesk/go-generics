@@ -37,11 +37,10 @@ test-fuzz:
 
 .PHONY: unit-with-coverage
 test-unit-with-coverage:
-	go test -v -timeout 45m ./... -coverprofile cover.out
-
-#make test-one TEST=YourTestName
-.PHONY: test-one
-test-one:
 	go clean -testcache
-	go test -v -timeout 45m ./... -run ^$(TEST)$
-
+	go test -v -timeout 20m ./cache -coverprofile cache.out
+	go test -v -timeout 20m ./datastructures -coverprofile datastructures.out
+	go test -v -timeout 20m ./encryption -coverprofile encryption.out
+	go test -v -timeout 20m ./functions -coverprofile functions.out
+	go test -v -timeout 20m ./ratelimit -coverprofile ratelimit.out
+	go test -v -timeout 20m ./serialize -coverprofile serialize.out
