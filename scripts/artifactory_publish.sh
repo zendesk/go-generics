@@ -20,12 +20,17 @@ chmod +x ~/jfrog
 echo "Preparing go.mod files for publish"
 go run build.go $ARTIFACT_VERSION
 
+## Configure jfrog cli
+jf --version
+jf config add --artifactory-url https://zdrepo.jfrog.io/zdrepo --url https://zdrepo.jfrog.io --user="$ARTIFACTORY_USERNAME" --password="$ARTIFACTORY_PASSWORD" zdrepo
+jf go-config --global --repo-deploy go-pkg
+jf config show
+
 publish() {
   package=$1
   echo "Publishing package: $package"
   echo "Publishing $TAG_NAME to Artifactory as $ARTIFACTORY_USERNAME"
-  export JFROG_CLI_OFFER_CONFIG=false
-  ~/jfrog rt go-publish go-pkg "$TAG_NAME" --url=https://zdrepo.jfrog.io/zdrepo --user="$ARTIFACTORY_USERNAME" --password="$ARTIFACTORY_API_KEY" --exclusions="*test.go;*.md"
+  ~/jfrog go-publish go-pkg "$TAG_NAME" --exclusions="*test.go;*.md"
   echo "Publish succeeded!"
   # sleep to guarantee that the publish save is complete before it possibly being necessary fro the next build
   sleep 5
