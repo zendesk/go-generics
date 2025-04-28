@@ -10,8 +10,8 @@ fi
 TAG_NAME="${BASH_REMATCH[1]}"
 
 echo "Installing JFrog CLI..."
-JFROG_VERSION="2.73.0"
-JFROG_DOWNLOAD_URL="https://releases.jfrog.io/artifactory/jfrog-cli/v1/${JFROG_VERSION}/jfrog-cli-linux-amd64/jfrog"
+JFROG_VERSION="2.75.0"
+JFROG_DOWNLOAD_URL="https://releases.jfrog.io/artifactory/jfrog-cli/v2/${JFROG_VERSION}/jfrog-cli-linux-amd64/jfrog"
 # We need to make sure we stash the jfrog CLI outside the current directory,
 # or it will be uploaded to artifactory itself in the zip file.
 curl --location --fail --silent --show-error --output ~/jfrog "$JFROG_DOWNLOAD_URL"
