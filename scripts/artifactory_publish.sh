@@ -22,7 +22,7 @@ go run build.go $ARTIFACT_VERSION
 
 ## Configure jfrog cli
 ~/jfrog --version
-~/jfrog config add --artifactory-url https://zdrepo.jfrog.io/zdrepo --url https://zdrepo.jfrog.io --user="$ARTIFACTORY_USERNAME" --password="$ARTIFACTORY_PASSWORD" zdrepo
+~/jfrog config add --artifactory-url https://zdrepo.jfrog.io/zdrepo --url https://zdrepo.jfrog.io --user="$ARTIFACTORY_USERNAME" --password="$ARTIFACTORY_API_KEY" zdrepo
 ~/jfrog go-config --global --repo-deploy go-pkg
 ~/jfrog config show
 
