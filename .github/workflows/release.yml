@@ -60,8 +60,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          tag_name: serialize/${{ steps.tag.outputs.next_tag }}
-          release_name: serialize/${{ steps.tag.outputs.next_tag }}
+          tag_name: ${{ steps.tag.outputs.next_tag }}
+          release_name: ${{ steps.tag.outputs.next_tag }}
           commitish: ${{ github.git_ref }}
           body: |
             See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
@@ -83,7 +83,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           tag_name: datastructures/${{ steps.tag.outputs.next_tag }}
-          release_name: ${{ steps.tag.outputs.next_tag }}
+          release_name: datastructures/${{ steps.tag.outputs.next_tag }}
           commitish: ${{ github.git_ref }}
           body: |
             See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
@@ -94,7 +94,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           tag_name: ratelimit/${{ steps.tag.outputs.next_tag }}
-          release_name: ${{ steps.tag.outputs.next_tag }}
+          release_name: ratelimit/${{ steps.tag.outputs.next_tag }}
           commitish: ${{ github.git_ref }}
           body: |
             See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
@@ -105,7 +105,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           tag_name: encryption/${{ steps.tag.outputs.next_tag }}
-          release_name: ${{ steps.tag.outputs.next_tag }}
+          release_name: encryption/${{ steps.tag.outputs.next_tag }}
           commitish: ${{ github.git_ref }}
           body: |
             See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
@@ -116,7 +116,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           tag_name: cache/${{ steps.tag.outputs.next_tag }}
-          release_name: ${{ steps.tag.outputs.next_tag }}
+          release_name: cache/${{ steps.tag.outputs.next_tag }}
           commitish: ${{ github.git_ref }}
           body: |
             See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
@@ -127,7 +127,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           tag_name: functions/${{ steps.tag.outputs.next_tag }}
-          release_name: ${{ steps.tag.outputs.next_tag }}
+          release_name: functions/${{ steps.tag.outputs.next_tag }}
           commitish: ${{ github.git_ref }}
           body: |
             See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
