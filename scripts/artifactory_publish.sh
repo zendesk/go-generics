@@ -21,10 +21,10 @@ echo "Preparing go.mod files for publish"
 go run build.go $ARTIFACT_VERSION
 
 ## Configure jfrog cli
-jf --version
-jf config add --artifactory-url https://zdrepo.jfrog.io/zdrepo --url https://zdrepo.jfrog.io --user="$ARTIFACTORY_USERNAME" --password="$ARTIFACTORY_PASSWORD" zdrepo
-jf go-config --global --repo-deploy go-pkg
-jf config show
+~/jfrog --version
+~/jfrog config add --artifactory-url https://zdrepo.jfrog.io/zdrepo --url https://zdrepo.jfrog.io --user="$ARTIFACTORY_USERNAME" --password="$ARTIFACTORY_PASSWORD" zdrepo
+~/jfrog go-config --global --repo-deploy go-pkg
+~/jfrog config show
 
 publish() {
   package=$1
