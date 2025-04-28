@@ -55,12 +55,78 @@ jobs:
           version_scheme: semantic
           version_type: ${{ steps.type.outputs.version_type }}
 
-      - name: Create release
+      - name: Create release base
         uses: zendesk/create-release@v1.1.4
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          tag_name: ${{ steps.tag.outputs.next_tag }}
+          tag_name: serialize/${{ steps.tag.outputs.next_tag }}
+          release_name: serialize/${{ steps.tag.outputs.next_tag }}
+          commitish: ${{ github.git_ref }}
+          body: |
+            See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
+
+      - name: Create release serialize
+        uses: zendesk/create-release@v1.1.4
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: serialize/${{ steps.tag.outputs.next_tag }}
+          release_name: serialize/${{ steps.tag.outputs.next_tag }}
+          commitish: ${{ github.git_ref }}
+          body: |
+            See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
+
+      - name: Create release datastructures
+        uses: zendesk/create-release@v1.1.4
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: datastructures/${{ steps.tag.outputs.next_tag }}
+          release_name: ${{ steps.tag.outputs.next_tag }}
+          commitish: ${{ github.git_ref }}
+          body: |
+            See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
+
+      - name: Create release ratelimit
+        uses: zendesk/create-release@v1.1.4
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: ratelimit/${{ steps.tag.outputs.next_tag }}
+          release_name: ${{ steps.tag.outputs.next_tag }}
+          commitish: ${{ github.git_ref }}
+          body: |
+            See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
+
+      - name: Create release encryption
+        uses: zendesk/create-release@v1.1.4
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: encryption/${{ steps.tag.outputs.next_tag }}
+          release_name: ${{ steps.tag.outputs.next_tag }}
+          commitish: ${{ github.git_ref }}
+          body: |
+            See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
+
+      - name: Create release cache
+        uses: zendesk/create-release@v1.1.4
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: cache/${{ steps.tag.outputs.next_tag }}
+          release_name: ${{ steps.tag.outputs.next_tag }}
+          commitish: ${{ github.git_ref }}
+          body: |
+            See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
+
+      - name: Create release functions
+        uses: zendesk/create-release@v1.1.4
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: functions/${{ steps.tag.outputs.next_tag }}
           release_name: ${{ steps.tag.outputs.next_tag }}
           commitish: ${{ github.git_ref }}
           body: |

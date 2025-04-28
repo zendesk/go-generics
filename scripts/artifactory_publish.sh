@@ -33,7 +33,7 @@ publish() {
 
 # Must publish packages in order based on dependencies.
 # 1. serialize
-# 2. datastructure
+# 2. datastructures
 # 3. ratelimit
 # 4. encryption
 # 5. cache
