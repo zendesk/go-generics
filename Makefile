@@ -24,12 +24,12 @@ test: test-unit
 .PHONY: test-unit
 test-unit:
 	go clean -testcache
-	go test -v -timeout 20m ./cache
-	go test -v -timeout 20m ./datastructures
-	go test -v -timeout 20m ./encryption
-	go test -v -timeout 20m ./functions
-	go test -v -timeout 20m ./ratelimit
-	go test -v -timeout 20m ./serialize
+	go test -v -timeout 20m -tags=test ./cache
+	go test -v -timeout 20m -tags=test ./datastructures
+	go test -v -timeout 20m -tags=test ./encryption
+	go test -v -timeout 20m -tags=test ./functions
+	go test -v -timeout 20m -tags=test ./ratelimit
+	go test -v -timeout 20m -tags=test ./serialize
 
 .PHONY: test-fuzz
 test-fuzz:
@@ -38,9 +38,9 @@ test-fuzz:
 .PHONY: unit-with-coverage
 test-unit-with-coverage:
 	go clean -testcache
-	go test -v -timeout 20m ./cache -coverprofile cache.out
-	go test -v -timeout 20m ./datastructures -coverprofile datastructures.out
-	go test -v -timeout 20m ./encryption -coverprofile encryption.out
-	go test -v -timeout 20m ./functions -coverprofile functions.out
-	go test -v -timeout 20m ./ratelimit -coverprofile ratelimit.out
-	go test -v -timeout 20m ./serialize -coverprofile serialize.out
+	go test -v -timeout 20m -tags=test ./cache -coverprofile cache.out
+	go test -v -timeout 20m -tags=test ./datastructures -coverprofile datastructures.out
+	go test -v -timeout 20m -tags=test ./encryption -coverprofile encryption.out
+	go test -v -timeout 20m -tags=test ./functions -coverprofile functions.out
+	go test -v -timeout 20m -tags=test ./ratelimit -coverprofile ratelimit.out
+	go test -v -timeout 20m -tags=test ./serialize -coverprofile serialize.out
