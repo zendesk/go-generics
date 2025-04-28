@@ -6,8 +6,8 @@ go 1.23.0
 require (
 	github.com/jellydator/ttlcache/v3 v3.2.0
 	github.com/redis/go-redis/v9 v9.7.3
-	github.com/zendesk/go-generics/serialize v1.1.2
-	github.com/zendesk/go-generics/encryption v1.1.2
+	github.com/zendesk/go-generics/serialize v1.4.8
+	github.com/zendesk/go-generics/encryption v1.4.8
 )
 
 require (

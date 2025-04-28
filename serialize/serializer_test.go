@@ -1,3 +1,4 @@
+// build +test
 package serialize
 
 import (
