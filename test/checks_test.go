@@ -2,11 +2,11 @@ package test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 )
 
 type mockT struct {
-	FatalfCalled bool
 	FatalCalled  bool
 	ErrorfCalled bool
 }
@@ -16,11 +16,15 @@ func (t *mockT) Errorf(format string, args ...any) {
 }
 
 func (t *mockT) Fatalf(format string, args ...any) {
-	t.FatalfCalled = true
+	t.FatalCalled = true
 }
 
 func (t *mockT) Fatal(args ...any) {
 	t.FatalCalled = true
+}
+
+func (t *mockT) Logf(format string, args ...any) {
+	fmt.Printf(format, args...)
 }
 
 func TestCheckErr(t *testing.T) {
@@ -45,14 +49,14 @@ func TestCheckErrs(t *testing.T) {
 	errs := []error{errors.New("error1"), errors.New("error2")}
 	CheckErrs(errs, "CheckErrs failed", mock)
 
-	if !mock.FatalfCalled {
+	if !mock.FatalCalled {
 		t.Errorf("Expected Fatalf to be called, but it was not")
 	}
 
 	mock = &mockT{}
 	CheckErrs(nil, "CheckErrs failed", mock)
 
-	if mock.FatalfCalled {
+	if mock.FatalCalled {
 		t.Errorf("Expected Fatalf not to be called, but it was")
 	}
 }
@@ -134,7 +138,7 @@ func TestCheckEqual(t *testing.T) {
 	expected := 42
 	CheckEqual(result, "result", expected, mock)
 
-	if mock.FatalfCalled {
+	if mock.FatalCalled {
 		t.Errorf("Expected Fatalf not to be called, but it was")
 	}
 
@@ -142,7 +146,7 @@ func TestCheckEqual(t *testing.T) {
 	expected = 43
 	CheckEqual(result, "result", expected, mock)
 
-	if !mock.FatalfCalled {
+	if !mock.FatalCalled {
 		t.Errorf("Expected Fatalf to be called, but it was not")
 	}
 }
@@ -153,7 +157,7 @@ func TestCheckContains(t *testing.T) {
 	item := 2
 	CheckContains(list, item, mock)
 
-	if mock.FatalfCalled {
+	if mock.FatalCalled {
 		t.Errorf("Expected Fatalf not to be called, but it was")
 	}
 
@@ -161,7 +165,7 @@ func TestCheckContains(t *testing.T) {
 	item = 4
 	CheckContains(list, item, mock)
 
-	if !mock.FatalfCalled {
+	if !mock.FatalCalled {
 		t.Errorf("Expected Fatalf to be called, but it was not")
 	}
 }
@@ -195,5 +199,60 @@ func TestCheckNotOk(t *testing.T) {
 
 	if !mock.FatalCalled {
 		t.Errorf("Expected Fatal to be called, but it was not")
+	}
+}
+
+func TestCheckComparableEqualIgnoreOrder(t *testing.T) {
+	tests := []struct {
+		name       string
+		result     []int
+		expected   []int
+		shouldFail bool
+	}{
+		{
+			name:       "Equal slices, same order",
+			result:     []int{1, 2, 3},
+			expected:   []int{1, 2, 3},
+			shouldFail: false,
+		},
+		{
+			name:       "Equal slices, different order",
+			result:     []int{3, 2, 1},
+			expected:   []int{1, 2, 3},
+			shouldFail: false,
+		},
+		{
+			name:       "Different slices",
+			result:     []int{1, 2, 4},
+			expected:   []int{1, 2, 3},
+			shouldFail: true,
+		},
+		{
+			name:       "One slice empty",
+			result:     []int{},
+			expected:   []int{1, 2, 3},
+			shouldFail: true,
+		},
+		{
+			name:       "Both slices empty",
+			result:     []int{},
+			expected:   []int{},
+			shouldFail: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mock := &mockT{}
+			CheckComparableEqualIgnoreOrder(tt.result, tt.name, tt.expected, mock)
+
+			if tt.shouldFail && !mock.FatalCalled {
+				t.Errorf("Expected Fatal to be called, but it was not")
+			}
+
+			if !tt.shouldFail && mock.FatalCalled {
+				t.Errorf("Expected Fatal not to be called, but it was")
+			}
+		})
 	}
 }

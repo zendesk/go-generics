@@ -219,6 +219,64 @@ func TestEqualIgnoreOrder(t *testing.T) {
 	test.CheckOk(EqualIgnoreOrder(first), "Test 8", t)
 }
 
+func TestEqualIgnoreOrder_Table(t *testing.T) {
+	tests := []struct {
+		name       string
+		slices     [][]int
+		shouldPass bool
+	}{
+		{
+			name:       "Equal slices, same order",
+			slices:     [][]int{{1, 2, 3}, {1, 2, 3}},
+			shouldPass: true,
+		},
+		{
+			name:       "Equal slices, different order",
+			slices:     [][]int{{3, 2, 1}, {1, 2, 3}},
+			shouldPass: true,
+		},
+		{
+			name:       "Different slices",
+			slices:     [][]int{{1, 2, 3}, {1, 2, 4}},
+			shouldPass: false,
+		},
+		{
+			name:       "Slices of different lengths",
+			slices:     [][]int{{1, 2, 3}, {1, 2}},
+			shouldPass: false,
+		},
+		{
+			name:       "Empty slices",
+			slices:     [][]int{{}, {}},
+			shouldPass: true,
+		},
+		{
+			name:       "One empty slice",
+			slices:     [][]int{{1, 2, 3}, {}},
+			shouldPass: false,
+		},
+		{
+			name:       "Multiple slices, all equal",
+			slices:     [][]int{{1, 2, 3}, {3, 1, 2}, {2, 3, 1}},
+			shouldPass: true,
+		},
+		{
+			name:       "Multiple slices, one different",
+			slices:     [][]int{{1, 2, 3}, {3, 1, 2}, {2, 3, 4}},
+			shouldPass: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := EqualIgnoreOrder(tt.slices...)
+			if result != tt.shouldPass {
+				t.Errorf("EqualIgnoreOrder() = %v, want %v", result, tt.shouldPass)
+			}
+		})
+	}
+}
+
 func TestSliceContainsAny(t *testing.T) {
 	tests := []struct {
 		name   string

@@ -14,11 +14,12 @@ func EqualIgnoreOrder[T comparable](slices ...[]T) bool {
 	firstSliceLen := len(slices[0])
 	// Add all items across all slices to map, if any items are not identical, we'll end up with a map longer than the provided slices.
 	for i := 0; i < len(slices); i++ {
-		sliceMap[i] = make(map[T]int)
 		// Short circuit false if slices aren't all the same length
 		if firstSliceLen != len(slices[i]) {
 			return false
 		}
+
+		sliceMap[i] = make(map[T]int, firstSliceLen)
 
 		// Increment item in map
 		for _, item := range slices[i] {
@@ -27,15 +28,15 @@ func EqualIgnoreOrder[T comparable](slices ...[]T) bool {
 	}
 
 	isEqual := true
-	// iterate over each map (except the last), and compare it to the map after it
-	for i := 0; i < len(sliceMap)-1; i++ {
+	// iterate over each item in the first map
+	for k, v := range sliceMap[0] {
+		// iterate over each map and compare it to the first maps item
+		for i := 1; i < len(sliceMap); i++ {
+			isEqual = sliceMap[i][k] == v
 
-		for k, v := range sliceMap[i] {
-			isEqual = isEqual && sliceMap[i+1][k] == v
-		}
-
-		if !isEqual {
-			return false
+			if !isEqual {
+				return false
+			}
 		}
 	}
 
