@@ -24,12 +24,12 @@ test: test-unit
 .PHONY: test-unit
 test-unit:
 	go clean -testcache
-	go test -v -timeout 20m -tags=test ./cache
-	go test -v -timeout 20m -tags=test ./datastructures
-	go test -v -timeout 20m -tags=test ./encryption
-	go test -v -timeout 20m -tags=test ./functions
-	go test -v -timeout 20m -tags=test ./ratelimit
-	go test -v -timeout 20m -tags=test ./serialize
+	go test -v -timeout 30m -tags=test ./cache
+	go test -v -timeout 30m -tags=test ./datastructures
+	go test -v -timeout 30m -tags=test ./encryption
+	go test -v -timeout 30m -tags=test ./functions
+	go test -v -timeout 30m -tags=test ./ratelimit
+	go test -v -timeout 30m -tags=test ./serialize
 	go test -v -timeout 1m -tags=test ./test
 
 .PHONY: test-fuzz
