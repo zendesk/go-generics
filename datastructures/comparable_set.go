@@ -47,9 +47,9 @@ func (s *comparableSet[V]) Remove(k V) {
 
 // Values returns all elements in the comparableSet.
 func (s *comparableSet[V]) Values() []V {
-	//out := make([]V, len(s.order))
-	//copy(out, s.order)
-	return s.order
+	out := make([]V, len(s.order))
+	copy(out, s.order)
+	return out
 }
 
 // Clear removes all elements from the comparableSet.
