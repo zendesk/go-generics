@@ -296,7 +296,7 @@ cache miss.
 - Generic implementation that supports all types.
 - Time-to-live for items set in the cache may be configured
 - Fail-through cache may be configured to configure multiple levels of caching. If the key is missing from the primary, the secondary will be queried
-- Supports transparent encryption / decryption wrapper for configuring a encrypted cache in memory and/or redis.
+- Supports transparent encryption / decryption wrapper for configuring an encrypted cache in memory and/or redis.
 
 Future goals / features:
 - Sized based capacity
@@ -366,7 +366,7 @@ user, wasFound, err := cache.Get(userID)
 Example 3: Cache with Datadog Metric Tracking
 
 ```go 
-// In Memory Cache with DD metric tracking
+// In Memory Cache with DataDog metric tracking
 import (
     "github.com/DataDog/datadog-go/v5/statsd"
 )
@@ -508,6 +508,7 @@ for i := 0; i < 20; i++ {
 }
 
 // With on-complete callback
+
 for i := 0; i < 20; i++ {
     limiter.Run(func() {
         fmt.Printf("Run #: %d executing \n", i)
@@ -517,7 +518,7 @@ for i := 0; i < 20; i++ {
     }))
 }
 
-// Wait for callbacks before existing
+// Wait for callbacks before existing (example, use WaitGroup or channel to signify completion)
 time.Sleep(time.Second * 5)
 
 
