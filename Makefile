@@ -45,3 +45,4 @@ test-unit-with-coverage:
 	go test -v -timeout 20m -tags=test ./functions -coverprofile functions.out
 	go test -v -timeout 20m -tags=test ./ratelimit -coverprofile ratelimit.out
 	go test -v -timeout 20m -tags=test ./serialize -coverprofile serialize.out
+	go test -v -timeout 1m -tags=test ./test -coverprofile test.out
