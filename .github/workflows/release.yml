@@ -144,8 +144,17 @@ jobs:
             See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
 
       - name: Run artifactory publish
-        run: ./scripts/artifactory_publish.sh
+        with:
+          token: ${{ secrets.ORG_GITHUB_TOKEN }}
+        run: |
+          ./scripts/artifactory_publish.sh
+          git config user.name "Version Release"
+          git config user.email "github@ga-runner.zende.sk"
+          git add -A
+          git commit -m "Release version ${{ steps.tag.outputs.next_tag }}"
+          git push
         env:
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
           ARTIFACT_VERSION: ${{ steps.tag.outputs.next_tag }}
+
