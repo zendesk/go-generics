@@ -5,9 +5,9 @@ go 1.23.0
 require (
 	// Versions of go-generics are dynamically updated at release to reference the current version. This means all
 	// dependencies across modules in go-generics depend on the same version
-	github.com/zendesk/go-generics/datastructures v1.4.24
-	github.com/zendesk/go-generics/ratelimit v1.4.24
-	github.com/zendesk/go-generics/test v1.4.24
+	github.com/zendesk/go-generics/datastructures v1.4.25
+	github.com/zendesk/go-generics/ratelimit v1.4.25
+	github.com/zendesk/go-generics/test v1.4.25
 	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0
 )
 
