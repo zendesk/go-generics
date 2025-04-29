@@ -5,6 +5,9 @@ go 1.23.0
 require (
 	github.com/go-redis/redis_rate/v10 v10.0.1
 	github.com/redis/go-redis/v9 v9.7.3
+
+	// Versions of go-generics are dynamically updated at release to reference the current version. This means all
+	// dependencies across modules in go-generics depend on the same version
 	github.com/zendesk/go-generics/test v1.4.21
 )
 
