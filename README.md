@@ -636,3 +636,4 @@ Encrypt with an auto-generated secure password + nonce.
 		return err
     }
 ```
+
