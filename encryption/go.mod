@@ -6,8 +6,8 @@ require (
 
 	// Versions of go-generics are dynamically updated at release to reference the current version. This means all
 	// dependencies across modules in go-generics depend on the same version
-	github.com/zendesk/go-generics/serialize v1.4.21
+	github.com/zendesk/go-generics/serialize v1.4.23
 	golang.org/x/crypto v0.35.0
 )
 
-require github.com/zendesk/go-generics/test v1.4.21 // indirect
+require github.com/zendesk/go-generics/test v1.4.23

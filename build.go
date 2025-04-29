@@ -92,7 +92,7 @@ func writeLines(lines []string, fileName string) error {
 }
 
 func updateVersion(lines []string, version string) []string {
-	regex := "\\s*github.com/zendesk/go-generics/[a-zA-Z]+\\s+"
+	regex := "(\\s*|require\\s+)github.com/zendesk/go-generics/[a-zA-Z]+\\s+"
 	r := regexp.MustCompile(regex)
 	updated := []string{}
 	for _, line := range lines {
