@@ -81,6 +81,7 @@ jobs:
       - name: Run Unit Tests
         run: |
           unset GOPROXY
+          git config --global url."https://${{ secrets.ORG_GITHUB_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
           make test
 
 #  test_fuzz:
