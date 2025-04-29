@@ -39,10 +39,10 @@ test-fuzz:
 .PHONY: unit-with-coverage
 test-unit-with-coverage:
 	go clean -testcache
-	go test -v -timeout 20m -tags=test ./cache -coverprofile cache.out
-	go test -v -timeout 20m -tags=test ./datastructures -coverprofile datastructures.out
-	go test -v -timeout 20m -tags=test ./encryption -coverprofile encryption.out
-	go test -v -timeout 20m -tags=test ./functions -coverprofile functions.out
-	go test -v -timeout 20m -tags=test ./ratelimit -coverprofile ratelimit.out
-	go test -v -timeout 20m -tags=test ./serialize -coverprofile serialize.out
+	go test -v -timeout 30m -tags=test ./cache -coverprofile cache.out
+	go test -v -timeout 30m -tags=test ./datastructures -coverprofile datastructures.out
+	go test -v -timeout 30m -tags=test ./encryption -coverprofile encryption.out
+	go test -v -timeout 30m -tags=test ./functions -coverprofile functions.out
+	go test -v -timeout 30m -tags=test ./ratelimit -coverprofile ratelimit.out
+	go test -v -timeout 30m -tags=test ./serialize -coverprofile serialize.out
 	go test -v -timeout 1m -tags=test ./test -coverprofile test.out

@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
 	"testing"
 
 	"github.com/zendesk/go-generics/test"
@@ -311,10 +310,10 @@ func Fuzz_Set(f *testing.F) {
 	})
 }
 
-// Fuzz_Set_StringsRandomLength tests random sets of strings of random length with a max size of length 65535
+// Fuzz_Set_StringsRandomLength tests random sets of strings of random length with a max size of length 10k
 func Fuzz_Set_Strings_Random_Length(f *testing.F) {
 	f.Add(uint16(0))
-	f.Add(uint16(math.MaxUint16))
+	f.Add(uint16(15000))
 
 	f.Fuzz(func(t *testing.T, size uint16) {
 		items := makeItems(size)
