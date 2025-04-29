@@ -18,7 +18,7 @@ github.com/redis/go-redis/v9 v9.7.3 h1:YpPyAayJV+XErNsatSElgRZZVCwXX9QzkKYNvO7x0
 github.com/redis/go-redis/v9 v9.7.3/go.mod h1:bGUrSggJ9X9GUmZpZNEOQKaANxSGgOEBRltRTZHSvrA=
 github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKsk=
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
-github.com/zendesk/go-generics/test v1.4.21 h1:zlWuGPJ+XIdBos7WNfJlJYbWNJDsVLgI1lSvtMs8k0w=
-github.com/zendesk/go-generics/test v1.4.21/go.mod h1:eYcRrFnFWIUcmVcHlpybFOimmpZ/iJV0VbCBkrw+ABs=
+github.com/zendesk/go-generics/test v1.4.24 h1:e3GK/BBr/FTtIi5N1YqnEvhYi2nwmIA2lnf5YXjsAO8=
+github.com/zendesk/go-generics/test v1.4.24/go.mod h1:eYcRrFnFWIUcmVcHlpybFOimmpZ/iJV0VbCBkrw+ABs=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=

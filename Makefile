@@ -46,3 +46,16 @@ test-unit-with-coverage:
 	go test -v -timeout 30m -tags=test ./ratelimit -coverprofile ratelimit.out
 	go test -v -timeout 30m -tags=test ./serialize -coverprofile serialize.out
 	go test -v -timeout 1m -tags=test ./test -coverprofile test.out
+
+.PHONY: tidy
+tidy:
+	cd ./cache && go mod tidy
+	cd ./datastructures && go mod tidy
+	cd ./encryption && go mod tidy
+	cd ./functions && go mod tidy
+	cd ./ratelimit && go mod tidy
+	cd ./serialize && go mod tidy
+	cd ./test && go mod tidy
+
+
+
