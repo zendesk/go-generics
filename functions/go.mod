@@ -3,10 +3,10 @@ module github.com/zendesk/go-generics/functions
 go 1.23.0
 
 require (
+	github.com/zendesk/go-generics/datastructures v1.4.21
+	github.com/zendesk/go-generics/ratelimit v1.4.21
+	github.com/zendesk/go-generics/test v1.4.21
 	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0
-	github.com/zendesk/go-generics/datastructures v1.4.16
-	github.com/zendesk/go-generics/test v1.4.16
-	github.com/zendesk/go-generics/ratelimit v1.4.16
 )
 
 require (

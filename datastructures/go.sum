@@ -1,0 +1,4 @@
+github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
+github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX3N/iU=
+github.com/zendesk/go-generics/test v1.4.21 h1:zlWuGPJ+XIdBos7WNfJlJYbWNJDsVLgI1lSvtMs8k0w=
+github.com/zendesk/go-generics/test v1.4.21/go.mod h1:eYcRrFnFWIUcmVcHlpybFOimmpZ/iJV0VbCBkrw+ABs=

@@ -18,6 +18,12 @@ github.com/redis/go-redis/v9 v9.7.3 h1:YpPyAayJV+XErNsatSElgRZZVCwXX9QzkKYNvO7x0
 github.com/redis/go-redis/v9 v9.7.3/go.mod h1:bGUrSggJ9X9GUmZpZNEOQKaANxSGgOEBRltRTZHSvrA=
 github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKsk=
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
+github.com/zendesk/go-generics/datastructures v1.4.21 h1:2SdB6U/Drs+r7U7OI5QziBN++wzFfycqjShLz5fJae4=
+github.com/zendesk/go-generics/datastructures v1.4.21/go.mod h1:rLCASlLNgUAfPaIbafKxxUoVmz8V2QeQFtbfsgvak30=
+github.com/zendesk/go-generics/ratelimit v1.4.21 h1:4AqpiGNKa8fBYmdsx2WaiYI12oV/bKDC3/1KixOqjOk=
+github.com/zendesk/go-generics/ratelimit v1.4.21/go.mod h1:S3iiOhruizwYn2M3fe/BX71mk2vsDeVJ37YJ/BL724g=
+github.com/zendesk/go-generics/test v1.4.21 h1:zlWuGPJ+XIdBos7WNfJlJYbWNJDsVLgI1lSvtMs8k0w=
+github.com/zendesk/go-generics/test v1.4.21/go.mod h1:eYcRrFnFWIUcmVcHlpybFOimmpZ/iJV0VbCBkrw+ABs=
 golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 h1:R84qjqJb5nVJMxqWYb3np9L5ZsaDtB+a39EqjV0JSUM=
 golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0/go.mod h1:S9Xr4PYopiDyqSyp5NjCrhFrqg6A5zA2E/iPHPhqnS8=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
