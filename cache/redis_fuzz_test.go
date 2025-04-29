@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/zendesk/go-generics/cache"
-	"github.com/zendesk/go-generics/cache/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 func Fuzz_Redis_String(f *testing.F) {

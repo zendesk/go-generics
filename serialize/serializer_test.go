@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/zendesk/go-generics/serialize"
-	"github.com/zendesk/go-generics/serialize/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 func validateB64(s string, t *testing.T) {

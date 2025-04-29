@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/zendesk/go-generics/functions/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 func TestMin(t *testing.T) {

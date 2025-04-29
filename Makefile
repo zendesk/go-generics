@@ -30,6 +30,7 @@ test-unit:
 	go test -v -timeout 20m -tags=test ./functions
 	go test -v -timeout 20m -tags=test ./ratelimit
 	go test -v -timeout 20m -tags=test ./serialize
+	go test -v -timeout 1m -tags=test ./test
 
 .PHONY: test-fuzz
 test-fuzz:

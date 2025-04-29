@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/functions/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 func TestEachMergeErrs(t *testing.T) {

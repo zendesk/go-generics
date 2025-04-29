@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/ratelimit/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 func Test_ConcurrencyLimiter(t *testing.T) {

@@ -8,6 +8,7 @@ require (
 	github.com/redis/go-redis/v9 v9.7.3
 	github.com/zendesk/go-generics/serialize v1.4.16
 	github.com/zendesk/go-generics/encryption v1.4.16
+	github.com/zendesk/go-generics/test v1.4.16
 )
 
 require (

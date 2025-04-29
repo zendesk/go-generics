@@ -6,7 +6,7 @@ package functions
 import (
 	"testing"
 
-	"github.com/zendesk/go-generics/functions/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 func TestFind(t *testing.T) {

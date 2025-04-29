@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/zendesk/go-generics/datastructures/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 func Test_Iter2(t *testing.T) {

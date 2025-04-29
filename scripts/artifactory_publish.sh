@@ -38,32 +38,31 @@ publish() {
 }
 
 # Must publish packages in order based on dependencies.
-# 1. serialize
-# 2. datastructures
-# 3. ratelimit
-# 4. encryption
-# 5. cache
-# 6. functions
+# 1. test
+# 2. serialize
+# 3. datastructures
+# 4. ratelimit
+# 5. encryption
+# 6. cache
+# 7. functions
 
-cd ./serialize
+cd ./test
+publish test
 
+cd ../serialize
 publish serialize
-cd ../datastructures
 
+cd ../datastructures
 publish datastructures
 
 cd ../ratelimit
-
 publish ratelimit
 
 cd ../encryption
-
 publish encryption
 
 cd ../cache
-
 publish cache
 
 cd ../functions
-
 publish functions

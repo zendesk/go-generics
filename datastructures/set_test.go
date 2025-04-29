@@ -10,7 +10,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/zendesk/go-generics/datastructures/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 type setTest[K comparable] struct {

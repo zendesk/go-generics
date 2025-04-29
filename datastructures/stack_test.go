@@ -6,7 +6,7 @@ package datastructures
 import (
 	"testing"
 
-	"github.com/zendesk/go-generics/datastructures/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 func TestStack(t *testing.T) {

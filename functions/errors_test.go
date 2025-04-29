@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/zendesk/go-generics/functions/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 func TestMergeErrors(t *testing.T) {
