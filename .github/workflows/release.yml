@@ -66,6 +66,17 @@ jobs:
           body: |
             See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
 
+      - name: Create release test
+        uses: zendesk/create-release@v1.1.4
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: test/${{ steps.tag.outputs.next_tag }}
+          release_name: test/${{ steps.tag.outputs.next_tag }}
+          commitish: ${{ github.git_ref }}
+          body: |
+            See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
+
       - name: Create release serialize
         uses: zendesk/create-release@v1.1.4
         env:
