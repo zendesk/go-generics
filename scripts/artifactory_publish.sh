@@ -1,6 +1,6 @@
 #!/bin/bash
-
 export GOWORK=off
+
 set -euo pipefail;
 
 if ! [[ "$ARTIFACT_VERSION" =~ ^(v[0-9.]+(-[0-9A-Za-z_.\\-]*)?)$ ]]; then
@@ -18,8 +18,12 @@ JFROG_DOWNLOAD_URL="https://releases.jfrog.io/artifactory/jfrog-cli/v2/${JFROG_V
 curl --location --fail --silent --show-error --output ~/jfrog "$JFROG_DOWNLOAD_URL"
 chmod +x ~/jfrog
 
-echo "Preparing go.mod files for publish"
+# Run build to prep go.mod / sum files
+cd internal
+go mod tidy
+echo "Preparing go.mod and go.sum files for publish"
 go run build.go $ARTIFACT_VERSION
+cd ..
 
 ## Configure jfrog cli
 ~/jfrog --version
@@ -31,7 +35,8 @@ publish() {
   package=$1
   echo "Publishing package: $package"
   echo "Publishing $TAG_NAME to Artifactory as $ARTIFACTORY_USERNAME"
-  ~/jfrog go-publish "$TAG_NAME" --exclusions="*test.go;*.md"
+#  ~/jfrog go-publish "$TAG_NAME" --exclusions="*test.go;*.md"
+  ~/jfrog go-publish "$TAG_NAME"
   echo "Publish succeeded!"
   # sleep to guarantee that the publish save is complete before it possibly being necessary fro the next build
   sleep 5

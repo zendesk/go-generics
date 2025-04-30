@@ -1,2 +1,7 @@
 .idea/
 *go.mod.bak
+*go.sum.bak
+*/**go.sum.bak
+*/**go.mod.bak
+go.work
+go.work.sum
