@@ -1,5 +1,12 @@
 package test
 
+type TestT interface {
+	Fatalf(format string, args ...any)
+	Fatal(args ...any)
+	Errorf(format string, args ...any)
+	Logf(format string, args ...any)
+}
+
 type Foo struct {
 	Bar   string
 	Baz   string

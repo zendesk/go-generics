@@ -1,3 +1,6 @@
+//go:build test
+// +build test
+
 package datastructures
 
 import (
@@ -7,7 +10,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 type setTest[K comparable] struct {
@@ -360,7 +363,7 @@ func Test_HashSet_CustomType(t *testing.T) {
 func makeItems(length uint16) []string {
 	items := make([]string, length)
 	for i := range items {
-		items[i] = fmt.Sprintf("item-%s", test.GenerateRandomLetterString(500))
+		items[i] = fmt.Sprintf("item-%s", test.GenerateRandomLetterString(25))
 	}
 	return items
 }

@@ -1,3 +1,6 @@
+//go:build test
+// +build test
+
 package functions
 
 import (
@@ -5,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 func TestMergeErrors(t *testing.T) {

@@ -1,3 +1,6 @@
+//go:build test
+// +build test
+
 package datastructures
 
 import (
@@ -6,7 +9,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 // Define a struct to use as input

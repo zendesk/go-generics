@@ -1,3 +1,6 @@
+//go:build test
+// +build test
+
 package ratelimit
 
 import (
@@ -6,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 func Test_RateLimiter_MultipleLimitersWithDifferentPrefixOnSameBackend(t *testing.T) {

@@ -1,10 +1,13 @@
+//go:build test
+// +build test
+
 package functions
 
 import (
 	"crypto/sha256"
 	"fmt"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 const (

@@ -1,11 +1,15 @@
-package cache
+//go:build test
+// +build test
+
+package cache_test
 
 import (
 	"context"
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/cache"
+	"github.com/zendesk/go-generics/test"
 )
 
 func Fuzz_Redis_String(f *testing.F) {
@@ -16,7 +20,7 @@ func Fuzz_Redis_String(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, value string, updatedValue string) {
 		mockRedis := &mockClient{}
-		redisCache := NewRedisCache[string, string](context.Background(), mockRedis, 10*time.Second)
+		redisCache := cache.NewRedisCache[string, string](context.Background(), mockRedis, 10*time.Second)
 
 		key := "key"
 		err := redisCache.Set(key, value)
@@ -25,8 +29,8 @@ func Fuzz_Redis_String(f *testing.F) {
 		gotValue, ok, err := redisCache.Get(key)
 		test.CheckOk(ok, "Unexpeced OK (1)", t)
 		test.CheckErr(err, "Failed to get", t)
-		test.CheckEqual(mockRedis.getKey, "Get key does not match", hashAny(key), t)
-		test.CheckEqual(mockRedis.setKey, "SET key does not match", hashAny(key), t)
+		test.CheckEqual(mockRedis.getKey, "Get key does not match", cache.HashAny(key), t)
+		test.CheckEqual(mockRedis.setKey, "SET key does not match", cache.HashAny(key), t)
 		test.CheckEqual(gotValue, "Got Value", value, t)
 
 		err = redisCache.Set(key, updatedValue)
@@ -44,7 +48,7 @@ func Fuzz_Redis_Bytes(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, value []byte, updatedValue []byte) {
 		mockRedis := &mockClient{}
-		redisCache := NewRedisCache[string, []byte](context.Background(), mockRedis, 10*time.Second)
+		redisCache := cache.NewRedisCache[string, []byte](context.Background(), mockRedis, 10*time.Second)
 
 		key := "key"
 		gotValue, ok, err := redisCache.Get(ExpectNoResult)
@@ -57,8 +61,8 @@ func Fuzz_Redis_Bytes(f *testing.F) {
 		gotValue, ok, err = redisCache.Get(key)
 		test.CheckErr(err, "Failed to get", t)
 		test.CheckOk(ok, "Expected ok (1)", t)
-		test.CheckEqual(mockRedis.getKey, "Get key does not match", hashAny(key), t)
-		test.CheckEqual(mockRedis.setKey, "SET key does not match", hashAny(key), t)
+		test.CheckEqual(mockRedis.getKey, "Get key does not match", cache.HashAny(key), t)
+		test.CheckEqual(mockRedis.setKey, "SET key does not match", cache.HashAny(key), t)
 		test.CheckEqualEquateEmpty(gotValue, "Got Value", value, t)
 
 		err = redisCache.Set(key, updatedValue)
@@ -82,7 +86,7 @@ func Fuzz_Redis_Struct(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, value string, updatedValue string) {
 		mockRedis := &mockClient{}
-		redisCache := NewRedisCache[string, Foo](context.Background(), mockRedis, 10*time.Second)
+		redisCache := cache.NewRedisCache[string, Foo](context.Background(), mockRedis, 10*time.Second)
 
 		firstValue := Foo{Value: value}
 
@@ -92,8 +96,8 @@ func Fuzz_Redis_Struct(f *testing.F) {
 
 		gotValue, _, err := redisCache.Get(key)
 		test.CheckErr(err, "Failed to get", t)
-		test.CheckEqual(mockRedis.getKey, "Get key does not match", hashAny(key), t)
-		test.CheckEqual(mockRedis.setKey, "SET key does not match", hashAny(key), t)
+		test.CheckEqual(mockRedis.getKey, "Get key does not match", cache.HashAny(key), t)
+		test.CheckEqual(mockRedis.setKey, "SET key does not match", cache.HashAny(key), t)
 		if gotValue.Value != firstValue.Value {
 			t.Logf("%+v : %+v", []byte(gotValue.Value), []byte(firstValue.Value))
 			t.Fatal("VALUES ARE NOT THE SAME?!?")

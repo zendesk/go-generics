@@ -1,3 +1,6 @@
+//go:build test
+// +build test
+
 package functions
 
 import (
@@ -5,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 func TestGoEachMapWithErrs(t *testing.T) {

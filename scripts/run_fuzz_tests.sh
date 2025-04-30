@@ -15,6 +15,6 @@ do
         echo "Fuzzing $func in $file"
         parentDir=$(dirname $file)
         echo "go test $parentDir -run=^${func}$ -fuzz=^${func}$ -fuzztime=${fuzzTime}s -parallel=3"
-        go test -v $parentDir -run="^${func}\$" -fuzz="^${func}$" -fuzztime=${fuzzTime}s -parallel=3
+        go test -v $parentDir -tags=test -run="^${func}\$" -fuzz="^${func}$" -fuzztime=${fuzzTime}s -parallel=3
     done
 done

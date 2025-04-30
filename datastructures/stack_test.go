@@ -1,9 +1,12 @@
+//go:build test
+// +build test
+
 package datastructures
 
 import (
 	"testing"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 func TestStack(t *testing.T) {

@@ -1,10 +1,13 @@
+//go:build test
+// +build test
+
 package functions
 
 import (
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 type Foo struct {

@@ -1,10 +1,13 @@
+//go:build test
+// +build test
+
 package functions
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 func TestMin(t *testing.T) {

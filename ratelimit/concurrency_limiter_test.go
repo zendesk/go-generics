@@ -1,10 +1,13 @@
+//go:build test
+// +build test
+
 package ratelimit
 
 import (
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 func Test_ConcurrencyLimiter(t *testing.T) {

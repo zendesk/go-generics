@@ -1,3 +1,6 @@
+//go:build test
+// +build test
+
 package cache_test
 
 import (
@@ -5,7 +8,7 @@ import (
 	"time"
 
 	"github.com/zendesk/go-generics/cache"
-	"github.com/zendesk/go-generics/internal/test"
+	"github.com/zendesk/go-generics/test"
 )
 
 type cacheObs[K comparable] struct {

@@ -24,7 +24,13 @@ test: test-unit
 .PHONY: test-unit
 test-unit:
 	go clean -testcache
-	go test -v -timeout 45m ./...
+	go test -v -timeout 30m -tags=test ./cache
+	go test -v -timeout 30m -tags=test ./datastructures
+	go test -v -timeout 30m -tags=test ./encryption
+	go test -v -timeout 30m -tags=test ./functions
+	go test -v -timeout 30m -tags=test ./ratelimit
+	go test -v -timeout 30m -tags=test ./serialize
+	go test -v -timeout 1m -tags=test ./test
 
 .PHONY: test-fuzz
 test-fuzz:
@@ -32,10 +38,24 @@ test-fuzz:
 
 .PHONY: unit-with-coverage
 test-unit-with-coverage:
-	go test -v -timeout 45m ./... -coverprofile cover.out
-
-#make test-one TEST=YourTestName
-.PHONY: test-one
-test-one:
 	go clean -testcache
-	go test -v -timeout 45m ./... -run ^$(TEST)$
+	go test -v -timeout 30m -tags=test ./cache -coverprofile cache.out
+	go test -v -timeout 30m -tags=test ./datastructures -coverprofile datastructures.out
+	go test -v -timeout 30m -tags=test ./encryption -coverprofile encryption.out
+	go test -v -timeout 30m -tags=test ./functions -coverprofile functions.out
+	go test -v -timeout 30m -tags=test ./ratelimit -coverprofile ratelimit.out
+	go test -v -timeout 30m -tags=test ./serialize -coverprofile serialize.out
+	go test -v -timeout 1m -tags=test ./test -coverprofile test.out
+
+.PHONY: tidy
+tidy:
+	cd ./cache && go mod tidy
+	cd ./datastructures && go mod tidy
+	cd ./encryption && go mod tidy
+	cd ./functions && go mod tidy
+	cd ./ratelimit && go mod tidy
+	cd ./serialize && go mod tidy
+	cd ./test && go mod tidy
+
+
+
