@@ -18,6 +18,7 @@ type EncryptorDecryptor[T any] struct {
 	nonce  []byte
 }
 
+// New creates a new EncryptorDecryptor instance with a random password and nonce.
 func New[T any](salt []byte, iterations int) (*EncryptorDecryptor[T], error) {
 	password := make([]byte, 2048)
 	if _, err := io.ReadFull(rand.Reader, password); err != nil {
@@ -49,6 +50,8 @@ func New[T any](salt []byte, iterations int) (*EncryptorDecryptor[T], error) {
 	return e, nil
 }
 
+// NewWithPasswordNonce creates a new EncryptorDecryptor instance with a specified password and nonce. Use this if
+// you intend to persist whatever is encrypted.
 func NewWithPasswordNonce[T any](password, nonce, salt []byte, iterations int) (*EncryptorDecryptor[T], error) {
 	aesKey := pbkdf2.Key(password, salt, iterations, 32, sha256.New)
 
