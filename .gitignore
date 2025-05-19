@@ -3,3 +3,4 @@
 *go.sum.bak
 */**go.sum.bak
 */**go.mod.bak
+*/testdata/
