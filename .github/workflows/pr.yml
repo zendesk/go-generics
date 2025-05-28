@@ -21,7 +21,7 @@ jobs:
         run: |
           unset GOPROXY
           git config --global url."https://${{ secrets.ORG_GITHUB_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
-          make test-unit-with-coverage
+          make test-coverage
 
       - name: Checkout Sonarqube Action Repo
         uses: zendesk/checkout@v2
@@ -83,6 +83,23 @@ jobs:
           unset GOPROXY
           git config --global url."https://${{ secrets.ORG_GITHUB_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
           make test
+  test_redis:
+    runs-on: [self-hosted, zendesk-stable]
+    steps:
+      - name: Checkout
+        uses: zendesk/checkout@v3
+
+      - name: Setup Go
+        uses: zendesk/setup-go@v2
+        with:
+          go-version: 1.23.x
+
+      - name: Run Redis Tests
+        run: |
+          unset GOPROXY
+          git config --global url."https://${{ secrets.ORG_GITHUB_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+          make redis-up
+          make test-redis
 
 #  test_fuzz:
 #    runs-on: [self-hosted, zendesk-stable]

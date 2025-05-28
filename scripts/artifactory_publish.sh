@@ -50,6 +50,7 @@ publish() {
 # 5. encryption
 # 6. cache
 # 7. functions
+# 8. concurrency
 
 cd ./test
 publish test
@@ -71,3 +72,6 @@ publish cache
 
 cd ../functions
 publish functions
+
+cd ../concurrency
+publish concurrency

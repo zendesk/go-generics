@@ -421,6 +421,161 @@ cash.Set(userID, Person{Name: "James", Age: 30})
 ```
 
 
+## Concurrency
+
+The `concurrency` package provides a generic distributed locking implementation with support for various backends, including: in-memory, or redis. You may also supply your own backend by implementing the `LockBackend` interface.
+
+### Features
+
+- Generic lock interface that supports multiple backends
+- Time-to-live (TTL) support for automatic lock expiration
+- Lock refresh functionality to extend lock duration
+- LockManager for simplified lock operations with retry logic and exponential backoff
+- Thread-safe operations
+- Context-aware operations for cancellation support
+
+### Lock Backends
+
+- **MemoryLockBackend**: In-memory locking suitable for single-instance applications
+- **RedisLockBackend**: Distributed locking using Redis, suitable for multi-instance applications
+
+### Examples
+
+Example 1: Simple in-memory locking
+
+```go
+// Create a memory-based lock backend
+backend := concurrency.NewMemoryLockBackend()
+manager := concurrency.NewLockManager(backend)
+
+ctx := context.Background()
+lockKey := "resource-123"
+lockTTL := 30 * time.Second
+
+// Acquire a lock manually
+lock, acquired, err := manager.Acquire(ctx, lockKey, lockTTL)
+if err != nil {
+    return fmt.Errorf("failed to acquire lock: %w", err)
+}
+if !acquired {
+    return fmt.Errorf("lock not available")
+}
+defer lock.Release(ctx)
+
+// Do work while holding the lock
+doSomeWork()
+```
+
+Example 2: Redis-based distributed locking
+
+```go
+import (
+    "github.com/go-redsync/redsync/v4/redis/goredis/v9"
+    goredislib "github.com/redis/go-redis/v9"
+)
+
+// Create Redis client and lock backend
+client := goredislib.NewClient(&goredislib.Options{
+    Addr: "localhost:6379",
+})
+pool := goredis.NewPool(client)
+backend := concurrency.NewRedisLockBackend(pool)
+manager := concurrency.NewLockManager(backend)
+
+ctx := context.Background()
+lockKey := "distributed-resource-456"
+lockTTL := 1 * time.Minute
+
+// Execute function with automatic lock management
+err := manager.ExecuteWithLock(ctx, lockKey, lockTTL, 5*time.Second, func() error {
+    // This function will only execute if the lock is successfully acquired
+    // The lock will be automatically released when the function completes
+    return processDistributedTask()
+})
+if err != nil {
+    return fmt.Errorf("failed to execute with lock: %w", err)
+}
+```
+
+Example 3: Lock with refresh
+
+```go
+backend := concurrency.NewMemoryLockBackend()
+ctx := context.Background()
+lockKey := "long-running-task"
+lockTTL := 30 * time.Second
+
+lock, err := backend.ObtainLock(ctx, lockKey, lockTTL)
+if err != nil {
+    return fmt.Errorf("failed to obtain lock: %w", err)
+}
+defer lock.Release(ctx)
+
+// Periodically refresh the lock for long-running operations
+ticker := time.NewTicker(15 * time.Second)
+defer ticker.Stop()
+
+done := make(chan bool)
+go func() {
+    defer close(done)
+    // Simulate long-running work
+    time.Sleep(2 * time.Minute)
+}()
+
+for {
+    select {
+    case <-done:
+        return // Work completed
+    case <-ticker.C:
+        if err := lock.Refresh(ctx); err != nil {
+            return fmt.Errorf("failed to refresh lock: %w", err)
+        }
+    }
+}
+```
+
+Example 4: Custom lock backend
+
+```go
+// Implement your own lock backend
+type CustomLockBackend struct {
+    // your implementation
+}
+
+func (c *CustomLockBackend) ObtainLock(ctx context.Context, name string, ttl time.Duration) (concurrency.Lock, error) {
+    // your lock acquisition logic
+}
+
+// Use with LockManager
+backend := &CustomLockBackend{}
+manager := concurrency.NewLockManager(backend)
+```
+
+### Error Handling
+
+The concurrency package provides specific error types for different lock scenarios:
+
+```go
+err := manager.ExecuteWithLock(ctx, "busy-resource", time.Second, 100*time.Millisecond, func() error {
+    return nil
+})
+
+// Handle different error types
+switch {
+case errors.Is(err, concurrency.ErrorLockNotAcquired):
+    // Lock is held by another process
+case errors.Is(err, concurrency.ErrorLockNotReleased):
+    // Failed to release lock
+case errors.Is(err, concurrency.ErrorLockNotRefreshed):
+    // Failed to refresh lock
+default:
+    var timeoutErr concurrency.LockTimeoutError
+    if errors.As(err, &timeoutErr) {
+        // Timed out waiting for lock
+    }
+}
+```
+
 ## RateLimiter
 
 A generic rate-limiter implementation is provided with support for various backends, including: redis, or in-memory. You may also supply your own backend.
@@ -487,7 +642,6 @@ Multiple rate limiters with shared redis backend and different rate limits
 	doSomething()
 }
 ```
-
 ## Concurrency Limiter
 
 Limits max concurrency of the Run() function based on config:

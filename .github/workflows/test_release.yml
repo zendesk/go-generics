@@ -23,7 +23,7 @@ jobs:
         run: |
           unset GOPROXY
           git config --global url."https://${{ secrets.ORG_GITHUB_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
-          make test-unit-with-coverage
+          make test-coverage
 
       - name: Checkout Sonarqube Action Repo
         uses: zendesk/checkout@v2

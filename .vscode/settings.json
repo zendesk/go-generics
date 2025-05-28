@@ -1,0 +1,12 @@
+{
+  "[go]": {
+    "editor.formatOnSave": true
+  },
+  "go.useLanguageServer": true,
+  "go.testTimeout": "300s",
+  "go.coverOnSingleTest": true,
+  "go.buildTags": "redis",
+  "go.testTags": "redis",
+  "go.formatTool": "gofmt",
+  "go.lintTool": "golangci-lint",
+}
