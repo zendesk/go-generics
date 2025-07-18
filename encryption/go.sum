@@ -1,0 +1,8 @@
+github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
+github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX3N/iU=
+github.com/zendesk/go-generics/serialize v1.5.2 h1:wrpJg1qbE29KWlwVdDwgGBR6v1aFYqWbIYwxpLHcOns=
+github.com/zendesk/go-generics/serialize v1.5.2/go.mod h1:B4HD4Mi9kraAvaBFBsdYpuQgOrbs7liezcqfsYm/If0=
+github.com/zendesk/go-generics/test v1.5.2 h1:SUyVd2LPYp8K6W9WYSdGKUym/PUs9Nu+1rZYM+yWPTw=
+github.com/zendesk/go-generics/test v1.5.2/go.mod h1:eYcRrFnFWIUcmVcHlpybFOimmpZ/iJV0VbCBkrw+ABs=
+golang.org/x/crypto v0.35.0 h1:b15kiHdrGCHrP6LvwaQ3c03kgNhhiMgvlhxHQhmg2Xs=
+golang.org/x/crypto v0.35.0/go.mod h1:dy7dXNW32cAb/6/PRuTNsix8T+vJAqvuIy5Bli/x0YQ=
