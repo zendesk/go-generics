@@ -57,7 +57,7 @@ jobs:
       - name: Run publish
         id: publish
         env:
-          ARTIFACT_VERSION: ${{ steps.tag.outputs.next_tag }}
+          ARTIFACT_VERSION: v${{ steps.tag.outputs.next_tag }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./scripts/publish.sh
