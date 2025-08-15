@@ -64,7 +64,7 @@ jobs:
           release_name: v${{ steps.tag.outputs.next_tag }}
           commitish: ${{ steps.publish.outputs.commit_hash }}
           body: |
-            See [changes since last release](https://github.com/${{ github.repository }}/compare/v${{ steps.tag.outputs.previous_tag }}..v${{ steps.tag.outputs.next_tag }}) for release details.
+            See [changes since last release](https://github.com/${{ github.repository }}/compare/v${{ steps.tag.outputs.previous_tag }}...v${{ steps.tag.outputs.next_tag }}) for release details.
 
       - name: Create release test
         uses: actions/create-release@v1.1.4
@@ -75,7 +75,7 @@ jobs:
           release_name: test/v${{ steps.tag.outputs.next_tag }}
           commitish: ${{ steps.publish.outputs.commit_hash }}
           body: |
-            See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
+            See [changes since last release](https://github.com/${{ github.repository }}/compare/v${{ steps.tag.outputs.previous_tag }}...v${{ steps.tag.outputs.next_tag }}) for release details.
 
       - name: Create release serialize
         uses: actions/create-release@v1.1.4
@@ -86,7 +86,7 @@ jobs:
           release_name: serialize/v${{ steps.tag.outputs.next_tag }}
           commitish: ${{ steps.publish.outputs.commit_hash }}
           body: |
-            See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
+            See [changes since last release](https://github.com/${{ github.repository }}/compare/v${{ steps.tag.outputs.previous_tag }}...v${{ steps.tag.outputs.next_tag }}) for release details.
       - name: Create release concurrency
         uses: actions/create-release@v1.1.4
         env:
@@ -96,7 +96,7 @@ jobs:
           release_name: concurrency/v${{ steps.tag.outputs.next_tag }}
           commitish: ${{ steps.publish.outputs.commit_hash }}
           body: |
-            See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
+            See [changes since last release](https://github.com/${{ github.repository }}/compare/v${{ steps.tag.outputs.previous_tag }}...v${{ steps.tag.outputs.next_tag }}) for release details.
       - name: Create release datastructures
         uses: actions/create-release@v1.1.4
         env:
@@ -106,7 +106,7 @@ jobs:
           release_name: datastructures/v${{ steps.tag.outputs.next_tag }}
           commitish: ${{ steps.publish.outputs.commit_hash }}
           body: |
-            See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
+            See [changes since last release](https://github.com/${{ github.repository }}/compare/v${{ steps.tag.outputs.previous_tag }}...v${{ steps.tag.outputs.next_tag }}) for release details.
 
       - name: Create release ratelimit
         uses: actions/create-release@v1.1.4
@@ -117,7 +117,7 @@ jobs:
           release_name: ratelimit/v${{ steps.tag.outputs.next_tag }}
           commitish: ${{ steps.publish.outputs.commit_hash }}
           body: |
-            See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
+            See [changes since last release](https://github.com/${{ github.repository }}/compare/v${{ steps.tag.outputs.previous_tag }}...v${{ steps.tag.outputs.next_tag }}) for release details.
 
       - name: Create release encryption
         uses: actions/create-release@v1.1.4
@@ -128,7 +128,7 @@ jobs:
           release_name: encryption/v${{ steps.tag.outputs.next_tag }}
           commitish: ${{ steps.publish.outputs.commit_hash }}
           body: |
-            See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
+            See [changes since last release](https://github.com/${{ github.repository }}/compare/v${{ steps.tag.outputs.previous_tag }}...v${{ steps.tag.outputs.next_tag }}) for release details.
 
       - name: Create release cache
         uses: actions/create-release@v1.1.4
@@ -139,7 +139,7 @@ jobs:
           release_name: cache/v${{ steps.tag.outputs.next_tag }}
           commitish: ${{ steps.publish.outputs.commit_hash }}
           body: |
-            See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
+            See [changes since last release](https://github.com/${{ github.repository }}/compare/v${{ steps.tag.outputs.previous_tag }}...v${{ steps.tag.outputs.next_tag }}) for release details.
 
       - name: Create release functions
         uses: actions/create-release@v1.1.4
@@ -150,5 +150,5 @@ jobs:
           release_name: functions/v${{ steps.tag.outputs.next_tag }}
           commitish: ${{ steps.publish.outputs.commit_hash }}
           body: |
-            See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}..${{ steps.tag.outputs.next_tag }}) for release details.
+            See [changes since last release](https://github.com/${{ github.repository }}/compare/v${{ steps.tag.outputs.previous_tag }}...v${{ steps.tag.outputs.next_tag }}) for release details.
 
