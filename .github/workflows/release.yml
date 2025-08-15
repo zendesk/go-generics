@@ -26,7 +26,7 @@ jobs:
           contains(github.event.pull_request.labels.*.name, 'create-patch-release') ||
           contains(github.event.pull_request.labels.*.name, 'create-minor-release') ||
           contains(github.event.pull_request.labels.*.name, 'create-major-release')
-        )) || github.event_name == 'workflow_dispatch' && 
+        )) || github.event_name == 'workflow_dispatch'
       }}
 
     # This may only be run by repository admins.
