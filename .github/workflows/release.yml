@@ -54,6 +54,21 @@ jobs:
           version_scheme: semantic
           version_type: ${{ steps.type.outputs.version_type }}
 
+      - name: Run publish
+        id: publish
+        env:
+          ARTIFACT_VERSION: ${{ steps.tag.outputs.next_tag }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./scripts/publish.sh
+          git config user.name "Version Release"
+          git config user.email "github@ga-runner.zende.sk"
+          git add -A
+          git commit -m "Release version ${{ steps.tag.outputs.next_tag }}"
+          git push
+          hash=$(git rev-parse HEAD)
+          echo "commit_hash=$hash" >> $GITHUB_OUTPUT
+          echo "Setting commit_hash to: $hash in GH output."
 
       - name: Create release base
         uses: actions/create-release@v1.1.4

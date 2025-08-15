@@ -9,4 +9,5 @@ use (
 	./serialize
 	./test
 	./concurrency
+	internal
 )
