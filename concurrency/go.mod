@@ -5,7 +5,7 @@ go 1.23.0
 require (
 	github.com/go-redsync/redsync/v4 v4.13.0
 	github.com/redis/go-redis/v9 v9.9.0
-	github.com/zendesk/go-generics/test v0.0.2
+	github.com/zendesk/go-generics/test v0.0.3
 )
 
 require (
