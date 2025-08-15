@@ -1,4 +1,4 @@
-go 1.24
+go 1.24.1
 
 use (
 	./cache
@@ -9,4 +9,5 @@ use (
 	./serialize
 	./test
 	./concurrency
+	internal
 )

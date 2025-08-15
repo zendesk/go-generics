@@ -19,6 +19,7 @@ var modules = []string{
 	"encryption",
 	"functions",
 	"cache",
+	"concurrency",
 }
 
 const (
