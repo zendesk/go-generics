@@ -670,7 +670,7 @@ Limits max concurrency of the Run() function based on config:
 ```go
 // Limit concurrency to 5 concurrent executions. The provided Run() function will be executed in a goroutine.
 
-limiter := ratelimit.NewConcurrencyLimiter(5)
+limiter := concurrency.NewConcurrencyLimiter(5)
 
 for i := 0; i < 20; i++ {
       limiter.Run(func() {
@@ -685,7 +685,7 @@ for i := 0; i < 20; i++ {
     limiter.Run(func() {
         fmt.Printf("Run #: %d executing \n", i)
         time.Sleep(time.Second)
-    }, ratelimit.WithOnCompleteCallback(func() {
+    }, concurrency.WithOnCompleteCallback(func() {
         fmt.Printf("Callback executed for: %d \n", i)
     }))
 }

@@ -1,4 +1,4 @@
-package ratelimit
+package concurrency
 
 // ConcurrencyLimiterRunConfig allows you to configure the behavior of the ConcurrencyLimiter.Run() function
 type ConcurrencyLimiterRunConfig struct {
