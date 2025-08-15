@@ -1,7 +1,7 @@
 //go:build test
 // +build test
 
-package ratelimit
+package concurrency
 
 import (
 	"testing"

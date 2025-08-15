@@ -15,7 +15,7 @@ Go-generics is a multi-module repository that exports the following go modules:
 Each new version of go-generics publishes a new version for each of these modules, and dependencies between modules
 are within a single larger go-generics version. 
 
-**This means that github.com/zendesk/go-generics/cache@v1.5.1 will depend on github.com/zendesk/go-generics/serialize@1.5.1**
+**This means that github.com/zendesk/go-generics/cache@v1.0.1 will depend on github.com/zendesk/go-generics/serialize@1.0.1**
 
 This provides an advantage that locally you may develop new changes and reference changes across-module without having to release
 one module to import its changes into another. This is achieved by the included `go.work` file. Changes may be made across modules,
@@ -38,5 +38,5 @@ while referencing their sibling version.
 
 ## Local Development
 
-The `go.work` file is committed here to simplify local development. You may modify any individual module, and test it individual, or a group of modules. To run
+The `go.work` file is committed here to simplify local development. You may modify any individual module, and test it individually, or with a group of modules. To run
 the whole test suite, run `make test`. To tidy all modules, `make tidy`. 

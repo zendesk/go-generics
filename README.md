@@ -1,3 +1,21 @@
+[//]: # (## Copyright and license)
+
+[//]: # ()
+[//]: # (Copyright 2025 Zendesk, Inc.)
+
+[//]: # ()
+[//]: # (Licensed under the Apache License, Version 2.0 &#40;the "License"&#41;; you may not use this file except in compliance with the License.)
+
+[//]: # (You may obtain a copy of the License at)
+
+[//]: # ()
+[//]: # (http://www.apache.org/licenses/LICENSE-2.0)
+
+[//]: # ()
+[//]: # (Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.)
+
+[//]: # ()
+
 [![Tests](https://github.com/zendesk/go-generics/actions/workflows/test_release.yml/badge.svg)](https://github.com/zendesk/zendesk/actions/workflows/test.yml)
 
 # go-generics
@@ -652,7 +670,7 @@ Limits max concurrency of the Run() function based on config:
 ```go
 // Limit concurrency to 5 concurrent executions. The provided Run() function will be executed in a goroutine.
 
-limiter := ratelimit.NewConcurrencyLimiter(5)
+limiter := concurrency.NewConcurrencyLimiter(5)
 
 for i := 0; i < 20; i++ {
       limiter.Run(func() {
@@ -667,7 +685,7 @@ for i := 0; i < 20; i++ {
     limiter.Run(func() {
         fmt.Printf("Run #: %d executing \n", i)
         time.Sleep(time.Second)
-    }, ratelimit.WithOnCompleteCallback(func() {
+    }, concurrency.WithOnCompleteCallback(func() {
         fmt.Printf("Callback executed for: %d \n", i)
     }))
 }
