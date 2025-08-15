@@ -8,9 +8,9 @@ require (
 
 	// Versions of go-generics are dynamically updated at release to reference the current version. This means all
 	// dependencies across modules in go-generics depend on the same version
-	github.com/zendesk/go-generics/encryption v1.0.1
-	github.com/zendesk/go-generics/serialize v1.0.1
-	github.com/zendesk/go-generics/test v1.0.1
+	github.com/zendesk/go-generics/encryption v1.0.2
+	github.com/zendesk/go-generics/serialize v1.0.2
+	github.com/zendesk/go-generics/test v1.0.2
 )
 
 require (
