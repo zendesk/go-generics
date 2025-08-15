@@ -1,4 +1,4 @@
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
 github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX3N/iU=
-github.com/zendesk/go-generics/test v1.0.0 h1:BTF9kCuIdOVmzFyj4/GH3/t//4F/waFalZax7mCob5Y=
-github.com/zendesk/go-generics/test v1.0.0/go.mod h1:eYcRrFnFWIUcmVcHlpybFOimmpZ/iJV0VbCBkrw+ABs=
+github.com/zendesk/go-generics/test v1.0.1 h1:aa0iAKdo1a4t/bXT3ZHG87DfoEDmpVC0h4AmCwE7DTA=
+github.com/zendesk/go-generics/test v1.0.1/go.mod h1:eYcRrFnFWIUcmVcHlpybFOimmpZ/iJV0VbCBkrw+ABs=
