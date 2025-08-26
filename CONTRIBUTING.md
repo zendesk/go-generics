@@ -10,7 +10,7 @@ Go-generics is a multi-module repository that exports the following go modules:
 - github.com/zendesk/go-generics/functions
 - github.com/zendesk/go-generics/ratelimit
 - github.com/zendesk/go-generics/serialize
-- github.com/zendesk/go-generics/test
+- github.com/zendesk/go-generics/internal/test
 
 Each new version of go-generics publishes a new version for each of these modules, and dependencies between modules
 are within a single larger go-generics version. 

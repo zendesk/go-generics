@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/zendesk/go-generics/test"
+	"github.com/zendesk/go-generics/internal/test"
 )
 
 // Define a struct to use as input

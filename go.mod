@@ -8,7 +8,6 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/jellydator/ttlcache/v3 v3.2.0
 	github.com/redis/go-redis/v9 v9.7.3
-	github.com/zendesk/go-generics/test v1.5.2
 	golang.org/x/crypto v0.41.0
 	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b
 

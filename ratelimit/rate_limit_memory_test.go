@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/test"
+	"github.com/zendesk/go-generics/internal/test"
 )
 
 func Test_RateLimiter_InMemoryBackend(t *testing.T) {

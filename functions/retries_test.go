@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/test"
+	"github.com/zendesk/go-generics/internal/test"
 )
 
 func TestRunEachWithRetries(t *testing.T) {
