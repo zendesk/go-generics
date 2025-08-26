@@ -9,11 +9,6 @@ default: build
 build:
 	go build $(PACKAGE) ./...
 
-.PHONY: ensure_deps
-ensure_deps:
-	go mod vendor
-	go mod tidy
-
 .PHONY: fmt
 	gofmt -w `find . -name '*.go'`
 
@@ -24,14 +19,7 @@ test: test-unit
 .PHONY: test-unit
 test-unit:
 	go clean -testcache
-	go test -v -timeout 30m -tags=test ./cache
-	go test -v -timeout 30m -tags=test ./concurrency
-	go test -v -timeout 30m -tags=test ./datastructures
-	go test -v -timeout 30m -tags=test ./encryption
-	go test -v -timeout 30m -tags=test ./functions
-	go test -v -timeout 30m -tags=test ./ratelimit
-	go test -v -timeout 30m -tags=test ./serialize
-	go test -v -timeout 1m -tags=test ./test
+	go test -v -timeout 30m -tags=test ./...
 
 .PHONY: test-fuzz
 test-fuzz:
@@ -41,14 +29,7 @@ test-fuzz:
 test-coverage:
 	make redis-up
 	go clean -testcache
-	go test -v -timeout 30m -tags=test ./cache -coverprofile cache.out
-	go test -v -timeout 30m -tags=test ./datastructures -coverprofile datastructures.out
-	go test -v -timeout 30m -tags=test ./encryption -coverprofile encryption.out
-	go test -v -timeout 30m -tags=test ./functions -coverprofile functions.out
-	go test -v -timeout 30m -tags=test ./ratelimit -coverprofile ratelimit.out
-	go test -v -timeout 30m -tags=test ./serialize -coverprofile serialize.out
-	go test -v -timeout 30m -tags=test,redis ./concurrency -coverprofile concurrency.out
-	go test -v -timeout 1m -tags=test ./test -coverprofile test.out
+	go test -v -timeout 30m -tags=test ./... -coverprofile cover.out
 
 # Detect container runtime (docker or podman)
 CONTAINER_RUNTIME := $(shell command -v docker 2> /dev/null)
@@ -89,14 +70,7 @@ test-redis-cleanup: test-redis redis-down
 
 .PHONY: tidy
 tidy:
-	cd ./cache && go mod tidy
-	cd ./concurrency && go mod tidy
-	cd ./datastructures && go mod tidy
-	cd ./encryption && go mod tidy
-	cd ./functions && go mod tidy
-	cd ./ratelimit && go mod tidy
-	cd ./serialize && go mod tidy
-	cd ./test && go mod tidy
+	go mod tidy
 
 
 

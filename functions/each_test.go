@@ -38,7 +38,6 @@ func TestEachMergeErrs(t *testing.T) {
 		strings.Contains(foundErrs.Error(), "error: 7.") ||
 		strings.Contains(foundErrs.Error(), "error: 9.")
 
-	t.Logf(foundErrs.Error())
 	test.CheckOk(expectedErrsFound, "Expected errors do not exist", t)
 	test.CheckOk(!missingErrorsAreMissing, "Errors have been found that shouldn't be here!", t)
 }

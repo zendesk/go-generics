@@ -77,8 +77,7 @@ func TestMapMergeErrs(t *testing.T) {
 		strings.Contains(foundErrs.Error(), "error: 9.")
 
 	test.CheckEqual(resultsNoNegative, "Expected Odds", expected, t)
-
-	t.Logf(foundErrs.Error())
+	serializer_test.go
 	test.CheckOk(expectedErrsFound, "Expected errors do not exist", t)
 	test.CheckOk(!missingErrorsAreMissing, "Errors have been found that shouldn't be here!", t)
 }
