@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/zendesk/go-generics/cache"
-	"github.com/zendesk/go-generics/test"
+	"github.com/zendesk/go-generics/internal/test"
 )
 
 type MockCache[K comparable, V any] struct {

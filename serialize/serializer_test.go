@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/zendesk/go-generics/internal/test"
 	"github.com/zendesk/go-generics/serialize"
-	"github.com/zendesk/go-generics/test"
 )
 
 func validateB64(s string, t *testing.T) {
@@ -601,7 +601,6 @@ func Test_Serializer_InferredType_Bytes(t *testing.T) {
 	test.CheckErr(err, "Failed to go from json string to bytes", t)
 	result, err = serialize.NewSerializer[[]byte]().FromB64Bytes(b64bytes).ToBytes()
 	converted := result.([]byte)
-	t.Logf("%s : %s", string(converted), string(from))
 	test.CheckErr(err, "Failed to go from bytes to json string", t)
 	test.CheckEqual(converted, "bytes -> b64bytes", from, t)
 

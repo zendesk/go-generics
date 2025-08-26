@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zendesk/go-generics/test"
+	"github.com/zendesk/go-generics/internal/test"
 )
 
 func FuzzGoMapToMany(f *testing.F) {
