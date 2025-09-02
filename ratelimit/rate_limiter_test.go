@@ -60,11 +60,11 @@ func Test_RateLimiter_AdjustThroughput(t *testing.T) {
 	ok = limiter1.GetRateForClient(ctx, "client1")
 	test.CheckNotOk(ok, "Rate not expected but as available for client1", t)
 
-	// Wait for new rate to be available
-	time.Sleep(rateDuration)
-
 	// Change rate to 10/s
 	limiter1.SetThroughput(10, rateDuration, 0)
+
+	// Wait for new rate to be available
+	time.Sleep(rateDuration)
 
 	for i := 0; i < 10; i++ {
 		ok = limiter1.GetRateForClient(ctx, "client1")
@@ -80,6 +80,7 @@ func Test_RateLimiter_AdjustThroughput_WithThroughputProvider(t *testing.T) {
 	var throughput = 1
 	rateDuration := time.Millisecond * 50
 	provider := func() (rate int, overTime time.Duration, burstCapacity int) {
+		t.Logf("Throughput set to: %d over %s with burst: %d", throughput, rateDuration.String(), 0)
 		return throughput, rateDuration, 0
 	}
 
@@ -96,12 +97,12 @@ func Test_RateLimiter_AdjustThroughput_WithThroughputProvider(t *testing.T) {
 	ok = limiter1.GetRateForClient(ctx, "client1")
 	test.CheckNotOk(ok, "Rate not expected but as available for client1", t)
 
-	// Wait for new rate to be available
-	time.Sleep(rateDuration)
-
 	// Change rate to 10/s
 	throughput = 10
 	time.Sleep(time.Millisecond * 2)
+
+	// Wait for new rate to be available
+	time.Sleep(rateDuration)
 
 	for i := 0; i < 10; i++ {
 		ok = limiter1.GetRateForClient(ctx, "client1")

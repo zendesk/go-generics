@@ -108,6 +108,7 @@ func (rl *RateLimiter) getRate(ctx context.Context, clientID string) bool {
 			if currentRate != rate || currentOverTime != overTime || currentBurst != burstCapacity {
 				rl.backend.SetThroughput(rate, overTime, burstCapacity)
 			}
+			rl.lastThroughputCheck = time.Now()
 			rl.throughputSync.Unlock()
 		}
 	}
