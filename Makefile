@@ -10,6 +10,7 @@ build:
 	go build $(PACKAGE) ./...
 
 .PHONY: fmt
+fmt:
 	gofmt -w `find . -name '*.go'`
 
 # make test TEST=MyTestName

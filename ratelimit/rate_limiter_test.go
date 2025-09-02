@@ -80,7 +80,6 @@ func Test_RateLimiter_AdjustThroughput_WithThroughputProvider(t *testing.T) {
 	var throughput = 1
 	rateDuration := time.Millisecond * 50
 	provider := func() (rate int, overTime time.Duration, burstCapacity int) {
-		t.Logf("Throughput set to: %d over %s with burst: %d", throughput, rateDuration.String(), 0)
 		return throughput, rateDuration, 0
 	}
 

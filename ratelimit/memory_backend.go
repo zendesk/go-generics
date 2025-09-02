@@ -95,13 +95,6 @@ func (rl *MemoryRateLimiterBackend) getClient(clientID string) *RateLimitedClien
 	return client
 }
 
-// hasRate returns true if there is rate available on the specified client. This does not consume rate
-func (rl *MemoryRateLimiterBackend) hasRate(clientID string) bool {
-	client := rl.getClient(clientID)
-	// Use AllowN with 0 tokens to check availability without consuming
-	return client.limiter.AllowN(time.Now(), 0)
-}
-
 // GetRate Returns T/F if there is rate available for execution, decrements if return is true
 func (rl *MemoryRateLimiterBackend) GetRate(ctx context.Context, clientID string) (bool, error) {
 	if rl.getRate() <= UnlimitedRate {
