@@ -6,7 +6,7 @@ package functions
 import (
 	"testing"
 
-	"github.com/zendesk/go-generics/test"
+	"github.com/zendesk/go-generics/internal/test"
 )
 
 func TestJoin(t *testing.T) {

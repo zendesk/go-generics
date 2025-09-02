@@ -34,7 +34,7 @@ func MergeErrors(errs ...error) error {
 // WrapError prepends a message to an error, and returns a new error while preserving its type.
 func WrapError(err error, message string) error {
 	if err == nil {
-		return fmt.Errorf(message)
+		return errors.New(message)
 	}
 	return fmt.Errorf("%s; %w", message, err)
 }

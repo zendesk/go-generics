@@ -31,6 +31,10 @@ Generic functions, data structures, and utilities for go programmers, including:
 
 Brought to you by the Zendesk Lockbox team. 
 
+Install: 
+```
+go get -u github.com/zendesk/go-generics`
+```
 
 ## Functions
 
