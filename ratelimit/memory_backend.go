@@ -67,7 +67,7 @@ func (rl *MemoryRateLimiterBackend) getClient(clientID string) *RateLimitedClien
 	// if not found, initialize client with a new rate limiter
 	rateLimit := rl.getRate()
 	burstCapacity := rl.getBurstCapacity()
-	
+
 	// Handle unlimited rate case
 	if rateLimit == UnlimitedRate {
 		client = &RateLimitedClient{
@@ -78,14 +78,14 @@ func (rl *MemoryRateLimiterBackend) getClient(clientID string) *RateLimitedClien
 		rateTimeframe := rl.getRateTimeFrame()
 		ratePerSecond := rate.Limit(float64(rateLimit) / rateTimeframe.Seconds())
 		limiter := rate.NewLimiter(ratePerSecond, burstCapacity)
-		
+
 		// Start with the initial rate (not full burst capacity) to match original behavior
 		// The original implementation started clients with a full bucket of `rate`, not `burstCapacity`
 		tokensToRemove := burstCapacity - rateLimit
 		if tokensToRemove > 0 {
 			limiter.AllowN(time.Now(), tokensToRemove)
 		}
-		
+
 		client = &RateLimitedClient{
 			limiter: limiter,
 		}
@@ -111,8 +111,6 @@ func (rl *MemoryRateLimiterBackend) GetRate(ctx context.Context, clientID string
 	client := rl.getClient(clientID)
 	return client.limiter.Allow(), nil
 }
-
-
 
 func (rl *MemoryRateLimiterBackend) getBurstCapacity() int {
 	rl.rateLock.RLock()
@@ -149,7 +147,7 @@ func (rl *MemoryRateLimiterBackend) SetThroughput(rateLimit int, overTime time.D
 	// Update all existing client rate limiters with new settings
 	rl.clientLock.Lock()
 	defer rl.clientLock.Unlock()
-	
+
 	for _, client := range rl.clients {
 		if rateLimit == UnlimitedRate {
 			client.limiter.SetLimit(rate.Inf)
