@@ -261,9 +261,10 @@ func (rl *RateLimiter) scheduleThroughputCheck() {
 			rl.lastThroughputCheck = time.Now()
 			rl.throughputSync.Unlock()
 		}
+
+		time.AfterFunc(rl.cfg.throughputCheckFrequency, rl.scheduleThroughputCheck)
 	}
 
-	time.AfterFunc(rl.cfg.throughputCheckFrequency, rl.scheduleThroughputCheck)
 }
 
 func randString(n int) string {
