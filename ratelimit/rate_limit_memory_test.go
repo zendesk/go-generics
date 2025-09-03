@@ -200,6 +200,7 @@ func Test_RateLimiter_InMemoryBackend_BurstCapacity(t *testing.T) {
 	result = limiter.GetRate(ctx)
 	test.CheckNotOk(result, "Didn't expect to get rate but got rate (2)", t)
 
+	// Fill up the bucket.
 	time.Sleep(rateDuration * 3)
 	result = limiter.GetRate(ctx)
 	test.CheckOk(result, "Expected to get rate (3)", t)
@@ -207,5 +208,7 @@ func Test_RateLimiter_InMemoryBackend_BurstCapacity(t *testing.T) {
 	test.CheckOk(result, "Expected to get rate (3a)", t)
 	result = limiter.GetRate(ctx)
 	test.CheckOk(result, "Expected to get rate (3b)", t)
+	result = limiter.GetRate(ctx)
+	test.CheckNotOk(result, "Didn't expect to get rate -- bucket should be empty (3c)", t)
 
 }

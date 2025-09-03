@@ -90,28 +90,20 @@ func NewRateLimiter(gateType GateType, backend RateLimitBackend, opts ...rateLim
 		cfg = opt(cfg)
 	}
 
-	return &RateLimiter{
+	limiter := &RateLimiter{
 		backend:       backend,
 		gateType:      gateType,
 		cfg:           cfg,
 		defaultClient: randString(10),
 	}
+
+	// Should be called once, as this will reschedule itself
+	limiter.scheduleThroughputCheck()
+
+	return limiter
 }
 
 func (rl *RateLimiter) getRate(ctx context.Context, clientID string) bool {
-	if rl.cfg.throughputProvider != nil {
-		if time.Since(rl.lastThroughputCheck) > rl.cfg.throughputCheckFrequency {
-			rl.throughputSync.Lock()
-			rate, overTime, burstCapacity := rl.cfg.throughputProvider()
-			currentRate, currentOverTime, currentBurst := rl.backend.GetThroughput()
-			// Only update (b/c it requires locks) if the rate has changed
-			if currentRate != rate || currentOverTime != overTime || currentBurst != burstCapacity {
-				rl.backend.SetThroughput(rate, overTime, burstCapacity)
-			}
-			rl.throughputSync.Unlock()
-		}
-	}
-
 	hasRate, err := rl.getRateFromBackend(ctx, clientID)
 
 	if err != nil {
@@ -254,6 +246,25 @@ func (rl *RateLimiter) initClientId(clientID string) string {
 	}
 
 	return fmt.Sprintf("%s-%s", rl.cfg.limiterPrefix, clientID)
+}
+
+func (rl *RateLimiter) scheduleThroughputCheck() {
+	if rl.cfg.throughputProvider != nil {
+		if time.Since(rl.lastThroughputCheck) >= rl.cfg.throughputCheckFrequency {
+			rl.throughputSync.Lock()
+			rate, overTime, burstCapacity := rl.cfg.throughputProvider()
+			currentRate, currentOverTime, currentBurst := rl.backend.GetThroughput()
+			// Only update (b/c it requires locks) if the rate has changed
+			if currentRate != rate || currentOverTime != overTime || currentBurst != burstCapacity {
+				rl.backend.SetThroughput(rate, overTime, burstCapacity)
+			}
+			rl.lastThroughputCheck = time.Now()
+			rl.throughputSync.Unlock()
+		}
+
+		time.AfterFunc(rl.cfg.throughputCheckFrequency, rl.scheduleThroughputCheck)
+	}
+
 }
 
 func randString(n int) string {

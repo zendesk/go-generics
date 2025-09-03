@@ -643,11 +643,11 @@ Multiple rate limiters with shared redis backend and different rate limits
     writeBackend = ratelimit.NewRedisRateLimiterBackend(writesPerSecond, time.Second, writeBurstCapacity, client)
     
     // if redis is unavailable, rate limiter fails OPEN, all reads will be accepted
-	readLimiter, err := ratelimit.NewRateLimiter(ratelimit.FailClosed, backend, ratelimit.WithPrefixOption("reads"))
+	readLimiter, err := ratelimit.NewRateLimiter(ratelimit.FailClosed, readBackend, ratelimit.WithPrefixOption("reads"))
 	
 
 	// if redis is unavailable, rate limiter fails CLOSED, and will not allow any writes
-    writeLimiter, err := ratelimit.NewRateLimiter(ratelimit.FailOpen, backend, ratelimit.WithPrefixOption("writes"))
+    writeLimiter, err := ratelimit.NewRateLimiter(ratelimit.FailOpen, writeBackend, ratelimit.WithPrefixOption("writes"))
 		
 	// If we want to dynamically adjust throughput for writes, we can
 	writeLimiter.SetThroughput(20, time.Second, 50)
@@ -664,6 +664,25 @@ Multiple rate limiters with shared redis backend and different rate limits
 	doSomething()
 }
 ```
+
+Dynamically adjusted rate limiter. Particularly useful when you want to ratchet up or down throughput based on external load calculations.
+
+```go
+
+    // Calculate throughput based on external factors
+    throughputProvider := func() (rate int, overTime time.Duration, burstCapacity int) {
+        return throughput, rateDuration, burst
+    }
+
+	throughputProviderUpdateInterval := time.Second 
+
+    backend = ratelimit.NewRedisRateLimiterBackend(readsPerSecond, time.Second, readBurstCapacity, client)
+    limiter, err := ratelimit.NewRateLimiter(ratelimit.FailClosed, backend, WithThroughputProvider(throughputProvider, throughputProviderUpdateInterval))
+
+	....
+```
+
+
 ## Concurrency Limiter
 
 Limits max concurrency of the Run() function based on config:
