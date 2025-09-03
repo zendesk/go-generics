@@ -250,7 +250,7 @@ func (rl *RateLimiter) initClientId(clientID string) string {
 
 func (rl *RateLimiter) scheduleThroughputCheck() {
 	if rl.cfg.throughputProvider != nil {
-		if time.Since(rl.lastThroughputCheck) > rl.cfg.throughputCheckFrequency {
+		if time.Since(rl.lastThroughputCheck) >= rl.cfg.throughputCheckFrequency {
 			rl.throughputSync.Lock()
 			rate, overTime, burstCapacity := rl.cfg.throughputProvider()
 			currentRate, currentOverTime, currentBurst := rl.backend.GetThroughput()
