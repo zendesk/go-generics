@@ -23,6 +23,3 @@ Further description of the PR, what it does and anything else relevant.
 - [ ] My code doesn't rely on n+1 network requests
 - [ ] I have updated relevant documentation
 - [ ] Changes are covered by tests
-
-### References
-- https://zendesk.atlassian.net/browse/
