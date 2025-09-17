@@ -4,9 +4,28 @@ on:
   pull_request:
 
 jobs:
+  check_membership:
+    name: Check Organization Membership
+    runs-on: ubuntu-24.04
+    outputs:
+      is_member: ${{ steps.check.outputs.is_member }}
+    steps:
+      - name: Check if user is Zendesk org member
+        id: check
+        run: |
+          response=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/orgs/zendesk/members/${{ github.actor }}")
+          if [ "$response" = "" ] || echo "$response" | grep -q "Not Found"; then
+            echo "is_member=false" >> $GITHUB_OUTPUT
+          else
+            echo "is_member=true" >> $GITHUB_OUTPUT
+          fi
+
   lint:
     name: Lint
     runs-on: [ubuntu-24.04]
+    needs: check_membership
+    if: needs.check_membership.outputs.is_member == 'true'
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
@@ -16,7 +35,7 @@ jobs:
       - name: Check gofmt
         run: |
           GOFMT_OUTPUT="$(gofmt -l `find . -name '*.go'`)"
-          
+
           if [ -n "$GOFMT_OUTPUT" ]; then
             echo "The following files do not meet gofmt specifications"
             echo "${GOFMT_OUTPUT}"
@@ -34,6 +53,8 @@ jobs:
 
   test_unit:
     runs-on: [ubuntu-24.04]
+    needs: check_membership
+    if: needs.check_membership.outputs.is_member == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -48,9 +69,11 @@ jobs:
           unset GOPROXY
           git config --global url."https://${{ github.token }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
           make test
-          
+
   test_redis:
     runs-on: [ubuntu-24.04]
+    needs: check_membership
+    if: needs.check_membership.outputs.is_member == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -69,6 +92,8 @@ jobs:
 
 #  test_fuzz:
 #    runs-on: [ubuntu-24.04]
+#    needs: check_membership
+#    if: needs.check_membership.outputs.is_member == 'true'
 #    steps:
 #      - name: Checkout
 #        uses: actions/checkout@v3

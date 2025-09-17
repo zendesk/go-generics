@@ -1,6 +1,4 @@
 #PACKAGE := "github.com/zendesk/go-generics"
-#export GOPROXY ?= https://$(ARTIFACTORY_USERNAME):$(ARTIFACTORY_API_KEY)@zdrepo.jfrog.io/zdrepo/api/go/zen-go
-#export GOSUMDB := off
 AWS_PROFILE := sandbox1
 
 default: build
