@@ -1,42 +1,125 @@
 ## Contributing to go-generics
 
-## Repo structure
+Thank you for your interest in contributing to go-generics! This document provides guidelines for contributing to this project.
 
-Go-generics is a multi-module repository that exports the following go modules:
+## Table of Contents
+- [Development Setup](#development-setup)
+- [Making Changes](#making-changes)
+- [Testing](#testing)
+- [Code Style](#code-style)
+- [Pull Request Process](#pull-request-process)
 
-- github.com/zendesk/go-generics/cache
-- github.com/zendesk/go-generics/datastructures
-- github.com/zendesk/go-generics/encryption
-- github.com/zendesk/go-generics/functions
-- github.com/zendesk/go-generics/ratelimit
-- github.com/zendesk/go-generics/serialize
-- github.com/zendesk/go-generics/internal/test
+## Development Setup
 
-Each new version of go-generics publishes a new version for each of these modules, and dependencies between modules
-are within a single larger go-generics version. 
+### Prerequisites
+- Go 1.24.0 or later
+- Docker or Podman (for Redis integration tests)
+- Make
 
-**This means that github.com/zendesk/go-generics/cache@v1.0.1 will depend on github.com/zendesk/go-generics/serialize@1.0.1**
+## Making Changes
 
-This provides an advantage that locally you may develop new changes and reference changes across-module without having to release
-one module to import its changes into another. This is achieved by the included `go.work` file. Changes may be made across modules,
-tested, and published together.
+### Before You Start
+- Check existing issues and PRs to avoid duplicating work
+- Create an issue for major changes to discuss the approach
+- Follow existing code patterns and conventions
+
+### Code Guidelines
+- Write generic, reusable code that follows Go best practices
+- Include comprehensive documentation with examples
+- Ensure your code has no instances of exponential time complexity
+- Avoid n+1 network request patterns
+- Use meaningful variable and function names
+
+### Package Organization
+The project is organized into focused packages:
+- `functions/` - Generic utility functions with concurrency support
+- `datastructures/` - Generic data structures (Set, Stack, etc.)
+- `cache/` - Generic caching implementations
+- `ratelimit/` - Rate limiting functionality
+- `concurrency/` - Concurrency utilities and distributed locking
+- `encryption/` - Generic encryption/decryption utilities
+- `serialize/` - Serialization helpers
+
+## Testing
+
+### Running Tests
+```bash
+# Run all unit tests
+make test
+
+# Run tests with coverage
+make test-coverage
+
+# Run fuzz tests (30 seconds)
+make test-fuzz
+
+# Start Redis and run Redis integration tests
+make test-redis
+
+```
+
+### Test Requirements
+- All new code must include comprehensive tests
+- Tests should use the `//go:build test` build tag
+- Use the `internal/test` package helpers for assertions
+- Include both unit tests and integration tests where applicable
+- Test edge cases and error conditions
+- Aim for high test coverage
+
+### Test Structure
+
+```go
+//go:build test
+// +build test
+
+package yourpackage
+
+import (
+    "testing"
+    "github.com/zendesk/go-generics/internal/test"
+)
+
+func TestYourFunction(t *testing.T) {
+    // Use test.CheckOk, test.CheckEqual, etc.
+}
+```
+
+## Code Style
+
+### Formatting
+- Use `gofmt` for code formatting: `make fmt`
+- Follow standard Go naming conventions
+- Use meaningful comments for exported functions and types
+
+### Documentation
+- Update README.md for new features
+
+## Pull Request Process
+
+### Before Submitting
+1. Ensure all tests pass: `make test`
+2. Run `make fmt` to format your code
+3. Update documentation as needed
+4. Add/update tests for your changes
+
+### PR Checklist
+Your PR should include:
+- [ ] Clear description of changes and purpose
+- [ ] Code follows existing design conventions
+- [ ] No exponential time complexity
+- [ ] No n+1 network request patterns
+- [ ] Updated relevant documentation
+- [ ] Comprehensive test coverage
+- [ ] All tests pass
+
+### PR Description
+Please include:
+- **Purpose**: What problem does this solve or what feature does it add?
+- **Changes**: What specific changes were made?
+- **Compromises**: Any trade-offs or decisions made during implementation
+- **Risks**: Any potential risks introduced by the changes
+
+## License
 
 
-## Why go through this trouble?
-
-Publishing these modules independently keeps transitive dependencies minimal for consumers. For instance, the cache module has a dependency on Redis; however, 
-a user of the functions package shouldn't have to import this dependency as an indirect dependency by adopting the functions module. This could be 
-achieved (to some extent) by leveraging custom interfaces (which we do in most cases), but there are some attached usability tradeoffs as a result. Publishing individual
-modules provides the best overall user experience and minimizes unnecessary indirect imports (which must be security patched) for customers.
-
-## Build + Release
-
-During the build process the `internal/build.go` file is executed. This script updates all module's go.mod files to reference the new version, then 
-generates valid checksums for each module and writes them into dependent go.sum files. This process is complex, but enables all new versions of go-generics to be published simultaneously 
-while referencing their sibling version. 
-
-
-## Local Development
-
-The `go.work` file is committed here to simplify local development. You may modify any individual module, and test it individually, or with a group of modules. To run
-the whole test suite, run `make test`. To tidy all modules, `make tidy`. 
+By contributing to this project, you agree that your contributions will be licensed under the Apache License 2.0.
