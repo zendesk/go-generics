@@ -17,9 +17,15 @@ on:
           - minor
           - major
 
+# Default permissions for all jobs - deny all by default
+permissions: {}
+
 jobs:
   release:
     runs-on: [ubuntu-24.04]
+    # Needs to read repository contents, create tags and releases
+    permissions:
+      contents: write  # Required for creating releases and tags
     if:
       ${{
         (github.event.pull_request.merged == true && (
@@ -67,4 +73,3 @@ jobs:
           commitish: ${{ steps.publish.outputs.commit_hash }}
           body: |
             See [changes since last release](https://github.com/${{ github.repository }}/compare/${{ steps.tag.outputs.previous_tag }}...${{ steps.tag.outputs.next_tag }}) for release details.
-

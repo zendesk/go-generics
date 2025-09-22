@@ -3,10 +3,16 @@ name: Pull Request
 on:
   pull_request:
 
+# Default permissions for all jobs - deny all by default
+permissions: {}
+
 jobs:
   lint:
     name: Lint
     runs-on: [ubuntu-24.04]
+    # Only needs to read repository contents
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
@@ -34,6 +40,9 @@ jobs:
 
   test_unit:
     runs-on: [ubuntu-24.04]
+    # Needs to read repository contents (uses github.token for git config)
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -51,6 +60,9 @@ jobs:
           
   test_redis:
     runs-on: [ubuntu-24.04]
+    # Needs to read repository contents (uses github.token for git config)
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v3

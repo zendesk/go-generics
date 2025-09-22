@@ -1,5 +1,8 @@
 name: Test
 
+# Default permissions for all jobs - deny all by default
+permissions: {}
+
 on:
   push:
     branches:
@@ -8,6 +11,9 @@ on:
 jobs:
   test_unit:
     runs-on: [ubuntu-24.04]
+    # Only needs to read repository contents for checkout and testing
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v3
