@@ -26,7 +26,6 @@ jobs:
     # Needs to read repository contents, create tags and releases
     permissions:
       contents: write  # Required for creating releases and tags
-      metadata: read   # Required for reading repository metadata
     if:
       ${{
         (github.event.pull_request.merged == true && (
