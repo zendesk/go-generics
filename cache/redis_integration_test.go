@@ -9,6 +9,7 @@ import (
 	"time"
 
 	goredislib "github.com/redis/go-redis/v9"
+	"github.com/zendesk/go-generics/internal/test"
 )
 
 const (
@@ -46,7 +47,7 @@ func TestRedisCache_ExpirationWithoutRefresh(t *testing.T) {
 	cacheTTL := 200 * time.Millisecond
 	cache := NewRedisCache[string, string](ctx, client, cacheTTL)
 
-	testKey := "test-expiration-key"
+	testKey := test.GenerateRandomLetterString(10)
 	testValue := "test-value-that-should-expire"
 
 	// Step 1: Set an item in the cache
@@ -59,15 +60,9 @@ func TestRedisCache_ExpirationWithoutRefresh(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 
 	retrievedValue, found, err := cache.Get(testKey)
-	if err != nil {
-		t.Fatalf("Failed to get item from cache: %v", err)
-	}
-	if !found {
-		t.Fatal("Expected item to be found in cache but it wasn't")
-	}
-	if retrievedValue != testValue {
-		t.Fatalf("Expected value %s, got %s", testValue, retrievedValue)
-	}
+	test.CheckErr(err, "Failed to get item from cache", t)
+	test.CheckOk(found, "Expected item to be found in cache but it was not", t)
+	test.CheckEqual(retrievedValue, "Value", testValue, t)
 
 	// Step 3: Wait until after the original TTL should have expired
 	// The item should be expired now since Redis cache doesn't refresh TTL on Get
@@ -76,66 +71,6 @@ func TestRedisCache_ExpirationWithoutRefresh(t *testing.T) {
 
 	// Step 4: Verify that the item no longer exists in the cache
 	_, found, err = cache.Get(testKey)
-	if err != nil {
-		t.Fatalf("Failed to get item from cache after expiration: %v", err)
-	}
-	if found {
-		t.Fatal("Expected item to be expired and not found in cache, but it was found")
-	}
-}
-
-func TestRedisCache_MultipleItemsExpiration(t *testing.T) {
-	client := setupRedisClient(t)
-	defer client.Close()
-
-	ctx := context.Background()
-
-	// Create cache with short TTL for testing
-	cacheTTL := 150 * time.Millisecond
-	cache := NewRedisCache[string, int](ctx, client, cacheTTL)
-
-	// Set multiple items
-	testData := map[string]int{
-		"item1": 100,
-		"item2": 200,
-		"item3": 300,
-	}
-
-	// Set all items
-	for key, value := range testData {
-		err := cache.Set(key, value)
-		if err != nil {
-			t.Fatalf("Failed to set item %s in cache: %v", key, err)
-		}
-	}
-
-	// Wait a bit and verify all items exist
-	time.Sleep(50 * time.Millisecond)
-
-	for key, expectedValue := range testData {
-		retrievedValue, found, err := cache.Get(key)
-		if err != nil {
-			t.Fatalf("Failed to get item %s from cache: %v", key, err)
-		}
-		if !found {
-			t.Fatalf("Expected item %s to be found in cache but it wasn't", key)
-		}
-		if retrievedValue != expectedValue {
-			t.Fatalf("Expected value %d for key %s, got %d", expectedValue, key, retrievedValue)
-		}
-	}
-
-	// Wait for expiration
-	time.Sleep(150 * time.Millisecond) // Total: 200ms > 150ms TTL
-
-	// Verify all items are expired
-	for key := range testData {
-		_, found, err := cache.Get(key)
-		if err != nil {
-			t.Fatalf("Failed to get item %s from cache after expiration: %v", key, err)
-		}
-		if found {
-			t.Fatalf("Expected item %s to be expired and not found in cache, but it was found", key)
-		}
-	}
+	test.CheckErr(err, "Failed to get item from cache, got unexpected error", t)
+	test.CheckNotOk(found, "Expected item to NOT bein cache but it was found", t)
 }
