@@ -5,6 +5,7 @@ package encryption
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -28,7 +29,7 @@ func TestEncryptDecrypt_Bytes(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ed, err := New[[]byte]([]byte("salt"), tt.iterations)
+			ed, err := New[[]byte]([]byte("salt-sixteen-byte"), tt.iterations)
 			if err != nil {
 				t.Fatalf("Error during New: %v", err)
 			}
@@ -70,7 +71,7 @@ func TestEncryptDecrypt_String(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ed, err := New[string]([]byte("salt"), tt.iterations)
+			ed, err := New[string]([]byte("salt-sixteen-byte"), tt.iterations)
 			if err != nil {
 				t.Fatalf("Error during New: %v", err)
 			}
@@ -121,7 +122,7 @@ func TestEncryptDecrypt_Struct(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ed, err := New[Foo]([]byte("salt"), tt.iterations)
+			ed, err := New[Foo]([]byte("salt-sixteen-byte"), tt.iterations)
 			if err != nil {
 				t.Fatalf("Error during New: %v", err)
 			}
@@ -180,7 +181,7 @@ func TestEncryptDecrypt_StructSlice(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ed, err := New[[]*Foo]([]byte("salt"), tt.iterations)
+			ed, err := New[[]*Foo]([]byte("salt-sixteen-byte"), tt.iterations)
 			if err != nil {
 				t.Fatalf("Error during New: %v", err)
 			}
@@ -231,7 +232,7 @@ func TestEncryptDecrypt_Struct_WithPassword(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ed, err := NewWithPasswordNonce[Foo]([]byte("password"), []byte("my-nonce-123"), []byte("salt"), tt.iterations)
+			ed, err := NewWithPasswordNonce[Foo]([]byte("password"), []byte("my-nonce-123"), []byte("salt-sixteen-byte"), tt.iterations)
 			if err != nil {
 				t.Fatalf("Error during New: %v", err)
 			}
@@ -250,5 +251,25 @@ func TestEncryptDecrypt_Struct_WithPassword(t *testing.T) {
 				t.Errorf("Decrypt() = %v, want %v", decrypted, tt.input)
 			}
 		})
+	}
+}
+
+func TestNew_RejectsShortSalt(t *testing.T) {
+	_, err := New[string]([]byte("short"), 4096)
+	if err == nil {
+		t.Fatal("expected error for short salt, got nil")
+	}
+	if !strings.Contains(err.Error(), "salt must be at least") {
+		t.Fatalf("unexpected error message: %v", err)
+	}
+}
+
+func TestNewWithPasswordNonce_RejectsShortSalt(t *testing.T) {
+	_, err := NewWithPasswordNonce[string]([]byte("password"), []byte("my-nonce-123"), []byte("short"), 4096)
+	if err == nil {
+		t.Fatal("expected error for short salt, got nil")
+	}
+	if !strings.Contains(err.Error(), "salt must be at least") {
+		t.Fatalf("unexpected error message: %v", err)
 	}
 }

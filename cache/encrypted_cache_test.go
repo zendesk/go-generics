@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	salt string = "salt"
+	salt string = "salt-sixteen-byte"
 )
 
 func TestNew(t *testing.T) {
