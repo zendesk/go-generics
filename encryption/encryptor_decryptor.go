@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"io"
 
@@ -15,6 +16,8 @@ import (
 
 const MinSaltLength = 16
 
+var ErrSaltTooShort = errors.New("salt too short")
+
 type EncryptorDecryptor[T any] struct {
 	aesgcm cipher.AEAD
 	nonce  []byte
@@ -22,7 +25,7 @@ type EncryptorDecryptor[T any] struct {
 
 func validateSalt(salt []byte) error {
 	if len(salt) < MinSaltLength {
-		return fmt.Errorf("salt must be at least %d bytes, got %d", MinSaltLength, len(salt))
+		return fmt.Errorf("%w: must be at least %d bytes, got %d", ErrSaltTooShort, MinSaltLength, len(salt))
 	}
 	return nil
 }
