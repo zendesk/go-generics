@@ -19,7 +19,7 @@ func TestEncryptDecrypt_Bytes(t *testing.T) {
 	}{
 		{
 			name:             "normal use case",
-			iterations:       4096,
+			iterations:       MinIterations,
 			input:            []byte("test input"),
 			shouldErrEncrypt: false,
 			shouldErrDecrypt: false,
@@ -61,7 +61,7 @@ func TestEncryptDecrypt_String(t *testing.T) {
 	}{
 		{
 			name:             "normal use case",
-			iterations:       4096,
+			iterations:       MinIterations,
 			input:            "Test input",
 			shouldErrEncrypt: false,
 			shouldErrDecrypt: false,
@@ -108,7 +108,7 @@ func TestEncryptDecrypt_Struct(t *testing.T) {
 	}{
 		{
 			name:       "normal use case",
-			iterations: 4096,
+			iterations: MinIterations,
 			input: Foo{
 				Value: "dflkasjflkajsdf",
 				Item:  nil,
@@ -159,7 +159,7 @@ func TestEncryptDecrypt_StructSlice(t *testing.T) {
 	}{
 		{
 			name:       "normal use case",
-			iterations: 4096,
+			iterations: MinIterations,
 			input: []*Foo{
 				{
 					Value: "item 1",
@@ -218,7 +218,7 @@ func TestEncryptDecrypt_Struct_WithPassword(t *testing.T) {
 	}{
 		{
 			name:       "normal use case",
-			iterations: 4096,
+			iterations: MinIterations,
 			input: Foo{
 				Value: "dflkasjflkajsdf",
 				Item:  nil,
@@ -255,7 +255,7 @@ func TestEncryptDecrypt_Struct_WithPassword(t *testing.T) {
 }
 
 func TestNew_RejectsShortSalt(t *testing.T) {
-	_, err := New[string]([]byte("short"), 4096)
+	_, err := New[string]([]byte("short"), MinIterations)
 	if err == nil {
 		t.Fatal("expected error for short salt, got nil")
 	}
@@ -276,7 +276,7 @@ func TestNewWithPasswordNonce_RejectsInvalidNonce(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewWithPasswordNonce[string]([]byte("password"), tt.nonce, []byte("1234567890abcdef"), 4096)
+			_, err := NewWithPasswordNonce[string]([]byte("password"), tt.nonce, []byte("1234567890abcdef"), MinIterations)
 			if err == nil {
 				t.Fatal("expected error for invalid nonce, got nil")
 			}
@@ -288,11 +288,55 @@ func TestNewWithPasswordNonce_RejectsInvalidNonce(t *testing.T) {
 }
 
 func TestNewWithPasswordNonce_RejectsShortSalt(t *testing.T) {
-	_, err := NewWithPasswordNonce[string]([]byte("password"), []byte("my-nonce-123"), []byte("short"), 4096)
+	_, err := NewWithPasswordNonce[string]([]byte("password"), []byte("my-nonce-123"), []byte("short"), MinIterations)
 	if err == nil {
 		t.Fatal("expected error for short salt, got nil")
 	}
 	if !errors.Is(err, ErrSaltTooShort) {
 		t.Fatalf("expected ErrSaltTooShort, got: %v", err)
+	}
+}
+
+func TestNew_RejectsLowIterations(t *testing.T) {
+	tests := []struct {
+		name       string
+		iterations int
+	}{
+		{"zero", 0},
+		{"negative", -1},
+		{"just below minimum", MinIterations - 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := New[string]([]byte("1234567890abcdef"), tt.iterations)
+			if err == nil {
+				t.Fatal("expected error for low iterations, got nil")
+			}
+			if !errors.Is(err, ErrIterationsTooLow) {
+				t.Fatalf("expected ErrIterationsTooLow, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestNewWithPasswordNonce_RejectsLowIterations(t *testing.T) {
+	tests := []struct {
+		name       string
+		iterations int
+	}{
+		{"zero", 0},
+		{"negative", -1},
+		{"just below minimum", MinIterations - 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := NewWithPasswordNonce[string]([]byte("password"), []byte("my-nonce-123"), []byte("1234567890abcdef"), tt.iterations)
+			if err == nil {
+				t.Fatal("expected error for low iterations, got nil")
+			}
+			if !errors.Is(err, ErrIterationsTooLow) {
+				t.Fatalf("expected ErrIterationsTooLow, got: %v", err)
+			}
+		})
 	}
 }
