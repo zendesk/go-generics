@@ -264,6 +264,29 @@ func TestNew_RejectsShortSalt(t *testing.T) {
 	}
 }
 
+func TestNewWithPasswordNonce_RejectsInvalidNonce(t *testing.T) {
+	tests := []struct {
+		name  string
+		nonce []byte
+	}{
+		{"nil nonce", nil},
+		{"empty nonce", []byte{}},
+		{"too short", make([]byte, NonceLength-1)},
+		{"too long", make([]byte, NonceLength+1)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := NewWithPasswordNonce[string]([]byte("password"), tt.nonce, []byte("1234567890abcdef"), 4096)
+			if err == nil {
+				t.Fatal("expected error for invalid nonce, got nil")
+			}
+			if !errors.Is(err, ErrInvalidNonce) {
+				t.Fatalf("expected ErrInvalidNonce, got: %v", err)
+			}
+		})
+	}
+}
+
 func TestNewWithPasswordNonce_RejectsShortSalt(t *testing.T) {
 	_, err := NewWithPasswordNonce[string]([]byte("password"), []byte("my-nonce-123"), []byte("short"), 4096)
 	if err == nil {
