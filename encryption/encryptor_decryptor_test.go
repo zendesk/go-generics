@@ -271,8 +271,8 @@ func TestNewWithPasswordNonce_RejectsInvalidNonce(t *testing.T) {
 	}{
 		{"nil nonce", nil},
 		{"empty nonce", []byte{}},
-		{"too short", []byte("short")},
-		{"too long", []byte("this-is-too-long-nonce")},
+		{"too short", make([]byte, NonceLength-1)},
+		{"too long", make([]byte, NonceLength+1)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

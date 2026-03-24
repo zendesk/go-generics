@@ -55,7 +55,7 @@ func New[T any](salt []byte, iterations int) (*EncryptorDecryptor[T], error) {
 		return nil, fmt.Errorf("error creating new GCM: %w", err)
 	}
 
-	nonce := make([]byte, 12)
+	nonce := make([]byte, NonceLength)
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		return nil, fmt.Errorf("error generating nonce: %w", err)
 	}
