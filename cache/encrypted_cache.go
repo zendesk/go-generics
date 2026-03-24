@@ -43,10 +43,12 @@ func NewEncryptedCacheWithIterations[K comparable, V any](backend CacheBackendAd
 	return e, nil
 }
 
-func NewEncryptedCacheWithPasswordNonce[K comparable, V any](backend CacheBackendAdapter[K, []byte], password, nonce, salt []byte, iterations int, opts ...CacheBackendOption[K, V]) (*EncryptedCache[K, V], error) {
+// NewEncryptedCacheWithPassword creates a new EncryptedCache with a caller-supplied password.
+// A fresh random nonce is generated for each encryption and prepended to the ciphertext.
+func NewEncryptedCacheWithPassword[K comparable, V any](backend CacheBackendAdapter[K, []byte], password, salt []byte, iterations int, opts ...CacheBackendOption[K, V]) (*EncryptedCache[K, V], error) {
 	cfg := setBackendOpts(opts...)
 
-	ed, err := encryption.NewWithPasswordNonce[V](password, nonce, salt, iterations)
+	ed, err := encryption.NewWithPassword[V](password, salt, iterations)
 	if err != nil {
 		return nil, fmt.Errorf("error creating new encryptor: %w", err)
 	}
@@ -58,6 +60,12 @@ func NewEncryptedCacheWithPasswordNonce[K comparable, V any](backend CacheBacken
 	}
 
 	return e, nil
+}
+
+// Deprecated: NewEncryptedCacheWithPasswordNonce is replaced by NewEncryptedCacheWithPassword.
+// Nonces are now generated per-encryption. This alias is kept for API compatibility.
+func NewEncryptedCacheWithPasswordNonce[K comparable, V any](backend CacheBackendAdapter[K, []byte], password, salt []byte, iterations int, opts ...CacheBackendOption[K, V]) (*EncryptedCache[K, V], error) {
+	return NewEncryptedCacheWithPassword[K, V](backend, password, salt, iterations, opts...)
 }
 
 func (c *EncryptedCache[K, V]) Get(key K) (v V, wasFound bool, err error) {

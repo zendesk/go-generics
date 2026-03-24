@@ -4,92 +4,53 @@
 package encryption
 
 import (
+	"bytes"
 	"errors"
 	"reflect"
 	"testing"
 )
 
 func TestEncryptDecrypt_Bytes(t *testing.T) {
-	tests := []struct {
-		name             string
-		iterations       int
-		input            []byte
-		shouldErrEncrypt bool
-		shouldErrDecrypt bool
-	}{
-		{
-			name:             "normal use case",
-			iterations:       MinIterations,
-			input:            []byte("test input"),
-			shouldErrEncrypt: false,
-			shouldErrDecrypt: false,
-		},
-		// additional test cases here
+	ed, err := New[[]byte]([]byte("1234567890abcdef"), MinIterations)
+	if err != nil {
+		t.Fatalf("Error during New: %v", err)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ed, err := New[[]byte]([]byte("1234567890abcdef"), tt.iterations)
-			if err != nil {
-				t.Fatalf("Error during New: %v", err)
-			}
+	input := []byte("test input")
+	ciphertext, err := ed.Encrypt(input)
+	if err != nil {
+		t.Fatalf("Encrypt() error: %v", err)
+	}
 
-			ciphertext, err := ed.Encrypt(tt.input)
-			if (err != nil) != tt.shouldErrEncrypt {
-				t.Fatalf("Encrypt() error = %v, wantErr %v", err, tt.shouldErrEncrypt)
-			}
+	decrypted, err := ed.Decrypt(ciphertext)
+	if err != nil {
+		t.Fatalf("Decrypt() error: %v", err)
+	}
 
-			decrypted, err := ed.Decrypt(ciphertext)
-			if (err != nil) != tt.shouldErrDecrypt {
-				t.Fatalf("Decrypt() error = %v, wantErr %v", err, tt.shouldErrDecrypt)
-			}
-
-			if !tt.shouldErrDecrypt && !reflect.DeepEqual(decrypted, tt.input) {
-				t.Errorf("Decrypt() = %v, want %v", decrypted, tt.input)
-			}
-		})
+	if !reflect.DeepEqual(decrypted, input) {
+		t.Errorf("Decrypt() = %v, want %v", decrypted, input)
 	}
 }
 
 func TestEncryptDecrypt_String(t *testing.T) {
-	tests := []struct {
-		name             string
-		iterations       int
-		input            string
-		shouldErrEncrypt bool
-		shouldErrDecrypt bool
-	}{
-		{
-			name:             "normal use case",
-			iterations:       MinIterations,
-			input:            "Test input",
-			shouldErrEncrypt: false,
-			shouldErrDecrypt: false,
-		},
-		// additional test cases here
+	ed, err := New[string]([]byte("1234567890abcdef"), MinIterations)
+	if err != nil {
+		t.Fatalf("Error during New: %v", err)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ed, err := New[string]([]byte("1234567890abcdef"), tt.iterations)
-			if err != nil {
-				t.Fatalf("Error during New: %v", err)
-			}
+	input := "Test input"
+	ciphertext, err := ed.Encrypt(input)
+	if err != nil {
+		t.Fatalf("Encrypt() error: %v", err)
+	}
 
-			ciphertext, err := ed.Encrypt(tt.input)
-			if (err != nil) != tt.shouldErrEncrypt {
-				t.Fatalf("Encrypt() error = %v, wantErr %v", err, tt.shouldErrEncrypt)
-			}
+	decrypted, err := ed.Decrypt(ciphertext)
+	if err != nil {
+		t.Fatalf("Decrypt() error: %v", err)
+	}
 
-			decrypted, err := ed.Decrypt(ciphertext)
-			if (err != nil) != tt.shouldErrDecrypt {
-				t.Fatalf("Decrypt() error = %v, wantErr %v", err, tt.shouldErrDecrypt)
-			}
-
-			if !tt.shouldErrDecrypt && !reflect.DeepEqual(decrypted, tt.input) {
-				t.Errorf("Decrypt() = %v, want %v", decrypted, tt.input)
-			}
-		})
+	if decrypted != input {
+		t.Errorf("Decrypt() = %v, want %v", decrypted, input)
 	}
 }
 
@@ -99,48 +60,25 @@ func TestEncryptDecrypt_Struct(t *testing.T) {
 		Item  []byte
 		Thing int
 	}
-	tests := []struct {
-		name             string
-		iterations       int
-		input            Foo
-		shouldErrEncrypt bool
-		shouldErrDecrypt bool
-	}{
-		{
-			name:       "normal use case",
-			iterations: MinIterations,
-			input: Foo{
-				Value: "dflkasjflkajsdf",
-				Item:  nil,
-				Thing: 1231414,
-			},
-			shouldErrEncrypt: false,
-			shouldErrDecrypt: false,
-		},
-		// additional test cases here
+
+	ed, err := New[Foo]([]byte("1234567890abcdef"), MinIterations)
+	if err != nil {
+		t.Fatalf("Error during New: %v", err)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ed, err := New[Foo]([]byte("1234567890abcdef"), tt.iterations)
-			if err != nil {
-				t.Fatalf("Error during New: %v", err)
-			}
+	input := Foo{Value: "dflkasjflkajsdf", Item: nil, Thing: 1231414}
+	ciphertext, err := ed.Encrypt(input)
+	if err != nil {
+		t.Fatalf("Encrypt() error: %v", err)
+	}
 
-			ciphertext, err := ed.Encrypt(tt.input)
-			if (err != nil) != tt.shouldErrEncrypt {
-				t.Fatalf("Encrypt() error = %v, wantErr %v", err, tt.shouldErrEncrypt)
-			}
+	decrypted, err := ed.Decrypt(ciphertext)
+	if err != nil {
+		t.Fatalf("Decrypt() error: %v", err)
+	}
 
-			decrypted, err := ed.Decrypt(ciphertext)
-			if (err != nil) != tt.shouldErrDecrypt {
-				t.Fatalf("Decrypt() error = %v, wantErr %v", err, tt.shouldErrDecrypt)
-			}
-
-			if !tt.shouldErrDecrypt && !reflect.DeepEqual(decrypted, tt.input) {
-				t.Errorf("Decrypt() = %v, want %v", decrypted, tt.input)
-			}
-		})
+	if !reflect.DeepEqual(decrypted, input) {
+		t.Errorf("Decrypt() = %v, want %v", decrypted, input)
 	}
 }
 
@@ -150,107 +88,135 @@ func TestEncryptDecrypt_StructSlice(t *testing.T) {
 		Item  []byte
 		Thing int
 	}
-	tests := []struct {
-		name             string
-		iterations       int
-		input            []*Foo
-		shouldErrEncrypt bool
-		shouldErrDecrypt bool
-	}{
-		{
-			name:       "normal use case",
-			iterations: MinIterations,
-			input: []*Foo{
-				{
-					Value: "item 1",
-					Item:  []byte{1, 33, 44},
-					Thing: 111,
-				},
-				{
 
-					Value: "item 2",
-					Item:  nil,
-					Thing: 0,
-				},
-			},
-			shouldErrEncrypt: false,
-			shouldErrDecrypt: false,
-		},
-		// additional test cases here
+	ed, err := New[[]*Foo]([]byte("1234567890abcdef"), MinIterations)
+	if err != nil {
+		t.Fatalf("Error during New: %v", err)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ed, err := New[[]*Foo]([]byte("1234567890abcdef"), tt.iterations)
-			if err != nil {
-				t.Fatalf("Error during New: %v", err)
-			}
+	input := []*Foo{
+		{Value: "item 1", Item: []byte{1, 33, 44}, Thing: 111},
+		{Value: "item 2", Item: nil, Thing: 0},
+	}
+	ciphertext, err := ed.Encrypt(input)
+	if err != nil {
+		t.Fatalf("Encrypt() error: %v", err)
+	}
 
-			ciphertext, err := ed.Encrypt(tt.input)
-			if (err != nil) != tt.shouldErrEncrypt {
-				t.Fatalf("Encrypt() error = %v, wantErr %v", err, tt.shouldErrEncrypt)
-			}
+	decrypted, err := ed.Decrypt(ciphertext)
+	if err != nil {
+		t.Fatalf("Decrypt() error: %v", err)
+	}
 
-			decrypted, err := ed.Decrypt(ciphertext)
-			if (err != nil) != tt.shouldErrDecrypt {
-				t.Fatalf("Decrypt() error = %v, wantErr %v", err, tt.shouldErrDecrypt)
-			}
-
-			if !tt.shouldErrDecrypt && !reflect.DeepEqual(decrypted, tt.input) {
-				t.Errorf("Decrypt() = %v, want %v", decrypted, tt.input)
-			}
-		})
+	if !reflect.DeepEqual(decrypted, input) {
+		t.Errorf("Decrypt() = %v, want %v", decrypted, input)
 	}
 }
 
-func TestEncryptDecrypt_Struct_WithPassword(t *testing.T) {
+func TestEncryptDecrypt_WithPassword(t *testing.T) {
 	type Foo struct {
 		Value string
 		Item  []byte
 		Thing int
 	}
-	tests := []struct {
-		name             string
-		iterations       int
-		input            Foo
-		shouldErrEncrypt bool
-		shouldErrDecrypt bool
-	}{
-		{
-			name:       "normal use case",
-			iterations: MinIterations,
-			input: Foo{
-				Value: "dflkasjflkajsdf",
-				Item:  nil,
-				Thing: 1231414,
-			},
-			shouldErrEncrypt: false,
-			shouldErrDecrypt: false,
-		},
-		// additional test cases here
+
+	ed, err := NewWithPassword[Foo]([]byte("password"), []byte("1234567890abcdef"), MinIterations)
+	if err != nil {
+		t.Fatalf("Error during NewWithPassword: %v", err)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ed, err := NewWithPasswordNonce[Foo]([]byte("password"), []byte("my-nonce-123"), []byte("1234567890abcdef"), tt.iterations)
-			if err != nil {
-				t.Fatalf("Error during New: %v", err)
-			}
+	input := Foo{Value: "dflkasjflkajsdf", Item: nil, Thing: 1231414}
+	ciphertext, err := ed.Encrypt(input)
+	if err != nil {
+		t.Fatalf("Encrypt() error: %v", err)
+	}
 
-			ciphertext, err := ed.Encrypt(tt.input)
-			if (err != nil) != tt.shouldErrEncrypt {
-				t.Fatalf("Encrypt() error = %v, wantErr %v", err, tt.shouldErrEncrypt)
-			}
+	decrypted, err := ed.Decrypt(ciphertext)
+	if err != nil {
+		t.Fatalf("Decrypt() error: %v", err)
+	}
 
-			decrypted, err := ed.Decrypt(ciphertext)
-			if (err != nil) != tt.shouldErrDecrypt {
-				t.Fatalf("Decrypt() error = %v, wantErr %v", err, tt.shouldErrDecrypt)
-			}
+	if !reflect.DeepEqual(decrypted, input) {
+		t.Errorf("Decrypt() = %v, want %v", decrypted, input)
+	}
+}
 
-			if !tt.shouldErrDecrypt && !reflect.DeepEqual(decrypted, tt.input) {
-				t.Errorf("Decrypt() = %v, want %v", decrypted, tt.input)
-			}
-		})
+func TestEncryptDecrypt_WithPasswordNonce_Compat(t *testing.T) {
+	// Verify the deprecated NewWithPasswordNonce shim still works
+	ed, err := NewWithPasswordNonce[string]([]byte("password"), []byte("ignored-nonce"), []byte("1234567890abcdef"), MinIterations)
+	if err != nil {
+		t.Fatalf("Error during NewWithPasswordNonce: %v", err)
+	}
+
+	input := "compat test"
+	ciphertext, err := ed.Encrypt(input)
+	if err != nil {
+		t.Fatalf("Encrypt() error: %v", err)
+	}
+
+	decrypted, err := ed.Decrypt(ciphertext)
+	if err != nil {
+		t.Fatalf("Decrypt() error: %v", err)
+	}
+
+	if decrypted != input {
+		t.Errorf("Decrypt() = %v, want %v", decrypted, input)
+	}
+}
+
+func TestEncrypt_ProducesUniqueNonces(t *testing.T) {
+	ed, err := New[string]([]byte("1234567890abcdef"), MinIterations)
+	if err != nil {
+		t.Fatalf("Error during New: %v", err)
+	}
+
+	ct1, err := ed.Encrypt("same value")
+	if err != nil {
+		t.Fatalf("Encrypt() error: %v", err)
+	}
+	ct2, err := ed.Encrypt("same value")
+	if err != nil {
+		t.Fatalf("Encrypt() error: %v", err)
+	}
+
+	// Ciphertexts must differ (different nonces) even for identical plaintext
+	if bytes.Equal(ct1, ct2) {
+		t.Error("two encryptions of the same value produced identical ciphertext — nonce reuse detected")
+	}
+
+	// The prepended nonces (first 12 bytes) must differ
+	nonce1 := ct1[:NonceLength]
+	nonce2 := ct2[:NonceLength]
+	if bytes.Equal(nonce1, nonce2) {
+		t.Error("two encryptions produced the same nonce")
+	}
+
+	// Both must still decrypt correctly
+	dec1, err := ed.Decrypt(ct1)
+	if err != nil {
+		t.Fatalf("Decrypt(ct1) error: %v", err)
+	}
+	dec2, err := ed.Decrypt(ct2)
+	if err != nil {
+		t.Fatalf("Decrypt(ct2) error: %v", err)
+	}
+	if dec1 != "same value" || dec2 != "same value" {
+		t.Errorf("decrypted values don't match: got %q and %q", dec1, dec2)
+	}
+}
+
+func TestDecrypt_RejectsTruncatedCiphertext(t *testing.T) {
+	ed, err := New[string]([]byte("1234567890abcdef"), MinIterations)
+	if err != nil {
+		t.Fatalf("Error during New: %v", err)
+	}
+
+	_, err = ed.Decrypt([]byte("short"))
+	if err == nil {
+		t.Fatal("expected error for truncated ciphertext, got nil")
+	}
+	if !errors.Is(err, ErrCiphertextTooShort) {
+		t.Fatalf("expected ErrCiphertextTooShort, got: %v", err)
 	}
 }
 
@@ -264,31 +230,8 @@ func TestNew_RejectsShortSalt(t *testing.T) {
 	}
 }
 
-func TestNewWithPasswordNonce_RejectsInvalidNonce(t *testing.T) {
-	tests := []struct {
-		name  string
-		nonce []byte
-	}{
-		{"nil nonce", nil},
-		{"empty nonce", []byte{}},
-		{"too short", make([]byte, NonceLength-1)},
-		{"too long", make([]byte, NonceLength+1)},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewWithPasswordNonce[string]([]byte("password"), tt.nonce, []byte("1234567890abcdef"), MinIterations)
-			if err == nil {
-				t.Fatal("expected error for invalid nonce, got nil")
-			}
-			if !errors.Is(err, ErrInvalidNonce) {
-				t.Fatalf("expected ErrInvalidNonce, got: %v", err)
-			}
-		})
-	}
-}
-
-func TestNewWithPasswordNonce_RejectsShortSalt(t *testing.T) {
-	_, err := NewWithPasswordNonce[string]([]byte("password"), []byte("my-nonce-123"), []byte("short"), MinIterations)
+func TestNewWithPassword_RejectsShortSalt(t *testing.T) {
+	_, err := NewWithPassword[string]([]byte("password"), []byte("short"), MinIterations)
 	if err == nil {
 		t.Fatal("expected error for short salt, got nil")
 	}
@@ -319,7 +262,7 @@ func TestNew_RejectsLowIterations(t *testing.T) {
 	}
 }
 
-func TestNewWithPasswordNonce_RejectsLowIterations(t *testing.T) {
+func TestNewWithPassword_RejectsLowIterations(t *testing.T) {
 	tests := []struct {
 		name       string
 		iterations int
@@ -330,7 +273,7 @@ func TestNewWithPasswordNonce_RejectsLowIterations(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewWithPasswordNonce[string]([]byte("password"), []byte("my-nonce-123"), []byte("1234567890abcdef"), tt.iterations)
+			_, err := NewWithPassword[string]([]byte("password"), []byte("1234567890abcdef"), tt.iterations)
 			if err == nil {
 				t.Fatal("expected error for low iterations, got nil")
 			}
