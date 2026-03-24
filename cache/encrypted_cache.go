@@ -43,10 +43,10 @@ func NewEncryptedCacheWithIterations[K comparable, V any](backend CacheBackendAd
 	return e, nil
 }
 
-func NewEncryptedCacheWithPasswordNonce[K comparable, V any](backend CacheBackendAdapter[K, []byte], password, nonce, salt []byte, iterations int, opts ...CacheBackendOption[K, V]) (*EncryptedCache[K, V], error) {
+func NewEncryptedCacheWithPasswordNonce[K comparable, V any](backend CacheBackendAdapter[K, []byte], password, salt []byte, iterations int, opts ...CacheBackendOption[K, V]) (*EncryptedCache[K, V], error) {
 	cfg := setBackendOpts(opts...)
 
-	ed, err := encryption.NewWithPasswordNonce[V](password, nonce, salt, iterations)
+	ed, err := encryption.NewWithPassword[V](password, salt, iterations)
 	if err != nil {
 		return nil, fmt.Errorf("error creating new encryptor: %w", err)
 	}
