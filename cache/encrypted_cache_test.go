@@ -172,7 +172,7 @@ func BenchmarkEncrypt(b *testing.B) {
 	}
 	b.StopTimer()
 
-	// Check that the benchmark took less than 75ms
+	// Check that the benchmark took less than 5s
 	if avg := b.Elapsed() / time.Duration(b.N); avg > 5*time.Second {
 		b.Fatalf("encrypt took too long: %v", avg)
 	}
@@ -200,7 +200,7 @@ func BenchmarkDecrypt(b *testing.B) {
 	}
 	b.StopTimer()
 
-	// Check that the benchmark took less than 75ms
+	// Check that the benchmark took less than 5s
 	if avg := b.Elapsed() / time.Duration(b.N); avg > 5*time.Second {
 		b.Fatalf("decrypt took too long: %v", avg)
 	}
