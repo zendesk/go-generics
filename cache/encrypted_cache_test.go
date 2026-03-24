@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	salt string = "salt"
+	salt string = "1234567890abcdef"
 )
 
 func TestNew(t *testing.T) {

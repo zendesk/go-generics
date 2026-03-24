@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"io"
 
@@ -13,13 +14,28 @@ import (
 	"github.com/zendesk/go-generics/serialize"
 )
 
+const MinSaltLength = 16
+
+var ErrSaltTooShort = errors.New("salt too short")
+
 type EncryptorDecryptor[T any] struct {
 	aesgcm cipher.AEAD
 	nonce  []byte
 }
 
+func validateSalt(salt []byte) error {
+	if len(salt) < MinSaltLength {
+		return fmt.Errorf("%w: must be at least %d bytes, got %d", ErrSaltTooShort, MinSaltLength, len(salt))
+	}
+	return nil
+}
+
 // New creates a new EncryptorDecryptor instance with a random password and nonce.
 func New[T any](salt []byte, iterations int) (*EncryptorDecryptor[T], error) {
+	if err := validateSalt(salt); err != nil {
+		return nil, err
+	}
+
 	password := make([]byte, 2048)
 	if _, err := io.ReadFull(rand.Reader, password); err != nil {
 		return nil, fmt.Errorf("error generating password: %w", err)
@@ -53,6 +69,10 @@ func New[T any](salt []byte, iterations int) (*EncryptorDecryptor[T], error) {
 // NewWithPasswordNonce creates a new EncryptorDecryptor instance with a specified password and nonce. Use this if
 // you intend to persist whatever is encrypted.
 func NewWithPasswordNonce[T any](password, nonce, salt []byte, iterations int) (*EncryptorDecryptor[T], error) {
+	if err := validateSalt(salt); err != nil {
+		return nil, err
+	}
+
 	aesKey := pbkdf2.Key(password, salt, iterations, 32, sha256.New)
 
 	block, err := aes.NewCipher(aesKey)
