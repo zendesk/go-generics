@@ -19,6 +19,9 @@ const NonceLength = 12
 const MinIterations = 100_000
 
 var ErrSaltTooShort = errors.New("salt too short")
+
+// Deprecated: ErrInvalidNonce is no longer returned by any constructor. Nonces are now
+// generated per-Encrypt call. Kept for backward compatibility.
 var ErrInvalidNonce = errors.New("invalid nonce length")
 var ErrIterationsTooLow = errors.New("iterations too low")
 var ErrCiphertextTooShort = errors.New("ciphertext too short")
@@ -97,9 +100,10 @@ func NewWithPassword[T any](password, salt []byte, iterations int) (*EncryptorDe
 	return &EncryptorDecryptor[T]{aesgcm: aesgcm}, nil
 }
 
-// NewWithPasswordNonce is deprecated. Use NewWithPassword instead.
-// Nonces are now generated per-Encrypt call and prepended to the ciphertext.
-// The nonce parameter is accepted for API compatibility but ignored.
+// Deprecated: NewWithPasswordNonce is replaced by NewWithPassword. Nonces are now generated
+// per-Encrypt call and prepended to the ciphertext. The nonce parameter is accepted only for
+// API compatibility, is completely ignored, and is not validated (any value, including nil, is
+// accepted and unused).
 func NewWithPasswordNonce[T any](password, _ /*nonce*/, salt []byte, iterations int) (*EncryptorDecryptor[T], error) {
 	return NewWithPassword[T](password, salt, iterations)
 }
@@ -124,8 +128,9 @@ func (e *EncryptorDecryptor[T]) Encrypt(value T) ([]byte, error) {
 func (e *EncryptorDecryptor[T]) Decrypt(ciphertext []byte) (T, error) {
 	var t T
 	nonceSize := e.aesgcm.NonceSize()
-	if len(ciphertext) < nonceSize {
-		return t, fmt.Errorf("%w: expected at least %d bytes, got %d", ErrCiphertextTooShort, nonceSize, len(ciphertext))
+	minLen := nonceSize + e.aesgcm.Overhead()
+	if len(ciphertext) < minLen {
+		return t, fmt.Errorf("%w: expected at least %d bytes, got %d", ErrCiphertextTooShort, minLen, len(ciphertext))
 	}
 
 	nonce, ct := ciphertext[:nonceSize], ciphertext[nonceSize:]
