@@ -15,8 +15,10 @@ import (
 )
 
 const MinSaltLength = 16
+const NonceLength = 12
 
 var ErrSaltTooShort = errors.New("salt too short")
+var ErrInvalidNonce = errors.New("invalid nonce length")
 
 type EncryptorDecryptor[T any] struct {
 	aesgcm cipher.AEAD
@@ -69,6 +71,9 @@ func New[T any](salt []byte, iterations int) (*EncryptorDecryptor[T], error) {
 // NewWithPasswordNonce creates a new EncryptorDecryptor instance with a specified password and nonce. Use this if
 // you intend to persist whatever is encrypted.
 func NewWithPasswordNonce[T any](password, nonce, salt []byte, iterations int) (*EncryptorDecryptor[T], error) {
+	if len(nonce) != NonceLength {
+		return nil, fmt.Errorf("%w: must be exactly %d bytes, got %d", ErrInvalidNonce, NonceLength, len(nonce))
+	}
 	if err := validateSalt(salt); err != nil {
 		return nil, err
 	}
