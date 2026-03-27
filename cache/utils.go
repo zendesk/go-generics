@@ -12,3 +12,10 @@ func HashAny(obj any) string {
 
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
+
+// buildKey hashes the key and prepends an optional prefix from OperationOption.
+// Both Redis and in-memory backends use this to produce the internal storage key.
+func buildKey(key any, opts ...OperationOption) string {
+	cfg := resolveOperationOpts(opts...)
+	return cfg.prefix + HashAny(key)
+}

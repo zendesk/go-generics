@@ -39,9 +39,9 @@ func NewRedisCache[K comparable, V any](ctx context.Context, client Redis, ttl t
 	return &cache
 }
 
-func (c *RedisCache[K, V]) Get(key K) (V, bool, error) {
+func (c *RedisCache[K, V]) Get(key K, opts ...OperationOption) (V, bool, error) {
 	var v V
-	bytes, err := c.client.Get(c.ctx, HashAny(key)).Bytes()
+	bytes, err := c.client.Get(c.ctx, buildKey(key, opts...)).Bytes()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			return v, false, nil
@@ -61,12 +61,12 @@ func (c *RedisCache[K, V]) Get(key K) (V, bool, error) {
 	return v, true, nil
 }
 
-func (c *RedisCache[K, V]) Set(key K, val V) error {
+func (c *RedisCache[K, V]) Set(key K, val V, opts ...OperationOption) error {
 	bytes, err := serialize.NewSerializer[V]().FromDynamicType(val).ToBytes()
 	if err != nil {
 		return err
 	}
-	err = c.client.Set(c.ctx, HashAny(key), bytes, c.ttl).Err()
+	err = c.client.Set(c.ctx, buildKey(key, opts...), bytes, c.ttl).Err()
 
 	if err == nil || c.cfg.ignoreCacheSetErrors {
 		return nil
@@ -77,8 +77,8 @@ func (c *RedisCache[K, V]) Set(key K, val V) error {
 	return err
 }
 
-func (c *RedisCache[K, V]) Delete(key K) error {
-	return c.client.Del(c.ctx, HashAny(key)).Err()
+func (c *RedisCache[K, V]) Delete(key K, opts ...OperationOption) error {
+	return c.client.Del(c.ctx, buildKey(key, opts...)).Err()
 }
 
 func (c *RedisCache[K, V]) Purge() error {
@@ -86,8 +86,8 @@ func (c *RedisCache[K, V]) Purge() error {
 }
 
 // GetOrSet gets the value from cache for key K, or sets it value and return it via func orSet.
-func (c *RedisCache[K, V]) GetOrSet(key K, orSet func() (V, error)) (val V, wasFoundInCache bool, err error) {
-	item, wasFound, err := c.Get(key)
+func (c *RedisCache[K, V]) GetOrSet(key K, orSet func() (V, error), opts ...OperationOption) (val V, wasFoundInCache bool, err error) {
+	item, wasFound, err := c.Get(key, opts...)
 	if wasFound {
 		return item, wasFound, err
 	}
@@ -97,7 +97,7 @@ func (c *RedisCache[K, V]) GetOrSet(key K, orSet func() (V, error)) (val V, wasF
 		return val, false, err
 	}
 
-	err = c.Set(key, val)
+	err = c.Set(key, val, opts...)
 	if err == nil || c.cfg.ignoreCacheSetErrors {
 		return val, false, nil
 	}

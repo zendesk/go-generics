@@ -1,22 +1,22 @@
 package cache
 
 type Cache[K comparable, V any] interface {
-	Get(key K) (v V, wasFound bool, err error)
-	Delete(key K) error
-	Set(key K, value V) error
+	Get(key K, opts ...OperationOption) (v V, wasFound bool, err error)
+	Delete(key K, opts ...OperationOption) error
+	Set(key K, value V, opts ...OperationOption) error
 	Purge() error
 	// Get the value from cache for key K, or setItsValue and return it via func orSet
-	GetOrSet(key K, orSet func() (V, error)) (val V, wasFoundInCache bool, err error)
+	GetOrSet(key K, orSet func() (V, error), opts ...OperationOption) (val V, wasFoundInCache bool, err error)
 }
 
 // CacheBackendAdapter manges reading/writing/deleting to and from a cache backend. E.G. Memory backend, Redis Backend, etc.
 type CacheBackendAdapter[K comparable, V any] interface {
-	Get(key K) (value V, wasFound bool, err error)
-	Set(key K, value V) error
-	Delete(key K) error
+	Get(key K, opts ...OperationOption) (value V, wasFound bool, err error)
+	Set(key K, value V, opts ...OperationOption) error
+	Delete(key K, opts ...OperationOption) error
 	Purge() error // Purges the cache
 	// Get the value from cache for key K, or setItsValue and return it via func orSet
-	GetOrSet(key K, orSet func() (V, error)) (val V, wasFoundInCache bool, err error)
+	GetOrSet(key K, orSet func() (V, error), opts ...OperationOption) (val V, wasFoundInCache bool, err error)
 }
 
 type CacheSetError struct {
@@ -58,9 +58,9 @@ type cache[K comparable, V any] struct {
 	cfg      cacheCfg[K, V]
 }
 
-func (c *cache[K, V]) Get(key K) (V, bool, error) {
+func (c *cache[K, V]) Get(key K, opts ...OperationOption) (V, bool, error) {
 
-	val, fromCache, err := c.backend.Get(key)
+	val, fromCache, err := c.backend.Get(key, opts...)
 	if c.observer != nil {
 		c.observer.Get(key)
 		if fromCache {
@@ -73,20 +73,20 @@ func (c *cache[K, V]) Get(key K) (V, bool, error) {
 	return val, fromCache, err
 }
 
-func (c *cache[K, V]) Set(key K, val V) error {
+func (c *cache[K, V]) Set(key K, val V, opts ...OperationOption) error {
 	if c.observer != nil {
 		c.observer.Set(key)
 	}
 
-	return c.backend.Set(key, val)
+	return c.backend.Set(key, val, opts...)
 }
 
-func (c *cache[K, V]) Delete(key K) error {
+func (c *cache[K, V]) Delete(key K, opts ...OperationOption) error {
 	if c.observer != nil {
 		c.observer.Delete(key)
 	}
 
-	return c.backend.Delete(key)
+	return c.backend.Delete(key, opts...)
 }
 
 func (c *cache[K, V]) Purge() error {
@@ -97,8 +97,8 @@ func (c *cache[K, V]) Purge() error {
 	return c.backend.Purge()
 }
 
-func (c *cache[K, V]) GetOrSet(key K, orSet func() (V, error)) (val V, wasFoundInCache bool, err error) {
-	v, fromCache, err := c.backend.GetOrSet(key, orSet)
+func (c *cache[K, V]) GetOrSet(key K, orSet func() (V, error), opts ...OperationOption) (val V, wasFoundInCache bool, err error) {
+	v, fromCache, err := c.backend.GetOrSet(key, orSet, opts...)
 
 	if c.observer != nil {
 		c.observer.Get(key)

@@ -68,8 +68,8 @@ func NewEncryptedCacheWithPasswordNonce[K comparable, V any](backend CacheBacken
 	return NewEncryptedCacheWithPassword[K, V](backend, password, salt, iterations, opts...)
 }
 
-func (c *EncryptedCache[K, V]) Get(key K) (v V, wasFound bool, err error) {
-	encryptedBytes, _, err := c.backend.Get(key)
+func (c *EncryptedCache[K, V]) Get(key K, opts ...OperationOption) (v V, wasFound bool, err error) {
+	encryptedBytes, _, err := c.backend.Get(key, opts...)
 	if err != nil {
 		return v, false, err
 	}
@@ -87,11 +87,11 @@ func (c *EncryptedCache[K, V]) Get(key K) (v V, wasFound bool, err error) {
 	return v, true, nil
 }
 
-func (c *EncryptedCache[K, V]) Delete(key K) error {
-	return c.backend.Delete(key)
+func (c *EncryptedCache[K, V]) Delete(key K, opts ...OperationOption) error {
+	return c.backend.Delete(key, opts...)
 }
 
-func (c *EncryptedCache[K, V]) Set(key K, value V) error {
+func (c *EncryptedCache[K, V]) Set(key K, value V, opts ...OperationOption) error {
 	// Encrypt the binary value
 	encryptedBytes, err := c.ed.Encrypt(value)
 	if err != nil {
@@ -99,7 +99,7 @@ func (c *EncryptedCache[K, V]) Set(key K, value V) error {
 	}
 
 	// Store the encrypted value in the cache
-	err = c.backend.Set(key, encryptedBytes)
+	err = c.backend.Set(key, encryptedBytes, opts...)
 	if err == nil || c.cfg.ignoreCacheSetErrors {
 		return nil
 	}
@@ -113,8 +113,8 @@ func (c *EncryptedCache[K, V]) Purge() error {
 	return c.backend.Purge()
 }
 
-func (c *EncryptedCache[K, V]) GetOrSet(key K, orSet func() (V, error)) (val V, wasFoundInCache bool, err error) {
-	item, wasFound, err := c.Get(key)
+func (c *EncryptedCache[K, V]) GetOrSet(key K, orSet func() (V, error), opts ...OperationOption) (val V, wasFoundInCache bool, err error) {
+	item, wasFound, err := c.Get(key, opts...)
 	if wasFound {
 		return item, wasFound, err
 	}
@@ -124,7 +124,7 @@ func (c *EncryptedCache[K, V]) GetOrSet(key K, orSet func() (V, error)) (val V, 
 		return val, false, err
 	}
 
-	err = c.Set(key, val)
+	err = c.Set(key, val, opts...)
 	if err == nil || c.cfg.ignoreCacheSetErrors {
 		return val, false, nil
 	}

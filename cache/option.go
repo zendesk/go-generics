@@ -67,3 +67,26 @@ func setCacheOpts[K comparable, V any](opts ...CacheOption[K, V]) cacheCfg[K, V]
 
 	return cfg
 }
+
+// OperationOption configures the behavior of individual cache operations (Get, Set, Delete, etc.).
+type OperationOption func(*operationCfg)
+
+type operationCfg struct {
+	prefix string
+}
+
+// WithPrefix prepends the given prefix to the hashed cache key for this operation.
+// Both Redis and in-memory backends hash keys via HashAny; the prefix is prepended to that hash.
+func WithPrefix(prefix string) OperationOption {
+	return func(cfg *operationCfg) {
+		cfg.prefix = prefix
+	}
+}
+
+func resolveOperationOpts(opts ...OperationOption) operationCfg {
+	var cfg operationCfg
+	for _, opt := range opts {
+		opt(&cfg)
+	}
+	return cfg
+}
