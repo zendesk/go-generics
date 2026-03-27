@@ -6,9 +6,10 @@ import (
 	"github.com/jellydator/ttlcache/v3"
 )
 
-// InMemoryCache adapts ttlCache to integrate it with CacheBackendAdapter
+// InMemoryCache adapts ttlCache to integrate it with CacheBackendAdapter.
+// Keys are hashed to strings internally (via HashAny), matching Redis behavior.
 type InMemoryCache[K comparable, V any] struct {
-	cache       *ttlcache.Cache[K, V]
+	cache       *ttlcache.Cache[string, V]
 	ttl         time.Duration
 	failThrough CacheBackendAdapter[K, V]
 	cfg         cacheBackendCfg[K, V]
@@ -18,16 +19,16 @@ type InMemoryCache[K comparable, V any] struct {
 func NewInMemoryCache[K comparable, V any](ttl time.Duration, opts ...CacheBackendOption[K, V]) CacheBackendAdapter[K, V] {
 	cfg := setBackendOpts(opts...)
 
-	ttlOpts := []ttlcache.Option[K, V]{
-		ttlcache.WithTTL[K, V](ttl),
-		ttlcache.WithDisableTouchOnHit[K, V](),
+	ttlOpts := []ttlcache.Option[string, V]{
+		ttlcache.WithTTL[string, V](ttl),
+		ttlcache.WithDisableTouchOnHit[string, V](),
 	}
 
 	if cfg.capacity > 0 {
-		ttlOpts = append(ttlOpts, ttlcache.WithCapacity[K, V](cfg.capacity))
+		ttlOpts = append(ttlOpts, ttlcache.WithCapacity[string, V](cfg.capacity))
 	}
 
-	ttlCache := ttlcache.New[K, V](ttlOpts...)
+	ttlCache := ttlcache.New[string, V](ttlOpts...)
 
 	cache := InMemoryCache[K, V]{
 		cache:       ttlCache,
@@ -41,20 +42,21 @@ func NewInMemoryCache[K comparable, V any](ttl time.Duration, opts ...CacheBacke
 	return &cache
 }
 
-func (c *InMemoryCache[K, V]) Get(key K) (V, bool, error) {
+func (c *InMemoryCache[K, V]) Get(key K, opts ...OperationOption) (V, bool, error) {
 	var v V
 	if c.cacheIsDisabled() {
 		return v, false, nil
 	}
 
-	item := c.cache.Get(key)
+	k := buildKey(key, opts...)
+	item := c.cache.Get(k)
 	if item != nil {
 		return item.Value(), true, nil
 	}
 
 	// If fail-through is configured, try fail-through
 	if c.failThrough != nil {
-		value, wasFound, err := c.failThrough.Get(key)
+		value, wasFound, err := c.failThrough.Get(key, opts...)
 		if err != nil {
 			return v, wasFound, err
 		}
@@ -62,7 +64,7 @@ func (c *InMemoryCache[K, V]) Get(key K) (V, bool, error) {
 		// Add item to this cache before returning it. Do **NOT** call public set (c.Set) as it will reset the value in the
 		// fail-through cache, so it will never expire (if it's a TTL based cache)
 		if wasFound {
-			_ = c.cache.Set(key, value, c.ttl)
+			_ = c.cache.Set(k, value, c.ttl)
 			return value, true, nil
 		}
 	}
@@ -71,16 +73,17 @@ func (c *InMemoryCache[K, V]) Get(key K) (V, bool, error) {
 	return v, false, nil
 }
 
-func (c *InMemoryCache[K, V]) Set(key K, val V) error {
+func (c *InMemoryCache[K, V]) Set(key K, val V, opts ...OperationOption) error {
 	if c.cacheIsDisabled() {
 		return nil
 	}
 
-	_ = c.cache.Set(key, val, c.ttl)
+	k := buildKey(key, opts...)
+	_ = c.cache.Set(k, val, c.ttl)
 
 	// if fail-through is enabled, set in fail-thorugh
 	if c.failThrough != nil {
-		err := c.failThrough.Set(key, val)
+		err := c.failThrough.Set(key, val, opts...)
 		if err != nil && !c.cfg.ignoreCacheSetErrors {
 			// Error on SET, so we wrap it in RedisCacheSetError
 			err = CacheSetError{Message: err.Error()}
@@ -91,12 +94,13 @@ func (c *InMemoryCache[K, V]) Set(key K, val V) error {
 	return nil
 }
 
-func (c *InMemoryCache[K, V]) Delete(key K) error {
-	c.cache.Delete(key)
+func (c *InMemoryCache[K, V]) Delete(key K, opts ...OperationOption) error {
+	k := buildKey(key, opts...)
+	c.cache.Delete(k)
 
 	// Delete from fail through
 	if c.failThrough != nil {
-		return c.failThrough.Delete(key)
+		return c.failThrough.Delete(key, opts...)
 	}
 
 	return nil
@@ -112,13 +116,13 @@ func (c *InMemoryCache[K, V]) Purge() error {
 	return nil
 }
 
-func (c *InMemoryCache[K, V]) GetOrSet(key K, orSet func() (V, error)) (val V, wasFoundInCache bool, err error) {
+func (c *InMemoryCache[K, V]) GetOrSet(key K, orSet func() (V, error), opts ...OperationOption) (val V, wasFoundInCache bool, err error) {
 	if c.cacheIsDisabled() {
 		val, err = orSet()
 		return val, false, err
 	}
 
-	item, wasFound, err := c.Get(key)
+	item, wasFound, err := c.Get(key, opts...)
 	if wasFound {
 		return item, wasFound, err
 	}
@@ -128,7 +132,7 @@ func (c *InMemoryCache[K, V]) GetOrSet(key K, orSet func() (V, error)) (val V, w
 		return val, false, err
 	}
 
-	err = c.Set(key, val)
+	err = c.Set(key, val, opts...)
 	if err == nil || c.cfg.ignoreCacheSetErrors {
 		return val, false, nil
 	}

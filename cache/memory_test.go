@@ -18,18 +18,18 @@ type MockCache[K comparable, V any] struct {
 	WasPurged  bool
 }
 
-func (m *MockCache[K, V]) Get(key K) (V, bool, error) {
+func (m *MockCache[K, V]) Get(key K, opts ...cache.OperationOption) (V, bool, error) {
 	var v V
 	m.WasGot = append(m.WasGot, key)
 	return v, true, nil
 }
 
-func (m *MockCache[K, V]) Set(key K, _ V) error {
+func (m *MockCache[K, V]) Set(key K, _ V, opts ...cache.OperationOption) error {
 	m.WasSet = append(m.WasSet, key)
 	return nil
 }
 
-func (m *MockCache[K, V]) Delete(key K) error {
+func (m *MockCache[K, V]) Delete(key K, opts ...cache.OperationOption) error {
 	m.WasDeleted = append(m.WasDeleted, key)
 	return nil
 }
@@ -39,7 +39,7 @@ func (m *MockCache[K, V]) Purge() error {
 	return nil
 }
 
-func (m *MockCache[K, V]) GetOrSet(key K, orSet func() (V, error)) (val V, wasFoundInCache bool, err error) {
+func (m *MockCache[K, V]) GetOrSet(key K, orSet func() (V, error), opts ...cache.OperationOption) (val V, wasFoundInCache bool, err error) {
 	v, err := orSet()
 	return v, false, err
 }
