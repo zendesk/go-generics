@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -395,8 +396,14 @@ func TestRedisLockBackend_WithPrefix(t *testing.T) {
 
 	// A second backend with the same prefix should conflict on the same name.
 	backend2 := NewRedisLockBackend([]redsyncredis.Pool{pool}, WithPrefix(prefix))
-	if _, err := backend2.ObtainLock(ctx, name, ttl); !errors.Is(err, ErrorLockNotAcquired) {
+	_, err = backend2.ObtainLock(ctx, name, ttl)
+	if !errors.Is(err, ErrorLockNotAcquired) {
 		t.Fatalf("expected ErrorLockNotAcquired from conflicting prefixed lock, got: %v", err)
+	}
+	// The underlying redsync error should also be surfaced so callers can diagnose
+	// non-contention failures (e.g. ACL NOPERM, network issues).
+	if msg := err.Error(); !strings.Contains(msg, name) || !strings.Contains(msg, prefix+name) {
+		t.Fatalf("expected error to include both name %q and key %q, got: %s", name, prefix+name, msg)
 	}
 
 	// A backend with a different prefix should not conflict.

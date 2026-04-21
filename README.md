@@ -492,8 +492,10 @@ Example 2: Redis-based distributed locking
 
 ```go
 import (
+    redsyncredis "github.com/go-redsync/redsync/v4/redis"
     "github.com/go-redsync/redsync/v4/redis/goredis/v9"
     goredislib "github.com/redis/go-redis/v9"
+    "github.com/zendesk/go-generics/concurrency"
 )
 
 // Create Redis client and lock backend
@@ -501,13 +503,13 @@ client := goredislib.NewClient(&goredislib.Options{
     Addr: "localhost:6379",
 })
 pool := goredis.NewPool(client)
-backend := concurrency.NewRedisLockBackend([]redis.Pool{pool})
+backend := concurrency.NewRedisLockBackend([]redsyncredis.Pool{pool})
 manager := concurrency.NewLockManager(backend)
 
 // To scope all locks under a key prefix (e.g. when the Redis user's ACL is
 // limited to a prefix such as `service-name:*`), pass concurrency.WithPrefix:
 //
-//   backend := concurrency.NewRedisLockBackend([]redis.Pool{pool}, concurrency.WithPrefix("service-name:"))
+//   backend := concurrency.NewRedisLockBackend([]redsyncredis.Pool{pool}, concurrency.WithPrefix("service-name:"))
 
 ctx := context.Background()
 lockKey := "distributed-resource-456"
