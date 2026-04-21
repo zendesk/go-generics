@@ -11,12 +11,16 @@ import (
 
 type RedisLockBackend struct {
 	locker *redsync.Redsync
+	prefix string
 }
 
-func NewRedisLockBackend(pools ...redis.Pool) *RedisLockBackend {
-	locker := redsync.New(pools...)
+// NewRedisLockBackend creates a RedisLockBackend backed by one or more redsync pools.
+// LockBackendOption values (e.g. WithPrefix) may be supplied via the opts parameter.
+func NewRedisLockBackend(pools []redis.Pool, opts ...LockBackendOption) *RedisLockBackend {
+	cfg := resolveLockBackendOpts(opts...)
 	return &RedisLockBackend{
-		locker: locker,
+		locker: redsync.New(pools...),
+		prefix: cfg.prefix,
 	}
 }
 
@@ -25,9 +29,10 @@ type redisMutex struct {
 }
 
 func (r *RedisLockBackend) ObtainLock(ctx context.Context, name string, ttl time.Duration) (Lock, error) {
-	mutex := r.locker.NewMutex(name, redsync.WithExpiry(ttl))
+	key := r.prefix + name
+	mutex := r.locker.NewMutex(key, redsync.WithExpiry(ttl))
 	if err := mutex.LockContext(ctx); err != nil {
-		return nil, WrapError(ErrorLockNotAcquired, fmt.Sprintf("failed to obtain lock for name %s", name))
+		return nil, WrapError(ErrorLockNotAcquired, fmt.Sprintf("failed to obtain lock for name %s", key))
 	}
 	return &redisMutex{mutex: mutex}, nil
 }

@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	redsyncredis "github.com/go-redsync/redsync/v4/redis"
 	"github.com/go-redsync/redsync/v4/redis/goredis/v9"
 	goredislib "github.com/redis/go-redis/v9"
 )
@@ -45,7 +46,7 @@ func TestRedisLockBackend_Integration(t *testing.T) {
 	defer client.Close()
 
 	pool := goredis.NewPool(client)
-	backend := NewRedisLockBackend(pool)
+	backend := NewRedisLockBackend([]redsyncredis.Pool{pool})
 	ctx := context.Background()
 	name := "test-redis-lock"
 	ttl := 100 * time.Millisecond
@@ -78,7 +79,7 @@ func TestRedisLockBackend_LockConflicts(t *testing.T) {
 	defer client.Close()
 
 	pool := goredis.NewPool(client)
-	backend := NewRedisLockBackend(pool)
+	backend := NewRedisLockBackend([]redsyncredis.Pool{pool})
 	ctx := context.Background()
 	name := "conflict-redis-lock"
 	ttl := 10 * time.Second
@@ -116,7 +117,7 @@ func TestRedisLockBackend_TTLExpiration(t *testing.T) {
 	defer client.Close()
 
 	pool := goredis.NewPool(client)
-	backend := NewRedisLockBackend(pool)
+	backend := NewRedisLockBackend([]redsyncredis.Pool{pool})
 	ctx := context.Background()
 	name := "expire-redis-lock"
 	shortTTL := 100 * time.Millisecond
@@ -148,7 +149,7 @@ func TestRedisLockBackend_RefreshOperations(t *testing.T) {
 	defer client.Close()
 
 	pool := goredis.NewPool(client)
-	backend := NewRedisLockBackend(pool)
+	backend := NewRedisLockBackend([]redsyncredis.Pool{pool})
 	ctx := context.Background()
 	name := "refresh-redis-lock"
 	ttl := 200 * time.Millisecond
@@ -180,7 +181,7 @@ func TestRedisLockBackend_ConcurrentAccess(t *testing.T) {
 	defer client.Close()
 
 	pool := goredis.NewPool(client)
-	backend := NewRedisLockBackend(pool)
+	backend := NewRedisLockBackend([]redsyncredis.Pool{pool})
 	ctx := context.Background()
 	name := "concurrent-redis-lock"
 	ttl := 20 * time.Second
@@ -231,7 +232,7 @@ func TestRedisLockBackend_MultipleLocks(t *testing.T) {
 	defer client.Close()
 
 	pool := goredis.NewPool(client)
-	backend := NewRedisLockBackend(pool)
+	backend := NewRedisLockBackend([]redsyncredis.Pool{pool})
 	ctx := context.Background()
 	ttl := 200 * time.Millisecond
 
@@ -266,7 +267,7 @@ func TestRedisLockBackend_LockAfterRelease(t *testing.T) {
 	defer client.Close()
 
 	pool := goredis.NewPool(client)
-	backend := NewRedisLockBackend(pool)
+	backend := NewRedisLockBackend([]redsyncredis.Pool{pool})
 	ctx := context.Background()
 	name := "reuse-redis-lock"
 	ttl := 100 * time.Millisecond
@@ -295,7 +296,7 @@ func TestRedisLockBackend_WithLockManager(t *testing.T) {
 	defer client.Close()
 
 	pool := goredis.NewPool(client)
-	backend := NewRedisLockBackend(pool)
+	backend := NewRedisLockBackend([]redsyncredis.Pool{pool})
 	manager := NewLockManager(backend)
 	ctx := context.Background()
 	key := "test-redis-manager-key"
@@ -329,7 +330,7 @@ func TestRedisLockBackend_ContextCancellation(t *testing.T) {
 	defer client.Close()
 
 	pool := goredis.NewPool(client)
-	backend := NewRedisLockBackend(pool)
+	backend := NewRedisLockBackend([]redsyncredis.Pool{pool})
 	name := "context-cancel-lock"
 	ttl := 100 * time.Millisecond
 
@@ -361,4 +362,48 @@ func TestRedisLockBackend_ContextCancellation(t *testing.T) {
 	if err := lock.Release(normalCtx); err != nil {
 		t.Fatalf("failed to release Redis lock: %v", err)
 	}
+}
+
+func TestRedisLockBackend_WithPrefix(t *testing.T) {
+	client := setupRedisClient(t)
+	defer client.Close()
+
+	pool := goredis.NewPool(client)
+	prefix := "svc:"
+	backend := NewRedisLockBackend([]redsyncredis.Pool{pool}, WithPrefix(prefix))
+	ctx := context.Background()
+	name := "prefix-redis-lock"
+	ttl := 10 * time.Second
+
+	lock, err := backend.ObtainLock(ctx, name, ttl)
+	if err != nil {
+		t.Fatalf("failed to obtain prefixed Redis lock: %v", err)
+	}
+	defer lock.Release(ctx)
+
+	// The prefixed key should exist; the unprefixed key should not.
+	if exists, err := client.Exists(ctx, prefix+name).Result(); err != nil {
+		t.Fatalf("failed to check prefixed key existence: %v", err)
+	} else if exists != 1 {
+		t.Fatalf("expected prefixed key %q to exist, got exists=%d", prefix+name, exists)
+	}
+	if exists, err := client.Exists(ctx, name).Result(); err != nil {
+		t.Fatalf("failed to check unprefixed key existence: %v", err)
+	} else if exists != 0 {
+		t.Fatalf("expected unprefixed key %q to not exist, got exists=%d", name, exists)
+	}
+
+	// A second backend with the same prefix should conflict on the same name.
+	backend2 := NewRedisLockBackend([]redsyncredis.Pool{pool}, WithPrefix(prefix))
+	if _, err := backend2.ObtainLock(ctx, name, ttl); !errors.Is(err, ErrorLockNotAcquired) {
+		t.Fatalf("expected ErrorLockNotAcquired from conflicting prefixed lock, got: %v", err)
+	}
+
+	// A backend with a different prefix should not conflict.
+	backend3 := NewRedisLockBackend([]redsyncredis.Pool{pool}, WithPrefix("other:"))
+	lock3, err := backend3.ObtainLock(ctx, name, ttl)
+	if err != nil {
+		t.Fatalf("expected independent lock under different prefix, got: %v", err)
+	}
+	_ = lock3.Release(ctx)
 }

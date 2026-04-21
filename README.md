@@ -501,8 +501,13 @@ client := goredislib.NewClient(&goredislib.Options{
     Addr: "localhost:6379",
 })
 pool := goredis.NewPool(client)
-backend := concurrency.NewRedisLockBackend(pool)
+backend := concurrency.NewRedisLockBackend([]redis.Pool{pool})
 manager := concurrency.NewLockManager(backend)
+
+// To scope all locks under a key prefix (e.g. when the Redis user's ACL is
+// limited to a prefix such as `service-name:*`), pass concurrency.WithPrefix:
+//
+//   backend := concurrency.NewRedisLockBackend([]redis.Pool{pool}, concurrency.WithPrefix("service-name:"))
 
 ctx := context.Background()
 lockKey := "distributed-resource-456"
