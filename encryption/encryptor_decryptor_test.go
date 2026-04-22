@@ -5,9 +5,16 @@ package encryption
 
 import (
 	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/sha256"
 	"errors"
 	"reflect"
 	"testing"
+
+	"golang.org/x/crypto/pbkdf2"
+
+	"github.com/zendesk/go-generics/serialize"
 )
 
 func TestEncryptDecrypt_Bytes(t *testing.T) {
@@ -353,5 +360,255 @@ func TestNewWithPasswordNonce_WithAllowLegacyParameters_BypassesValidation(t *te
 	}
 	if decrypted != input {
 		t.Errorf("Decrypt() = %q, want %q", decrypted, input)
+	}
+}
+
+// encryptLegacyV0 faithfully reproduces the pre-#18 (2025-era) Encrypt wire format:
+// a single fixed nonce is reused for every call, and Seal is called with nil as
+// the dst so the output is just [ciphertext|tag] — no nonce prefix.
+// Key derivation matches pre-#18 NewWithPasswordNonce: pbkdf2 with the same
+// parameters that the current NewWithPassword uses.
+func encryptLegacyV0[T any](t *testing.T, password, salt, nonce []byte, iterations int, value T) []byte {
+	t.Helper()
+
+	aesKey := pbkdf2.Key(password, salt, iterations, 32, sha256.New)
+	block, err := aes.NewCipher(aesKey)
+	if err != nil {
+		t.Fatalf("aes.NewCipher: %v", err)
+	}
+	aesgcm, err := cipher.NewGCM(block)
+	if err != nil {
+		t.Fatalf("cipher.NewGCM: %v", err)
+	}
+
+	// Exactly matches the pre-#18 Encrypt path in encryption/encryptor_decryptor.go:
+	//   w := wrapper[T]{T: value}
+	//   bytes, _ := serialize.NewSerializer[wrapper[T]]().FromDynamicType(w).ToBytes()
+	//   ciphertext := e.aesgcm.Seal(nil, e.nonce, bytes, nil)
+	w := wrapper[T]{T: value}
+	plaintext, err := serialize.NewSerializer[wrapper[T]]().FromDynamicType(w).ToBytes()
+	if err != nil {
+		t.Fatalf("serialize: %v", err)
+	}
+	return aesgcm.Seal(nil, nonce, plaintext, nil)
+}
+
+// TestLegacyV0_Decryptable_ByNewWithLegacyNonce is the core cross-version proof:
+// ciphertext produced by the pre-#18 wire format (fixed nonce, no prefix) must
+// roundtrip through a current EncryptorDecryptor when WithLegacyNonce is
+// supplied, and the default (no-option) constructor must fail to decrypt it.
+func TestLegacyV0_Decryptable_ByNewWithLegacyNonce(t *testing.T) {
+	password := []byte("production-password")
+	// Intentionally a 10-byte salt to mirror ssv2-api's CryptoSalt "73616C7479" —
+	// the exact reason WithAllowLegacyParameters exists.
+	salt := []byte("saltyvalu2")
+	// Intentionally 4096 iterations, the legacy default that pre-dates MinIterations.
+	iterations := 4096
+	nonce := []byte("legacy-none1") // 12 bytes — matches NonceLength
+
+	input := "secret written by old go-generics"
+	legacyCiphertext := encryptLegacyV0[string](t, password, salt, nonce, iterations, input)
+
+	// 1. A current-default encryptor must NOT be able to decrypt legacy bytes:
+	//    it will slice off the first 12 bytes as a (wrong) nonce and fail auth.
+	currentDefault, err := NewWithPassword[string](password, []byte("1234567890abcdef"), MinIterations)
+	if err != nil {
+		t.Fatalf("NewWithPassword (default) setup: %v", err)
+	}
+	if _, err := currentDefault.Decrypt(legacyCiphertext); err == nil {
+		t.Fatal("current default decrypter unexpectedly decrypted legacy ciphertext — wire format detection is broken")
+	}
+
+	// 2. A current encryptor opted in to legacy parameters AND legacy nonce MUST
+	//    be able to decrypt the legacy bytes.
+	legacyReader, err := NewWithPassword[string](
+		password, salt, iterations,
+		WithAllowLegacyParameters(),
+		WithLegacyNonce(nonce),
+	)
+	if err != nil {
+		t.Fatalf("NewWithPassword with legacy opts: %v", err)
+	}
+	decrypted, err := legacyReader.Decrypt(legacyCiphertext)
+	if err != nil {
+		t.Fatalf("legacyReader.Decrypt: %v", err)
+	}
+	if decrypted != input {
+		t.Errorf("Decrypt() = %q, want %q", decrypted, input)
+	}
+}
+
+// TestLegacyV0_Encrypt_ReadableByLegacyAlgorithm confirms the legacy-nonce path
+// produces the same wire format the old version did. We encrypt with the new
+// code + WithLegacyNonce, then decrypt by hand using the documented pre-#18
+// algorithm (Open with fixed nonce against [ciphertext|tag]). If this roundtrips
+// we've proven Encrypt is byte-compatible with the old format.
+func TestLegacyV0_Encrypt_ReadableByLegacyAlgorithm(t *testing.T) {
+	password := []byte("production-password")
+	salt := []byte("saltyvalu2")
+	iterations := 4096
+	nonce := []byte("legacy-none1")
+
+	input := "written by new encryptor in legacy mode"
+
+	ed, err := NewWithPassword[string](
+		password, salt, iterations,
+		WithAllowLegacyParameters(),
+		WithLegacyNonce(nonce),
+	)
+	if err != nil {
+		t.Fatalf("NewWithPassword with legacy opts: %v", err)
+	}
+	ciphertext, err := ed.Encrypt(input)
+	if err != nil {
+		t.Fatalf("Encrypt: %v", err)
+	}
+
+	// Hand-rolled pre-#18 Decrypt: no nonce prefix, fixed nonce, plain Open.
+	aesKey := pbkdf2.Key(password, salt, iterations, 32, sha256.New)
+	block, err := aes.NewCipher(aesKey)
+	if err != nil {
+		t.Fatalf("aes.NewCipher: %v", err)
+	}
+	aesgcm, err := cipher.NewGCM(block)
+	if err != nil {
+		t.Fatalf("cipher.NewGCM: %v", err)
+	}
+	plaintext, err := aesgcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		t.Fatalf("legacy-style Open: %v", err)
+	}
+
+	w := wrapper[string]{}
+	result, err := serialize.NewSerializer[wrapper[string]]().FromBytes(plaintext).ToDynamicType(serialize.Reflect, w)
+	if err != nil {
+		t.Fatalf("serialize: %v", err)
+	}
+	got, ok := result.(wrapper[string])
+	if !ok {
+		t.Fatalf("result is %T, not wrapper[string]", result)
+	}
+	if got.T != input {
+		t.Errorf("roundtrip = %q, want %q", got.T, input)
+	}
+}
+
+// TestLegacyV0_Roundtrip_WithinCurrent is the pragmatic "ssv2-api" check: the
+// current encryptor, opted in to legacy mode, roundtrips its own output. This
+// is what the service will actually do in production (write + read legacy rows).
+func TestLegacyV0_Roundtrip_WithinCurrent(t *testing.T) {
+	salt := []byte("saltyvalu2")
+	iterations := 4096
+	nonce := []byte("legacy-none1")
+
+	ed, err := NewWithPassword[string](
+		[]byte("production-password"), salt, iterations,
+		WithAllowLegacyParameters(),
+		WithLegacyNonce(nonce),
+	)
+	if err != nil {
+		t.Fatalf("NewWithPassword: %v", err)
+	}
+
+	for _, input := range []string{"", "short", "a much longer secret value that is also encrypted"} {
+		ct, err := ed.Encrypt(input)
+		if err != nil {
+			t.Fatalf("Encrypt(%q): %v", input, err)
+		}
+		// Fixed-nonce Seal does not prefix a nonce: no [nonce|...] framing.
+		// We cannot test the exact length cheaply here (serializer adds overhead),
+		// but we can assert we did NOT accidentally double up by checking that
+		// our own Decrypt on the output succeeds.
+		got, err := ed.Decrypt(ct)
+		if err != nil {
+			t.Fatalf("Decrypt(%q): %v", input, err)
+		}
+		if got != input {
+			t.Errorf("roundtrip: got %q, want %q", got, input)
+		}
+	}
+}
+
+// TestLegacyNonce_RejectsWrongLength protects callers from silently producing
+// garbage ciphertext when they pass a non-12-byte nonce.
+func TestLegacyNonce_RejectsWrongLength(t *testing.T) {
+	tests := []struct {
+		name  string
+		nonce []byte
+	}{
+		{"empty", []byte{}},
+		{"too short", []byte("short")},
+		{"too long", []byte("way too long to be a GCM nonce")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := NewWithPassword[string](
+				[]byte("password"), []byte("1234567890abcdef"), MinIterations,
+				WithLegacyNonce(tt.nonce),
+			)
+			if err == nil {
+				t.Fatal("expected ErrInvalidNonce, got nil")
+			}
+			if !errors.Is(err, ErrInvalidNonce) {
+				t.Fatalf("expected ErrInvalidNonce, got: %v", err)
+			}
+		})
+	}
+}
+
+// TestCurrent_vs_Legacy_WireFormats_Differ is a guard: if someone ever makes
+// Encrypt emit the legacy format by default, this test will fail. It confirms
+// that in the default (no WithLegacyNonce) path, ciphertext starts with the
+// randomly generated nonce — i.e. the wire formats are genuinely distinct.
+func TestCurrent_vs_Legacy_WireFormats_Differ(t *testing.T) {
+	password := []byte("password")
+	salt := []byte("1234567890abcdef")
+	nonce := []byte("legacy-none1")
+
+	current, err := NewWithPassword[string](password, salt, MinIterations)
+	if err != nil {
+		t.Fatalf("default: %v", err)
+	}
+	legacy, err := NewWithPassword[string](
+		password, salt, MinIterations,
+		WithLegacyNonce(nonce),
+	)
+	if err != nil {
+		t.Fatalf("legacy: %v", err)
+	}
+
+	currentCT, err := current.Encrypt("hello")
+	if err != nil {
+		t.Fatalf("current.Encrypt: %v", err)
+	}
+	legacyCT, err := legacy.Encrypt("hello")
+	if err != nil {
+		t.Fatalf("legacy.Encrypt: %v", err)
+	}
+
+	// Current must be exactly NonceLength bytes longer than legacy for the same
+	// plaintext, because it prepends a fresh nonce and uses the same AEAD tag.
+	if len(currentCT)-len(legacyCT) != NonceLength {
+		t.Errorf("expected current ciphertext to be %d bytes longer than legacy, got current=%d legacy=%d",
+			NonceLength, len(currentCT), len(legacyCT))
+	}
+
+	// Current must NOT decrypt legacy bytes, and vice-versa.
+	if _, err := current.Decrypt(legacyCT); err == nil {
+		t.Error("current.Decrypt unexpectedly accepted legacy ciphertext")
+	}
+	if _, err := legacy.Decrypt(currentCT); err == nil {
+		t.Error("legacy.Decrypt unexpectedly accepted current ciphertext")
+	}
+
+	// Legacy ciphertexts for identical plaintext must be byte-identical (fixed
+	// nonce reuse) — this is the documented, insecure property of legacy mode,
+	// and proves the nonce is actually fixed.
+	legacyCT2, err := legacy.Encrypt("hello")
+	if err != nil {
+		t.Fatalf("legacy.Encrypt (2): %v", err)
+	}
+	if !bytes.Equal(legacyCT, legacyCT2) {
+		t.Error("legacy encryptor produced different ciphertexts for the same plaintext — fixed nonce is not actually fixed")
 	}
 }
