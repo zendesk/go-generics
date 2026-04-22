@@ -291,6 +291,40 @@ func TestNewWithPassword_RejectsLowIterations(t *testing.T) {
 	}
 }
 
+func TestNew_WithAllowLegacyParameters_StillRejectsInsaneParameters(t *testing.T) {
+	// WithAllowLegacyParameters relaxes the floor — it does NOT disable the
+	// basic sanity checks that protect against meaningless PBKDF2 inputs.
+	// pbkdf2.Key does not error on non-positive iterations or empty salts;
+	// it silently produces a trivially-derived key, so callers must be stopped
+	// at construction time regardless of the opt-out.
+	cases := []struct {
+		name       string
+		salt       []byte
+		iterations int
+		wantErr    error
+	}{
+		{"zero iterations", []byte("saltyvalu2"), 0, ErrIterationsTooLow},
+		{"negative iterations", []byte("saltyvalu2"), -1, ErrIterationsTooLow},
+		{"empty salt", []byte{}, 4096, ErrSaltTooShort},
+		{"nil salt", nil, 4096, ErrSaltTooShort},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if _, err := New[string](tc.salt, tc.iterations, WithAllowLegacyParameters()); err == nil {
+				t.Fatalf("expected error for %s, got nil", tc.name)
+			} else if !errors.Is(err, tc.wantErr) {
+				t.Fatalf("expected %v, got: %v", tc.wantErr, err)
+			}
+
+			if _, err := NewWithPassword[string]([]byte("password"), tc.salt, tc.iterations, WithAllowLegacyParameters()); err == nil {
+				t.Fatalf("NewWithPassword: expected error for %s, got nil", tc.name)
+			} else if !errors.Is(err, tc.wantErr) {
+				t.Fatalf("NewWithPassword: expected %v, got: %v", tc.wantErr, err)
+			}
+		})
+	}
+}
+
 func TestNew_WithAllowLegacyParameters_BypassesValidation(t *testing.T) {
 	// Short salt (10 bytes) and iterations below MinIterations must be accepted
 	// when the opt-out option is provided, to support legacy persisted data.

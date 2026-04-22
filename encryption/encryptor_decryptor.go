@@ -49,6 +49,20 @@ func validateIterations(iterations int) error {
 	return nil
 }
 
+// validateParameterSanity enforces the absolute minimum constraints that must
+// hold regardless of WithAllowLegacyParameters. pbkdf2.Key does not validate
+// its inputs and produces meaningless / trivially-derived keys when iterations
+// is non-positive or salt is empty, so these checks are *not* opt-out-able.
+func validateParameterSanity(salt []byte, iterations int) error {
+	if iterations <= 0 {
+		return fmt.Errorf("%w: must be greater than 0, got %d", ErrIterationsTooLow, iterations)
+	}
+	if len(salt) == 0 {
+		return fmt.Errorf("%w: must not be empty", ErrSaltTooShort)
+	}
+	return nil
+}
+
 // New creates a new EncryptorDecryptor instance with a random password.
 // A fresh random nonce is generated for each Encrypt call and prepended to the ciphertext.
 //
@@ -58,6 +72,9 @@ func validateIterations(iterations int) error {
 // see that option's documentation for the security implications.
 func New[T any](salt []byte, iterations int, opts ...Option) (*EncryptorDecryptor[T], error) {
 	cfg := resolveOptions(opts...)
+	if err := validateParameterSanity(salt, iterations); err != nil {
+		return nil, err
+	}
 	if !cfg.allowLegacyParameters {
 		if err := validateIterations(iterations); err != nil {
 			return nil, err
@@ -100,6 +117,9 @@ func New[T any](salt []byte, iterations int, opts ...Option) (*EncryptorDecrypto
 // see that option's documentation for the security implications.
 func NewWithPassword[T any](password, salt []byte, iterations int, opts ...Option) (*EncryptorDecryptor[T], error) {
 	cfg := resolveOptions(opts...)
+	if err := validateParameterSanity(salt, iterations); err != nil {
+		return nil, err
+	}
 	if !cfg.allowLegacyParameters {
 		if err := validateIterations(iterations); err != nil {
 			return nil, err
