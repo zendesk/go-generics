@@ -283,3 +283,75 @@ func TestNewWithPassword_RejectsLowIterations(t *testing.T) {
 		})
 	}
 }
+
+func TestNew_WithAllowLegacyParameters_BypassesValidation(t *testing.T) {
+	// Short salt (10 bytes) and iterations below MinIterations must be accepted
+	// when the opt-out option is provided, to support legacy persisted data.
+	shortSalt := []byte("saltyvalu2") // 10 bytes, below MinSaltLength=16
+	lowIterations := 4096             // below MinIterations=100_000
+
+	ed, err := New[string](shortSalt, lowIterations, WithAllowLegacyParameters())
+	if err != nil {
+		t.Fatalf("New() with WithAllowLegacyParameters returned error: %v", err)
+	}
+
+	input := "legacy roundtrip"
+	ciphertext, err := ed.Encrypt(input)
+	if err != nil {
+		t.Fatalf("Encrypt() error: %v", err)
+	}
+	decrypted, err := ed.Decrypt(ciphertext)
+	if err != nil {
+		t.Fatalf("Decrypt() error: %v", err)
+	}
+	if decrypted != input {
+		t.Errorf("Decrypt() = %q, want %q", decrypted, input)
+	}
+}
+
+func TestNewWithPassword_WithAllowLegacyParameters_BypassesValidation(t *testing.T) {
+	shortSalt := []byte("saltyvalu2")
+	lowIterations := 4096
+
+	ed, err := NewWithPassword[string]([]byte("password"), shortSalt, lowIterations, WithAllowLegacyParameters())
+	if err != nil {
+		t.Fatalf("NewWithPassword() with WithAllowLegacyParameters returned error: %v", err)
+	}
+
+	input := "legacy roundtrip"
+	ciphertext, err := ed.Encrypt(input)
+	if err != nil {
+		t.Fatalf("Encrypt() error: %v", err)
+	}
+	decrypted, err := ed.Decrypt(ciphertext)
+	if err != nil {
+		t.Fatalf("Decrypt() error: %v", err)
+	}
+	if decrypted != input {
+		t.Errorf("Decrypt() = %q, want %q", decrypted, input)
+	}
+}
+
+func TestNewWithPasswordNonce_WithAllowLegacyParameters_BypassesValidation(t *testing.T) {
+	// The deprecated shim must also forward the option.
+	shortSalt := []byte("saltyvalu2")
+	lowIterations := 4096
+
+	ed, err := NewWithPasswordNonce[string]([]byte("password"), []byte("ignored-nonce"), shortSalt, lowIterations, WithAllowLegacyParameters())
+	if err != nil {
+		t.Fatalf("NewWithPasswordNonce() with WithAllowLegacyParameters returned error: %v", err)
+	}
+
+	input := "legacy roundtrip"
+	ciphertext, err := ed.Encrypt(input)
+	if err != nil {
+		t.Fatalf("Encrypt() error: %v", err)
+	}
+	decrypted, err := ed.Decrypt(ciphertext)
+	if err != nil {
+		t.Fatalf("Decrypt() error: %v", err)
+	}
+	if decrypted != input {
+		t.Errorf("Decrypt() = %q, want %q", decrypted, input)
+	}
+}

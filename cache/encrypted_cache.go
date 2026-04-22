@@ -30,7 +30,7 @@ func NewEncryptedCache[K comparable, V any](backend CacheBackendAdapter[K, []byt
 func NewEncryptedCacheWithIterations[K comparable, V any](backend CacheBackendAdapter[K, []byte], salt []byte, iterations int, opts ...CacheBackendOption[K, V]) (*EncryptedCache[K, V], error) {
 	cfg := setBackendOpts(opts...)
 
-	ed, err := encryption.New[V](salt, iterations)
+	ed, err := encryption.New[V](salt, iterations, cfg.encryptionOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("error creating new encryptor: %w", err)
 	}
@@ -48,7 +48,7 @@ func NewEncryptedCacheWithIterations[K comparable, V any](backend CacheBackendAd
 func NewEncryptedCacheWithPassword[K comparable, V any](backend CacheBackendAdapter[K, []byte], password, salt []byte, iterations int, opts ...CacheBackendOption[K, V]) (*EncryptedCache[K, V], error) {
 	cfg := setBackendOpts(opts...)
 
-	ed, err := encryption.NewWithPassword[V](password, salt, iterations)
+	ed, err := encryption.NewWithPassword[V](password, salt, iterations, cfg.encryptionOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("error creating new encryptor: %w", err)
 	}

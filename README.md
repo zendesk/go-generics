@@ -839,3 +839,39 @@ Encrypt with an auto-generated secure password + nonce.
     }
 ```
 
+### Validation and legacy parameters
+
+`New`, `NewWithPassword`, and `NewWithPasswordNonce` reject salts shorter than
+`MinSaltLength` (16 bytes) and iteration counts below `MinIterations` (100 000).
+New deployments should always meet these minimums.
+
+Existing production systems that persisted data using a shorter salt or a lower
+iteration count cannot change those parameters without a coordinated data
+re-encryption. For those cases, pass `WithAllowLegacyParameters()` to bypass the
+validation at construction time:
+
+```go
+ed, err := encryption.NewWithPassword[Foo](
+    []byte("password"),
+    legacySalt,         // e.g. a 10-byte salt persisted before MinSaltLength existed
+    legacyIterations,   // e.g. 4096, below the current MinIterations
+    encryption.WithAllowLegacyParameters(),
+)
+```
+
+When constructing an `EncryptedCache`, forward the option via
+`cache.WithEncryptionOptions`:
+
+```go
+c, err := cache.NewEncryptedCacheWithPassword[string, string](
+    backend,
+    []byte("password"),
+    legacySalt,
+    legacyIterations,
+    cache.WithEncryptionOptions[string, string](encryption.WithAllowLegacyParameters()),
+)
+```
+
+Do not use this option for new data. It exists only to keep already-persisted
+ciphertext readable while callers plan a migration to compliant parameters.
+

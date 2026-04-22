@@ -206,6 +206,61 @@ func BenchmarkDecrypt(b *testing.B) {
 	}
 }
 
+func TestNewEncryptedCache_WithEncryptionOptions_AllowsLegacyParameters(t *testing.T) {
+	// A 10-byte salt violates MinSaltLength; low iterations violate MinIterations.
+	// Forwarding WithAllowLegacyParameters via WithEncryptionOptions must bypass both.
+	shortSalt := []byte("saltyvalu2")
+	lowIterations := 4096
+
+	ttlCache := cache.NewInMemoryCache[string, []byte](10 * time.Second)
+
+	// Without the option, construction must fail.
+	if _, err := cache.NewEncryptedCache[string, string](ttlCache, shortSalt, lowIterations); err == nil {
+		t.Fatal("expected error for short salt + low iterations without opt-out, got nil")
+	}
+
+	// With the option, construction must succeed and the cache must round-trip.
+	c, err := cache.NewEncryptedCache[string, string](
+		ttlCache,
+		shortSalt,
+		lowIterations,
+		cache.WithEncryptionOptions[string, string](encryption.WithAllowLegacyParameters()),
+	)
+	test.CheckErr(err, "Unexpected err constructing encrypted cache with legacy parameters opt-out", t)
+	test.ExpectNotNil("cache", c, t)
+
+	err = c.Set("key", "value")
+	test.CheckErr(err, "Unexpected err on Set", t)
+
+	value, _, err := c.Get("key")
+	test.CheckErr(err, "Unexpected err on Get", t)
+	test.CheckEqual(value, "value", "value", t)
+}
+
+func TestNewEncryptedCacheWithPassword_WithEncryptionOptions_AllowsLegacyParameters(t *testing.T) {
+	shortSalt := []byte("saltyvalu2")
+	lowIterations := 4096
+
+	ttlCache := cache.NewInMemoryCache[string, []byte](10 * time.Second)
+
+	c, err := cache.NewEncryptedCacheWithPassword[string, string](
+		ttlCache,
+		[]byte("password"),
+		shortSalt,
+		lowIterations,
+		cache.WithEncryptionOptions[string, string](encryption.WithAllowLegacyParameters()),
+	)
+	test.CheckErr(err, "Unexpected err constructing password-encrypted cache with legacy parameters opt-out", t)
+	test.ExpectNotNil("cache", c, t)
+
+	err = c.Set("key", "value")
+	test.CheckErr(err, "Unexpected err on Set", t)
+
+	value, _, err := c.Get("key")
+	test.CheckErr(err, "Unexpected err on Get", t)
+	test.CheckEqual(value, "value", "value", t)
+}
+
 func TestPurge(t *testing.T) {
 	ttlCache := cache.NewInMemoryCache[string, []byte](10 * time.Second)
 

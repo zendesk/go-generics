@@ -46,12 +46,18 @@ func validateIterations(iterations int) error {
 
 // New creates a new EncryptorDecryptor instance with a random password.
 // A fresh random nonce is generated for each Encrypt call and prepended to the ciphertext.
-func New[T any](salt []byte, iterations int) (*EncryptorDecryptor[T], error) {
-	if err := validateIterations(iterations); err != nil {
-		return nil, err
-	}
-	if err := validateSalt(salt); err != nil {
-		return nil, err
+//
+// Pass WithAllowLegacyParameters to bypass salt-length and iteration-count
+// validation; see that option's documentation for when it is appropriate.
+func New[T any](salt []byte, iterations int, opts ...Option) (*EncryptorDecryptor[T], error) {
+	cfg := resolveOptions(opts...)
+	if !cfg.allowLegacyParameters {
+		if err := validateIterations(iterations); err != nil {
+			return nil, err
+		}
+		if err := validateSalt(salt); err != nil {
+			return nil, err
+		}
 	}
 
 	password := make([]byte, 2048)
@@ -77,12 +83,18 @@ func New[T any](salt []byte, iterations int) (*EncryptorDecryptor[T], error) {
 // NewWithPassword creates a new EncryptorDecryptor instance with a specified password. Use this if
 // you intend to persist whatever is encrypted. A fresh random nonce is generated for each Encrypt
 // call and prepended to the ciphertext.
-func NewWithPassword[T any](password, salt []byte, iterations int) (*EncryptorDecryptor[T], error) {
-	if err := validateIterations(iterations); err != nil {
-		return nil, err
-	}
-	if err := validateSalt(salt); err != nil {
-		return nil, err
+//
+// Pass WithAllowLegacyParameters to bypass salt-length and iteration-count
+// validation; see that option's documentation for when it is appropriate.
+func NewWithPassword[T any](password, salt []byte, iterations int, opts ...Option) (*EncryptorDecryptor[T], error) {
+	cfg := resolveOptions(opts...)
+	if !cfg.allowLegacyParameters {
+		if err := validateIterations(iterations); err != nil {
+			return nil, err
+		}
+		if err := validateSalt(salt); err != nil {
+			return nil, err
+		}
 	}
 
 	aesKey := pbkdf2.Key(password, salt, iterations, 32, sha256.New)
@@ -104,8 +116,8 @@ func NewWithPassword[T any](password, salt []byte, iterations int) (*EncryptorDe
 // per-Encrypt call and prepended to the ciphertext. The nonce parameter is accepted only for
 // API compatibility, is completely ignored, and is not validated (any value, including nil, is
 // accepted and unused).
-func NewWithPasswordNonce[T any](password, _ /*nonce*/, salt []byte, iterations int) (*EncryptorDecryptor[T], error) {
-	return NewWithPassword[T](password, salt, iterations)
+func NewWithPasswordNonce[T any](password, _ /*nonce*/, salt []byte, iterations int, opts ...Option) (*EncryptorDecryptor[T], error) {
+	return NewWithPassword[T](password, salt, iterations, opts...)
 }
 
 func (e *EncryptorDecryptor[T]) Encrypt(value T) ([]byte, error) {
