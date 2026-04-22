@@ -839,3 +839,74 @@ Encrypt with an auto-generated secure password + nonce.
     }
 ```
 
+### Validation and legacy parameters
+
+`New`, `NewWithPassword`, and `NewWithPasswordNonce` reject salts shorter than
+`MinSaltLength` (16 bytes) and iteration counts below `MinIterations` (100 000).
+New deployments should always meet these minimums.
+
+Existing production systems that persisted data using a shorter salt or a lower
+iteration count cannot change those parameters without a coordinated data
+re-encryption. For those cases, pass `WithAllowLegacyParameters()` to bypass the
+validation at construction time:
+
+```go
+ed, err := encryption.NewWithPassword[Foo](
+    []byte("password"),
+    legacySalt,         // e.g. a 10-byte salt persisted before MinSaltLength existed
+    legacyIterations,   // e.g. 4096, below the current MinIterations
+    encryption.WithAllowLegacyParameters(),
+)
+```
+
+When constructing an `EncryptedCache`, forward the option via
+`cache.WithEncryptionOptions`:
+
+```go
+c, err := cache.NewEncryptedCacheWithPassword[string, string](
+    backend,
+    []byte("password"),
+    legacySalt,
+    legacyIterations,
+    cache.WithEncryptionOptions[string, string](encryption.WithAllowLegacyParameters()),
+)
+```
+
+Do not use this option for new data. It exists only to keep already-persisted
+ciphertext readable while callers plan a migration to compliant parameters.
+
+### Reading data written by pre-2026-03 releases (`WithLegacyNonce`)
+
+Prior to the AES-GCM nonce-reuse fix, the encryptor stored a single nonce on the
+struct and produced ciphertext without a nonce prefix: `[ciphertext|tag]`. The
+current version generates a fresh nonce for every call and prepends it:
+`[nonce|ciphertext|tag]`. These two wire formats are incompatible — a default
+current `Decrypt` will treat the first 12 bytes of legacy ciphertext as a nonce
+and fail authentication.
+
+For callers that must read rows written by the old format, pass
+`encryption.WithLegacyNonce(nonce)` with the exact 12-byte nonce the data was
+originally encrypted with:
+
+```go
+ed, err := encryption.NewWithPassword[Foo](
+    password,
+    legacySalt,
+    legacyIterations,
+    encryption.WithAllowLegacyParameters(), // if salt/iterations are also legacy
+    encryption.WithLegacyNonce(legacyNonce),
+)
+```
+
+**Not recommended.** `WithLegacyNonce` fixes the AES-GCM nonce for every call,
+which reintroduces the exact vulnerability #18 fixed: reusing a nonce under the
+same key catastrophically breaks both confidentiality and authenticity. Treat a
+legacy-nonce encryptor as read-only whenever possible — decrypt old rows,
+re-encrypt them with a default (per-call random nonce) encryptor, and retire
+the legacy option. Only continue to *write* with `WithLegacyNonce` when a
+migration cannot be scheduled, and keep such writes tightly scoped.
+
+`WithLegacyNonce` is *technically* forwardable through `cache.WithEncryptionOptions`,
+but don't do that: encrypted caches are ephemeral and should invalidate and
+re-encrypt rather than permanently adopt a fixed-nonce encryptor.
+

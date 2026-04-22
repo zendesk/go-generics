@@ -1,10 +1,13 @@
 package cache
 
+import "github.com/zendesk/go-generics/encryption"
+
 type cacheBackendCfg[K comparable, V any] struct {
 	failThroughCache     CacheBackendAdapter[K, V]
 	observer             CacheObserver[K]
 	capacity             uint64
 	ignoreCacheSetErrors bool
+	encryptionOpts       []encryption.Option
 }
 
 type CacheBackendOption[K comparable, V any] func(cfg cacheBackendCfg[K, V]) cacheBackendCfg[K, V]
@@ -42,6 +45,16 @@ func WithCapacity[K comparable, V any](maxObjects uint64) CacheBackendOption[K, 
 func IgnoreCacheSetErrors[K comparable, V any]() CacheBackendOption[K, V] {
 	return func(cfg cacheBackendCfg[K, V]) cacheBackendCfg[K, V] {
 		cfg.ignoreCacheSetErrors = true
+		return cfg
+	}
+}
+
+// WithEncryptionOptions forwards the given encryption.Option values to the
+// underlying EncryptorDecryptor used by NewEncryptedCache* constructors.
+// It has no effect on non-encrypted caches.
+func WithEncryptionOptions[K comparable, V any](opts ...encryption.Option) CacheBackendOption[K, V] {
+	return func(cfg cacheBackendCfg[K, V]) cacheBackendCfg[K, V] {
+		cfg.encryptionOpts = append(cfg.encryptionOpts, opts...)
 		return cfg
 	}
 }

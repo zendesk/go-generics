@@ -20,17 +20,25 @@ type EncryptedCache[K comparable, V any] struct {
 	cfg     cacheBackendCfg[K, V]
 }
 
-// NewEncryptedCache provides a new EncryptedCache with default configurations that provides a balance of performance and security. Selecting a # of iterations that is difficult to guess
-// and high enough to make encrypt / decrypt durations sufficiently long to deter brute force attack is recommended. Minimum 2048 iterations is recommended
+// NewEncryptedCache provides a new EncryptedCache with default configurations
+// that balance performance and security.
+//
+// salt must be at least encryption.MinSaltLength (16) bytes and iterations
+// must be at least encryption.MinIterations (100 000); otherwise construction
+// fails. Legacy persisted data that predates these minimums can opt out by
+// passing cache.WithEncryptionOptions(encryption.WithAllowLegacyParameters()).
 func NewEncryptedCache[K comparable, V any](backend CacheBackendAdapter[K, []byte], salt []byte, iterations int, opts ...CacheBackendOption[K, V]) (*EncryptedCache[K, V], error) {
 	return NewEncryptedCacheWithIterations[K, V](backend, salt, iterations, opts...)
 }
 
-// NewEncryptedCacheWithIterations allows the user to specify a number of iterations which influences work factor for the cache.
+// NewEncryptedCacheWithIterations allows the user to specify a number of
+// iterations which influences work factor for the cache. iterations must be at
+// least encryption.MinIterations (100 000) unless the caller opts out via
+// cache.WithEncryptionOptions(encryption.WithAllowLegacyParameters()).
 func NewEncryptedCacheWithIterations[K comparable, V any](backend CacheBackendAdapter[K, []byte], salt []byte, iterations int, opts ...CacheBackendOption[K, V]) (*EncryptedCache[K, V], error) {
 	cfg := setBackendOpts(opts...)
 
-	ed, err := encryption.New[V](salt, iterations)
+	ed, err := encryption.New[V](salt, iterations, cfg.encryptionOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("error creating new encryptor: %w", err)
 	}
@@ -48,7 +56,7 @@ func NewEncryptedCacheWithIterations[K comparable, V any](backend CacheBackendAd
 func NewEncryptedCacheWithPassword[K comparable, V any](backend CacheBackendAdapter[K, []byte], password, salt []byte, iterations int, opts ...CacheBackendOption[K, V]) (*EncryptedCache[K, V], error) {
 	cfg := setBackendOpts(opts...)
 
-	ed, err := encryption.NewWithPassword[V](password, salt, iterations)
+	ed, err := encryption.NewWithPassword[V](password, salt, iterations, cfg.encryptionOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("error creating new encryptor: %w", err)
 	}
