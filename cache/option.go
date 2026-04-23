@@ -8,6 +8,7 @@ type cacheBackendCfg[K comparable, V any] struct {
 	capacity             uint64
 	ignoreCacheSetErrors bool
 	encryptionOpts       []encryption.Option
+	keyPrefix            string
 }
 
 type CacheBackendOption[K comparable, V any] func(cfg cacheBackendCfg[K, V]) cacheBackendCfg[K, V]
@@ -59,6 +60,25 @@ func WithEncryptionOptions[K comparable, V any](opts ...encryption.Option) Cache
 	}
 }
 
+// WithPrefix configures a static prefix that the backend prepends to every
+// cache key, on every Get/Set/Delete/GetOrSet call. Unlike the per-operation
+// WithKeyPrefix (OperationOption), this prefix is stored on the backend and
+// does not need to be re-specified by every caller.
+//
+// When both are used, the final key layout is:
+//
+//	<backend-prefix><operation-prefix><hash(key)>
+//
+// Typical use: a Redis ACL namespace (e.g. "ssv2-api:") that must precede every
+// key the service writes. Callers can still layer an OperationOption
+// WithKeyPrefix on top for sub-namespacing within that namespace.
+func WithPrefix[K comparable, V any](prefix string) CacheBackendOption[K, V] {
+	return func(cfg cacheBackendCfg[K, V]) cacheBackendCfg[K, V] {
+		cfg.keyPrefix = prefix
+		return cfg
+	}
+}
+
 type cacheCfg[K comparable, V any] struct {
 	observer CacheObserver[K]
 }
@@ -88,9 +108,14 @@ type operationCfg struct {
 	prefix string
 }
 
-// WithPrefix prepends the given prefix to the hashed cache key for this operation.
-// Both Redis and in-memory backends hash keys via HashAny; the prefix is prepended to that hash.
-func WithPrefix(prefix string) OperationOption {
+// WithKeyPrefix prepends the given prefix to the hashed cache key for this
+// operation. Both Redis and in-memory backends hash keys via HashAny; the
+// prefix is prepended to that hash.
+//
+// This is the per-operation counterpart to the cache-constructor WithPrefix
+// (CacheBackendOption). Both can be combined: the backend prefix always comes
+// first, then the operation prefix, then the hashed key.
+func WithKeyPrefix(prefix string) OperationOption {
 	return func(cfg *operationCfg) {
 		cfg.prefix = prefix
 	}

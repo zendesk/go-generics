@@ -48,7 +48,7 @@ func (c *InMemoryCache[K, V]) Get(key K, opts ...OperationOption) (V, bool, erro
 		return v, false, nil
 	}
 
-	k := buildKey(key, opts...)
+	k := buildKey(key, c.cfg.keyPrefix, opts...)
 	item := c.cache.Get(k)
 	if item != nil {
 		return item.Value(), true, nil
@@ -78,7 +78,7 @@ func (c *InMemoryCache[K, V]) Set(key K, val V, opts ...OperationOption) error {
 		return nil
 	}
 
-	k := buildKey(key, opts...)
+	k := buildKey(key, c.cfg.keyPrefix, opts...)
 	_ = c.cache.Set(k, val, c.ttl)
 
 	// if fail-through is enabled, set in fail-thorugh
@@ -95,7 +95,7 @@ func (c *InMemoryCache[K, V]) Set(key K, val V, opts ...OperationOption) error {
 }
 
 func (c *InMemoryCache[K, V]) Delete(key K, opts ...OperationOption) error {
-	k := buildKey(key, opts...)
+	k := buildKey(key, c.cfg.keyPrefix, opts...)
 	c.cache.Delete(k)
 
 	// Delete from fail through

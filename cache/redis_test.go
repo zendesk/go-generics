@@ -24,6 +24,7 @@ type mockClient struct {
 	getKey   string
 	setValue []byte
 	setKey   string
+	delKey   string
 }
 
 func NewMockClient() *mockClient {
@@ -53,8 +54,12 @@ func (mc *mockClient) Set(ctx context.Context, key string, value interface{}, ex
 }
 
 func (mc *mockClient) Del(ctx context.Context, keys ...string) *redis.IntCmd {
-	return nil
-
+	if len(keys) > 0 {
+		mc.delKey = keys[0]
+	}
+	cmd := redis.NewIntCmd(ctx)
+	cmd.SetVal(int64(len(keys)))
+	return cmd
 }
 
 func (mc *mockClient) FlushDB(ctx context.Context) *redis.StatusCmd {
