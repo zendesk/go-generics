@@ -442,6 +442,32 @@ cash.Set(userID, Person{Name: "James", Age: 30})
 
 ```
 
+### Key prefixing
+
+Two options namespace cache keys. Both prepend their prefix to the hashed key;
+when both are supplied the final Redis/in-memory key is
+`<backend-prefix><operation-prefix><hash(key)>`.
+
+- `cache.WithPrefix[K, V](prefix)` — **CacheBackendOption**. Stored on the
+  backend at construction time. Applied automatically to every Get/Set/Delete/
+  GetOrSet. Use this when the entire service is confined to a namespace (e.g.
+  a Redis ACL pattern like `service-name:*`).
+- `cache.WithKeyPrefix(prefix)` — **OperationOption**. Passed per call. Use
+  this for sub-namespacing within a single cache (e.g. partitioning by tenant).
+
+```go
+// Backend prefix: every key is prepended with "service-name:" so it matches
+// an ACL that restricts this user to service-name:* keys.
+redisCache := cache.NewRedisCache[string, Person](ctx, client, ttl,
+    cache.WithPrefix[string, Person]("service-name:"))
+
+redisCache.Set("user-123", Person{Name: "James"})
+// Redis key: service-name:<hash("user-123")>
+
+// Layer a per-operation prefix on top:
+redisCache.Set("user-123", Person{Name: "James"}, cache.WithKeyPrefix("tenant-a:"))
+// Redis key: service-name:tenant-a:<hash("user-123")>
+```
 
 ## Concurrency
 
