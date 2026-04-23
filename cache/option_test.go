@@ -263,3 +263,62 @@ func Test_WithPrefix_EncryptedCache_AppliesToBackend(t *testing.T) {
 	test.CheckEqual(mockRedis.setKey, "encrypted-cache SET should reach Redis with the backend prefix",
 		"svc:"+cache.HashAny("k"), t)
 }
+
+// Test_WithPrefix_FailThrough_PrefixOnRedisOnly verifies a common deployment
+// pattern: an in-memory primary with no prefix wrapping a prefixed Redis
+// fail-through. The in-memory key must stay unprefixed (prefix only matters
+// on the Redis wire, where the ACL lives) AND the fail-through round-trip
+// must use the Redis-level prefix so keys land where the ACL expects them.
+func Test_WithPrefix_FailThrough_PrefixOnRedisOnly(t *testing.T) {
+	mockRedis := &mockClient{}
+	redisBackend := cache.NewRedisCache[string, string](context.Background(), mockRedis, 10*time.Second,
+		cache.WithPrefix[string, string]("svc:"))
+
+	// In-memory primary: no WithPrefix, Redis is fail-through.
+	memWithRedisFailThrough := cache.NewInMemoryCache[string, string](10*time.Second,
+		cache.WithFailThroughCache[string, string](redisBackend),
+		cache.WithCapacity[string, string](16))
+
+	// Set via the memory cache. This must write through to Redis WITH the
+	// svc: prefix (fail-through receives the original K, not the pre-hashed
+	// memory key), but the in-memory entry itself is unprefixed.
+	err := memWithRedisFailThrough.Set("mykey", "val")
+	test.CheckErr(err, "Failed to set", t)
+	test.CheckEqual(mockRedis.setKey, "fail-through SET must hit Redis with svc: prefix",
+		"svc:"+cache.HashAny("mykey"), t)
+
+	// Primary hit: the value is still in memory, so Redis is NOT consulted.
+	mockRedis.getKey = "" // reset to prove the next Get does not call Redis
+	got, found, err := memWithRedisFailThrough.Get("mykey")
+	test.CheckErr(err, "Failed to get (primary hit)", t)
+	test.CheckOk(found, "primary cache hit", t)
+	test.CheckEqual(got, "primary hit value", "val", t)
+	test.CheckEqual(mockRedis.getKey, "primary hit must not consult Redis", "", t)
+
+	// Primary miss + fail-through hit: evict the in-memory entry, then Get
+	// must fetch from Redis using the svc: prefix AND repopulate the memory
+	// primary so the next Get is a primary hit.
+	err = memWithRedisFailThrough.Delete("mykey")
+	test.CheckErr(err, "Failed to evict", t)
+	// Delete also deletes from Redis; re-seed Redis via a direct Set so the
+	// fail-through has a value to return on the next Get.
+	err = redisBackend.Set("mykey", "val")
+	test.CheckErr(err, "Failed to re-seed Redis", t)
+
+	mockRedis.getKey = ""
+	got, found, err = memWithRedisFailThrough.Get("mykey")
+	test.CheckErr(err, "Failed to get (fail-through)", t)
+	test.CheckOk(found, "fail-through hit", t)
+	test.CheckEqual(got, "fail-through value", "val", t)
+	test.CheckEqual(mockRedis.getKey, "fail-through GET must use svc: prefix",
+		"svc:"+cache.HashAny("mykey"), t)
+
+	// After the fail-through hit, the primary should be repopulated, so the
+	// next Get must NOT consult Redis.
+	mockRedis.getKey = ""
+	got, found, err = memWithRedisFailThrough.Get("mykey")
+	test.CheckErr(err, "Failed to get (after repopulate)", t)
+	test.CheckOk(found, "post-repopulate primary hit", t)
+	test.CheckEqual(got, "post-repopulate value", "val", t)
+	test.CheckEqual(mockRedis.getKey, "post-repopulate must not consult Redis", "", t)
+}
