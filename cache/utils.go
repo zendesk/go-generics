@@ -14,9 +14,10 @@ func HashAny(obj any) string {
 }
 
 // buildKey hashes the key and prepends the backend-level and operation-level
-// prefixes. The backend-level prefix (from WithKeyPrefix) comes first and is
-// fixed at cache construction time; the operation-level prefix (from the
-// OperationOption WithPrefix) comes next and may vary per call.
+// prefixes. The backend-level prefix (from the CacheBackendOption WithPrefix)
+// comes first and is fixed at cache construction time; the operation-level
+// prefix (from the OperationOption WithKeyPrefix) comes next and may vary per
+// call.
 //
 // Final layout: <backendPrefix><operationPrefix><hash(key)>
 //
