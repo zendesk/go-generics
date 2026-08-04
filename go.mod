@@ -1,6 +1,6 @@
 module github.com/zendesk/go-generics
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/go-redis/redis_rate/v10 v10.0.1
@@ -8,7 +8,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/jellydator/ttlcache/v3 v3.2.0
 	github.com/redis/go-redis/v9 v9.7.3
-	golang.org/x/crypto v0.45.0
+	golang.org/x/crypto v0.52.0
 	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b
 	golang.org/x/time v0.12.0
 )
