@@ -472,6 +472,82 @@ func TestLegacyV0_Decryptable_ByNewWithLegacyNonce(t *testing.T) {
 	}
 }
 
+func TestLegacyV0_ReadOldWriteNew(t *testing.T) {
+	password := []byte("production-password")
+	salt := []byte("saltyvalu2")
+	legacyNonce := []byte("legacy-none1")
+	iterations := 4096
+	legacyCiphertext := encryptLegacyV0(t, password, salt, legacyNonce, iterations, "old Aurora record")
+
+	ed, err := NewWithPassword[string](password, salt, iterations,
+		WithAllowLegacyParameters(), WithLegacyDecryptNonce(legacyNonce))
+	if err != nil {
+		t.Fatal(err)
+	}
+	oldValue, err := ed.Decrypt(legacyCiphertext)
+	if err != nil || oldValue != "old Aurora record" {
+		t.Fatalf("decrypt old record: %q, %v", oldValue, err)
+	}
+
+	first, err := ed.Encrypt("new Aurora record")
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := ed.Encrypt("new Aurora record")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bytes.Equal(first[:NonceLength], second[:NonceLength]) {
+		t.Fatal("new writes reused a nonce")
+	}
+	for _, ciphertext := range [][]byte{first, second} {
+		value, err := ed.Decrypt(ciphertext)
+		if err != nil || value != "new Aurora record" {
+			t.Fatalf("decrypt new record: %q, %v", value, err)
+		}
+	}
+
+	// A separate reader must be able to read both formats after a restart.
+	reader, err := NewWithPassword[string](password, salt, iterations,
+		WithAllowLegacyParameters(), WithLegacyDecryptNonce(legacyNonce))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, ciphertext := range [][]byte{legacyCiphertext, first} {
+		if _, err := reader.Decrypt(ciphertext); err != nil {
+			t.Fatalf("decrypt after restart: %v", err)
+		}
+	}
+	legacyWriter, err := NewWithPassword[string](password, salt, iterations,
+		WithAllowLegacyParameters(), WithLegacyNonce(legacyNonce))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if value, err := legacyWriter.Decrypt(first); err != nil || value != "new Aurora record" {
+		t.Fatalf("reader still writing legacy must accept new ciphertext during rollout: %q, %v", value, err)
+	}
+	corrupted := bytes.Clone(first)
+	corrupted[len(corrupted)-1] ^= 1
+	if _, err := ed.Decrypt(corrupted); err == nil {
+		t.Fatal("tampered new ciphertext must not decrypt as legacy")
+	}
+}
+
+func TestWithLegacyDecryptNonceRejectsInvalidNonce(t *testing.T) {
+	for _, nonce := range [][]byte{[]byte("short"), []byte("too-long-nonce")} {
+		_, err := NewWithPassword[string]([]byte("password"), []byte("1234567890abcdef"), MinIterations,
+			WithLegacyDecryptNonce(nonce))
+		if !errors.Is(err, ErrInvalidNonce) {
+			t.Fatalf("nonce of length %d: got %v, want ErrInvalidNonce", len(nonce), err)
+		}
+	}
+	_, err := NewWithPassword[string]([]byte("password"), []byte("1234567890abcdef"), MinIterations,
+		WithLegacyNonce([]byte("legacy-none1")), WithLegacyDecryptNonce([]byte("legacy-none1")))
+	if err == nil {
+		t.Fatal("legacy write and legacy read modes must not be combined")
+	}
+}
+
 // TestLegacyV0_Encrypt_ReadableByLegacyAlgorithm confirms the legacy-nonce path
 // produces the same wire format the old version did. We encrypt with the new
 // code + WithLegacyNonce, then decrypt by hand using the documented pre-#18
@@ -627,12 +703,13 @@ func TestCurrent_vs_Legacy_WireFormats_Differ(t *testing.T) {
 			NonceLength, len(currentCT), len(legacyCT))
 	}
 
-	// Current must NOT decrypt legacy bytes, and vice-versa.
+	// Default readers must not decrypt legacy bytes, while a reader still
+	// writing in legacy mode must accept the new format during staged rollout.
 	if _, err := current.Decrypt(legacyCT); err == nil {
 		t.Error("current.Decrypt unexpectedly accepted legacy ciphertext")
 	}
-	if _, err := legacy.Decrypt(currentCT); err == nil {
-		t.Error("legacy.Decrypt unexpectedly accepted current ciphertext")
+	if value, err := legacy.Decrypt(currentCT); err != nil || value != "hello" {
+		t.Errorf("legacy.Decrypt must accept current ciphertext: %q, %v", value, err)
 	}
 
 	// Legacy ciphertexts for identical plaintext must be byte-identical (fixed

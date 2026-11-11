@@ -6,6 +6,7 @@ type Option func(*options)
 type options struct {
 	allowLegacyParameters bool
 	legacyNonce           []byte
+	legacyDecryptNonce    []byte
 }
 
 func resolveOptions(opts ...Option) options {
@@ -31,7 +32,8 @@ func WithAllowLegacyParameters() Option {
 
 // WithLegacyNonce selects the pre-2026-03 ciphertext wire format: the nonce is
 // fixed at construction time (the one provided here) and is NOT prepended to
-// ciphertext. Both Encrypt and Decrypt use the supplied nonce directly.
+// ciphertext. Encrypt uses that nonce; Decrypt can read both the legacy and
+// per-message-nonce formats to support a staged rollout to safe writes.
 //
 // NOT RECOMMENDED. This exists purely for backwards compatibility with data
 // that was encrypted by an older go-generics release (pre-#18), which stored
@@ -48,5 +50,18 @@ func WithAllowLegacyParameters() Option {
 func WithLegacyNonce(nonce []byte) Option {
 	return func(o *options) {
 		o.legacyNonce = nonce
+	}
+}
+
+// WithLegacyDecryptNonce reads ciphertext written by pre-#18 go-generics while
+// keeping Encrypt on the safe, per-message-random-nonce format. Use this for
+// migrating persisted ciphertext without continuing to write fixed-nonce data.
+// Both formats are authenticated before plaintext is returned.
+//
+// All readers must support the new format before enabling new writes; older
+// versions of go-generics cannot decrypt ciphertext written in this mode.
+func WithLegacyDecryptNonce(nonce []byte) Option {
+	return func(o *options) {
+		o.legacyDecryptNonce = nonce
 	}
 }

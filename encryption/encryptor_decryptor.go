@@ -1,6 +1,7 @@
 package encryption
 
 import (
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -29,10 +30,12 @@ var ErrCiphertextTooShort = errors.New("ciphertext too short")
 
 type EncryptorDecryptor[T any] struct {
 	aesgcm cipher.AEAD
-	// legacyNonce, when non-nil, selects the pre-#18 wire format: a fixed
-	// caller-supplied nonce is reused for every Encrypt/Decrypt call and the
-	// ciphertext is NOT self-describing (no nonce prefix). See WithLegacyNonce.
+	// legacyNonce selects pre-#18 fixed-nonce writes (no nonce prefix).
+	// Decrypt can read both the old and new formats during a staged rollout.
 	legacyNonce []byte
+	// legacyDecryptNonce is only tried after authenticated decryption with the
+	// per-message nonce fails; Encrypt always uses a fresh nonce in this mode.
+	legacyDecryptNonce []byte
 }
 
 func validateSalt(salt []byte) error {
@@ -86,6 +89,12 @@ func New[T any](salt []byte, iterations int, opts ...Option) (*EncryptorDecrypto
 	if cfg.legacyNonce != nil && len(cfg.legacyNonce) != NonceLength {
 		return nil, fmt.Errorf("%w: must be exactly %d bytes, got %d", ErrInvalidNonce, NonceLength, len(cfg.legacyNonce))
 	}
+	if cfg.legacyDecryptNonce != nil && len(cfg.legacyDecryptNonce) != NonceLength {
+		return nil, fmt.Errorf("%w: must be exactly %d bytes, got %d", ErrInvalidNonce, NonceLength, len(cfg.legacyDecryptNonce))
+	}
+	if cfg.legacyNonce != nil && cfg.legacyDecryptNonce != nil {
+		return nil, fmt.Errorf("WithLegacyNonce and WithLegacyDecryptNonce cannot be combined")
+	}
 
 	password := make([]byte, 2048)
 	if _, err := io.ReadFull(rand.Reader, password); err != nil {
@@ -104,7 +113,7 @@ func New[T any](salt []byte, iterations int, opts ...Option) (*EncryptorDecrypto
 		return nil, fmt.Errorf("error creating new GCM: %w", err)
 	}
 
-	return &EncryptorDecryptor[T]{aesgcm: aesgcm, legacyNonce: cfg.legacyNonce}, nil
+	return &EncryptorDecryptor[T]{aesgcm: aesgcm, legacyNonce: bytes.Clone(cfg.legacyNonce), legacyDecryptNonce: bytes.Clone(cfg.legacyDecryptNonce)}, nil
 }
 
 // NewWithPassword creates a new EncryptorDecryptor instance with a specified password. Use this if
@@ -131,6 +140,12 @@ func NewWithPassword[T any](password, salt []byte, iterations int, opts ...Optio
 	if cfg.legacyNonce != nil && len(cfg.legacyNonce) != NonceLength {
 		return nil, fmt.Errorf("%w: must be exactly %d bytes, got %d", ErrInvalidNonce, NonceLength, len(cfg.legacyNonce))
 	}
+	if cfg.legacyDecryptNonce != nil && len(cfg.legacyDecryptNonce) != NonceLength {
+		return nil, fmt.Errorf("%w: must be exactly %d bytes, got %d", ErrInvalidNonce, NonceLength, len(cfg.legacyDecryptNonce))
+	}
+	if cfg.legacyNonce != nil && cfg.legacyDecryptNonce != nil {
+		return nil, fmt.Errorf("WithLegacyNonce and WithLegacyDecryptNonce cannot be combined")
+	}
 
 	aesKey := pbkdf2.Key(password, salt, iterations, 32, sha256.New)
 
@@ -144,7 +159,7 @@ func NewWithPassword[T any](password, salt []byte, iterations int, opts ...Optio
 		return nil, fmt.Errorf("error creating new GCM: %w", err)
 	}
 
-	return &EncryptorDecryptor[T]{aesgcm: aesgcm, legacyNonce: cfg.legacyNonce}, nil
+	return &EncryptorDecryptor[T]{aesgcm: aesgcm, legacyNonce: bytes.Clone(cfg.legacyNonce), legacyDecryptNonce: bytes.Clone(cfg.legacyDecryptNonce)}, nil
 }
 
 // Deprecated: NewWithPasswordNonce is replaced by NewWithPassword. Nonces are now generated
@@ -183,24 +198,26 @@ func (e *EncryptorDecryptor[T]) Encrypt(value T) ([]byte, error) {
 func (e *EncryptorDecryptor[T]) Decrypt(ciphertext []byte) (T, error) {
 	var t T
 
-	var nonce, ct []byte
-	if e.legacyNonce != nil {
-		// Legacy wire format: ciphertext is [ciphertext|tag]; nonce is the fixed one.
-		minLen := e.aesgcm.Overhead()
-		if len(ciphertext) < minLen {
-			return t, fmt.Errorf("%w: expected at least %d bytes, got %d", ErrCiphertextTooShort, minLen, len(ciphertext))
-		}
-		nonce, ct = e.legacyNonce, ciphertext
-	} else {
-		nonceSize := e.aesgcm.NonceSize()
-		minLen := nonceSize + e.aesgcm.Overhead()
-		if len(ciphertext) < minLen {
-			return t, fmt.Errorf("%w: expected at least %d bytes, got %d", ErrCiphertextTooShort, minLen, len(ciphertext))
-		}
-		nonce, ct = ciphertext[:nonceSize], ciphertext[nonceSize:]
+	var decryptedBytes []byte
+	var err error
+	nonceSize := e.aesgcm.NonceSize()
+	if len(ciphertext) >= nonceSize+e.aesgcm.Overhead() {
+		decryptedBytes, err = e.aesgcm.Open(nil, ciphertext[:nonceSize], ciphertext[nonceSize:], nil)
 	}
-
-	decryptedBytes, err := e.aesgcm.Open(nil, nonce, ct, nil)
+	legacyNonce := e.legacyDecryptNonce
+	if e.legacyNonce != nil {
+		legacyNonce = e.legacyNonce
+	}
+	if legacyNonce != nil && decryptedBytes == nil && len(ciphertext) >= e.aesgcm.Overhead() {
+		decryptedBytes, err = e.aesgcm.Open(nil, legacyNonce, ciphertext, nil)
+	}
+	if decryptedBytes == nil && err == nil {
+		minLen := nonceSize + e.aesgcm.Overhead()
+		if legacyNonce != nil {
+			minLen = e.aesgcm.Overhead()
+		}
+		return t, fmt.Errorf("%w: expected at least %d bytes, got %d", ErrCiphertextTooShort, minLen, len(ciphertext))
+	}
 	if err != nil {
 		return t, fmt.Errorf("error decrypting ciphertext: %w", err)
 	}
