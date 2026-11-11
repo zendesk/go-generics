@@ -1,6 +1,7 @@
 package encryption
 
 import (
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -112,7 +113,7 @@ func New[T any](salt []byte, iterations int, opts ...Option) (*EncryptorDecrypto
 		return nil, fmt.Errorf("error creating new GCM: %w", err)
 	}
 
-	return &EncryptorDecryptor[T]{aesgcm: aesgcm, legacyNonce: append([]byte(nil), cfg.legacyNonce...), legacyDecryptNonce: append([]byte(nil), cfg.legacyDecryptNonce...)}, nil
+	return &EncryptorDecryptor[T]{aesgcm: aesgcm, legacyNonce: bytes.Clone(cfg.legacyNonce), legacyDecryptNonce: bytes.Clone(cfg.legacyDecryptNonce)}, nil
 }
 
 // NewWithPassword creates a new EncryptorDecryptor instance with a specified password. Use this if
@@ -158,7 +159,7 @@ func NewWithPassword[T any](password, salt []byte, iterations int, opts ...Optio
 		return nil, fmt.Errorf("error creating new GCM: %w", err)
 	}
 
-	return &EncryptorDecryptor[T]{aesgcm: aesgcm, legacyNonce: append([]byte(nil), cfg.legacyNonce...), legacyDecryptNonce: append([]byte(nil), cfg.legacyDecryptNonce...)}, nil
+	return &EncryptorDecryptor[T]{aesgcm: aesgcm, legacyNonce: bytes.Clone(cfg.legacyNonce), legacyDecryptNonce: bytes.Clone(cfg.legacyDecryptNonce)}, nil
 }
 
 // Deprecated: NewWithPasswordNonce is replaced by NewWithPassword. Nonces are now generated
